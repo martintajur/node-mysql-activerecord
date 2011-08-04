@@ -29,63 +29,6 @@
  * OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
- *
- * Some usage examples:
- * 
- * var db = new require('mysql-activerecord').Adapter({ server: 'localhost', username: 'root', password: '12345', database: 'test' });
- * 
- * --------------
- * 
- * db.get('people', function(err, results, fields) { console.log(results); });
- * 
- * --------------
- * 
- * db.insert('people', { name: 'Martin', email: 'martin@example.com' }, function(err, info) { console.log('New row ID is ' + info.insertId); });
- * 
- * --------------
- * 
- * db.insert('people', { name: 'Martin', email: 'martin@example.com' }, function(err, info) { console.log('New row ID is ' + info.insertId); });
- * 
- * --------------
- * 
- * db
- *    .select('id, name, email')
- *    .where({ name: 'Martin' }
- *    .limit(1)
- *    .get('people', function(err, results, fields) {
- *       console.log(results);
- *    });
- * 
- * --------------
- *
- * db
- *    .select(['people.id', 'people.name', 'people.email', 'songs.title'])
- *    .join('songs', 'people.favorite_song_id', 'left')
- *    .where({
- *       'people.name': 'Martin',
- *       'songs.title': 'Yesterday'
- *    })
- *    .limit(5, 10)
- *    .get('people', function(err, results, fields) {
- *       console.log(results);
- *    });
- *
- * --------------
- * 
- * db
- *    .select(['people.id', 'people.name', 'people.email', 'songs.title'])
- *    .join('songs', 'people.favorite_song_id', 'left')
- *    .where({
- *       'people.name': 'Martin',
- *       'songs.title': 'Yesterday'
- *    })
- *    .limit(5, 10)
- *    .order_by('people.name asc')
- *    .get('people', function(err, results, fields) {
- *       console.log(results);
- *    });
- *
- * --------------
  * 
 **/ 
 
