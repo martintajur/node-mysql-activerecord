@@ -10,6 +10,14 @@ It enables similar database operations as in CodeIgniter (a PHP web applications
  * Supports method chaining
  * Automatically escapes field values
 
+How to install
+==============
+
+	npm install mysql-activerecord
+
+Licence info
+============
+
 Copyright (c) 2011 Martin Tajur (martin@tajur.ee)
 Licensed under the GPL license and MIT:
 
