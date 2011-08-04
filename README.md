@@ -123,30 +123,19 @@ Basic DELETE query
 Methods
 =======
 
-	.select(selectFieldName)
-	.select([selectFieldName, selectFieldName, ... ])
-	
-	.where(fieldName, fieldValue)
-	.where({ fieldName: fieldValue, fieldName: fieldValue, ... })
-	
-	.order_by(orderByCondition)
-	.order_by([orderByCondition, orderByCondition, ... ])
-	
-	.join(tableName, joinCondition, joinDirection)
-	
-	.update(tableName, newData, responseCallback)
-	
-	.delete(tableName, responseCallback)
-	
-	.insert(tableName, newData, responseCallback)
-	
-	.get(tableName, responseCallback)
-	
-	.limit(limitNumber)
-	.limit(limitNumber, offsetNumber)
-	
-	.query(sqlQueryString, responseCallback)
-	
-	.ping()
-	
+ * .select(selectFieldName)
+ * .select([selectFieldName, selectFieldName, ... ])
+ * .where(fieldName, fieldValue)
+ * .where({ fieldName: fieldValue, fieldName: fieldValue, ... })
+ * .order_by(orderByCondition)
+ * .order_by([orderByCondition, orderByCondition, ... ])
+ * .join(tableName, joinCondition, joinDirection)
+ * .update(tableName, newData, responseCallback)
+ * .delete(tableName, responseCallback)
+ * .insert(tableName, newData, responseCallback)
+ * .get(tableName, responseCallback)
+ * .limit(limitNumber)
+ * .limit(limitNumber, offsetNumber)
+ * .query(sqlQueryString, responseCallback)
+ * .ping()
 
