@@ -49,7 +49,7 @@ Usage examples
 Establishing a connection
 -------------------------
 
-    var db = new require('mysql-activerecord.js').Adapter({
+    var db = new require('mysql-activerecord').Adapter({
     	server: 'localhost',
     	username: 'root',
     	password: '12345',
