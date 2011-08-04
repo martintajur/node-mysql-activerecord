@@ -146,4 +146,4 @@ Methods
  * .limit(limitNumber, offsetNumber)
  * .query(sqlQueryString, responseCallback)
  * .ping()
-
+ * ._last_query()

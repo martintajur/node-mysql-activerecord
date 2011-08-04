@@ -65,15 +65,17 @@ exports.Adapter = function(settings) {
 		orderByClause = '',
 		limitClause = -1,
 		offsetClause = -1,
-		joinClause = [];
+		joinClause = [],
+		lastQuery = '';
 	
-	var resetQuery = function() {
+	var resetQuery = function(newLastQuery) {
 		whereClause = {};
 		selectClause = [];
 		orderByClause = '';
 		limitClause = -1;
 		offsetClause = -1;
 		joinClause = [];
+		lastQuery = (typeof newLastQuery === 'string' ? newLastQuery : '');
 	};
 	
 	var buildDataString = function(dataSet, separator, clause) {
@@ -223,7 +225,7 @@ exports.Adapter = function(settings) {
 			+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
 			
 			connection.query(combinedQueryString, responseCallback);
-			resetQuery();
+			resetQuery(combinedQueryString);
 		}
 		
 		return that;
@@ -237,7 +239,7 @@ exports.Adapter = function(settings) {
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
 						
 			connection.query(combinedQueryString, responseCallback);
-			resetQuery();
+			resetQuery(combinedQueryString);
 		}
 		
 		return that;
@@ -250,15 +252,19 @@ exports.Adapter = function(settings) {
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
 						
 			connection.query(combinedQueryString, responseCallback);
-			resetQuery();
+			resetQuery(combinedQueryString);
 		}
 		
 		return that;
 	};
 	
+	this._last_query = function() {
+		return lastQuery;
+	};
+	
 	this.query = function(sqlQueryString, responseCallback) {
 		connection.query(sqlQueryString, responseCallback);
-		resetQuery();
+		resetQuery(sqlQueryString);
 		return that;
 	};
 

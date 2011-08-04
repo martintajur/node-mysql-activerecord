@@ -1,5 +1,5 @@
 { "name" : "mysql-activerecord"
-, "version": "0.1.2"
+, "version": "0.2.1"
 , "devDependencies": {"node-mysql": "0.9.1"}
 , "main" : "./"
 }
