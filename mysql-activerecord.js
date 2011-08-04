@@ -1,7 +1,7 @@
 /**
  * MySQL ActiveRecord Adapter for Node.js
- * (C) Martin Tajur and Round OÜ 2011
- * martin@round.ee
+ * (C) Martin Tajur 2011
+ * martin@tajur.ee
  * 
  * Active Record Database Pattern implementation for use with node-mysql as MySQL connection driver.
  * 
@@ -269,10 +269,6 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 	
-	this.escape = function(string) {
-		return connection.escape(string);
-	};
-	
 	this.get = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'SELECT ' + (selectClause.length === 0 ? '*' : selectClause.join(','))
@@ -284,15 +280,41 @@ exports.Adapter = function(settings) {
 			+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
 			
 			connection.query(combinedQueryString, responseCallback);
-			console.log(combinedQueryString);
 			resetQuery();
 		}
 		
 		return that;
 	};
 	
-	this.query = function(queryString, responseCallback) {
-		connection.query(queryString, responseCallback);
+	this.update = function(tableName, newData, responseCallback) {
+		if (typeof tableName === 'string') {
+			var combinedQueryString = 'UPDATE ' + tableName
+			+ buildDataString(newData, ', ', 'SET')
+			+ buildDataString(whereClause, ' AND ', 'WHERE')
+			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
+						
+			connection.query(combinedQueryString, responseCallback);
+			resetQuery();
+		}
+		
+		return that;
+	};
+	
+	this.delete = function(tableName, responseCallback) {
+		if (typeof tableName === 'string') {
+			var combinedQueryString = 'DELETE FROM ' + tableName
+			+ buildDataString(whereClause, ' AND ', 'WHERE')
+			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
+						
+			connection.query(combinedQueryString, responseCallback);
+			resetQuery();
+		}
+		
+		return that;
+	};
+	
+	this.query = function(sqlQueryString, responseCallback) {
+		connection.query(sqlQueryString, responseCallback);
 		resetQuery();
 		return that;
 	};
