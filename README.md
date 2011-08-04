@@ -1,7 +1,7 @@
 MySQL ActiveRecord Adapter for Node.js
 ======================================
 
-Active Record Database Pattern implementation for use with node-mysql as MySQL connection driver.
+Active Record Database Pattern implementation for use with node-mysql (https://github.com/felixge/node-mysql) as MySQL connection driver.
 
 It enables similar database operations as in CodeIgniter (a PHP web applications framework). The main benefit and the reason I worked on this was the ability to direct JavaScript objects straight to MySQL queries without having to worry about constructing the query itself. Although Active Record is maybe a tiny step closer to ORM, I see a lot of value in the Active Record as it allows more control over database queries than traditional ORM.
 
