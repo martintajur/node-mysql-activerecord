@@ -78,6 +78,10 @@ exports.Adapter = function(settings) {
 		lastQuery = (typeof newLastQuery === 'string' ? newLastQuery : '');
 	};
 	
+	var escapeFieldName = function(str) {
+		return '`' + str.replace('.','`.`') + '`';
+	};
+	
 	var buildDataString = function(dataSet, separator, clause) {
 		if (!clause) {
 			clause = 'WHERE';
@@ -86,8 +90,9 @@ exports.Adapter = function(settings) {
 		if (!separator) {
 			separator = ', ';
 		}
+		
 		for (var key in dataSet) {
-			queryString += key + "=" + connection.escape(dataSet[key]);
+			queryString += escapeFieldName(key) + "=" + connection.escape(dataSet[key]);
 			if (y < getObjectSize(dataSet)) {
 				queryString += separator;
 				y++;
@@ -103,7 +108,7 @@ exports.Adapter = function(settings) {
 		var joinString = '';
 		
 		for (var i = 0; i < joinClause.length; i++) {
-			joinString += (joinClause[i].direction !== '' ? ' ' + joinClause[i].direction : '') + ' JOIN ' + joinClause[i].table + ' ON ' + joinClause[i].relation;
+			joinString += (joinClause[i].direction !== '' ? ' ' + joinClause[i].direction : '') + ' JOIN ' + escapeFieldName(joinClause[i].table) + ' ON ' + joinClause[i].relation;
 		}
 		
 		return joinString;
@@ -144,7 +149,6 @@ exports.Adapter = function(settings) {
 	this.where = function(whereSet, whereValue) {
 		if (typeof whereValue === 'undefined' && typeof whereSet === 'object') {
 			whereClause = mergeObjects(whereClause, whereSet);
-			console.log(whereClause);
 		}
 		else if (typeof whereSet === 'string' || typeof whereSet === 'number') {
 			whereClause[whereSet] = whereValue;
@@ -204,20 +208,27 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 
-	this.insert = function(tableToInsert, dataSet, callbackHandler) {
-		connection.query('INSERT into ' + tableToInsert + ' SET ' + buildQueryString(dataSet, ', '), callbackHandler);
+	this.ping = function() {
+		connection.ping();
 		return that;
 	};
 	
-	this.ping = function() {
-		connection.ping();
+	this.insert = function(tableName, dataSet, responseCallback) {
+		if (typeof tableName === 'string') {
+			
+			var combinedQueryString = 'INSERT into ' + escapeFieldName(tableName)
+			+ buildDataString(dataSet, ', ', 'SET');
+			
+			connection.query(combinedQueryString, responseCallback);
+			resetQuery(combinedQueryString);
+		}
 		return that;
 	};
 	
 	this.get = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'SELECT ' + (selectClause.length === 0 ? '*' : selectClause.join(','))
-			+ ' FROM ' + tableName
+			+ ' FROM ' + escapeFieldName(tableName)
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
@@ -233,7 +244,7 @@ exports.Adapter = function(settings) {
 	
 	this.update = function(tableName, newData, responseCallback) {
 		if (typeof tableName === 'string') {
-			var combinedQueryString = 'UPDATE ' + tableName
+			var combinedQueryString = 'UPDATE ' + escapeFieldName(tableName)
 			+ buildDataString(newData, ', ', 'SET')
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
@@ -247,7 +258,7 @@ exports.Adapter = function(settings) {
 	
 	this.delete = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
-			var combinedQueryString = 'DELETE FROM ' + tableName
+			var combinedQueryString = 'DELETE FROM ' + escapeFieldName(tableName)
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
 						
