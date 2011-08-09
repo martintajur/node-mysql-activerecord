@@ -256,6 +256,10 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 	
+	this.escape = function(str) {
+		return connection.escape(str);
+	};
+	
 	this.delete = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'DELETE FROM ' + escapeFieldName(tableName)
