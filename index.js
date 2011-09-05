@@ -59,6 +59,10 @@ exports.Adapter = function(settings) {
 	connection.connect();
 
 	connection.useDatabase(settings.database);
+	
+	if (settings.charset) {
+		connection.query('SET NAMES ' + settings.charset);
+	}
 
 	var whereClause = {},
 		selectClause = [],
@@ -92,10 +96,17 @@ exports.Adapter = function(settings) {
 		}
 		
 		for (var key in dataSet) {
-			queryString += escapeFieldName(key) + "=" + connection.escape(dataSet[key]);
-			if (y < getObjectSize(dataSet)) {
-				queryString += separator;
-				y++;
+			if (dataSet.hasOwnProperty(key)) {
+				if (typeof dataSet[key] !== 'object') {
+					queryString += escapeFieldName(key) + "=" + connection.escape(dataSet[key]);
+				}
+				else if (typeof dataSet[key] === 'object' && dataSet[key] instanceof Array && dataSet[key].length > 0) {
+					queryString += escapeFieldName(key) + ' in ("' + dataSet[key].join('", "') + '")';
+				}
+				if (y < getObjectSize(dataSet)) {
+					queryString += separator;
+					y++;
+				}
 			}
 		}
 		if (getObjectSize(dataSet) > 0) {
@@ -147,10 +158,13 @@ exports.Adapter = function(settings) {
 	};
 	
 	this.where = function(whereSet, whereValue) {
-		if (typeof whereValue === 'undefined' && typeof whereSet === 'object') {
+		if (typeof whereSet === 'object' && typeof whereValue === 'undefined') {
 			whereClause = mergeObjects(whereClause, whereSet);
 		}
-		else if (typeof whereSet === 'string' || typeof whereSet === 'number') {
+		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue != 'undefined') {
+			whereClause[whereSet] = whereValue;
+		}
+		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue === 'object' && whereValue instanceof Array) {
 			whereClause[whereSet] = whereValue;
 		}
 		return that;
