@@ -50,7 +50,7 @@ exports.Adapter = function(settings) {
 		throw new Error('Unable to start ActiveRecord - no username given.');
 	}
 	
-	var connection = new require('mysql').Client();
+	var connection = new require('mysql').createClient();
 
 	connection.user = settings.username;
 	connection.password = settings.password;
