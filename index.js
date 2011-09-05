@@ -56,8 +56,6 @@ exports.Adapter = function(settings) {
 	connection.password = settings.password;
 	connection.database = settings.database;
 	
-	connection.connect();
-
 	connection.useDatabase(settings.database);
 	
 	if (settings.charset) {
