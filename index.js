@@ -50,13 +50,13 @@ exports.Adapter = function(settings) {
 		throw new Error('Unable to start ActiveRecord - no username given.');
 	}
 	
-	var connection = new require('mysql').createClient();
-
-	connection.user = settings.username;
-	connection.password = settings.password;
-	connection.database = settings.database;
-	
-	connection.useDatabase(settings.database);
+	var connection = new require('mysql').createClient({
+		host: settings.server,
+		port: settings.port,
+		user: settings.username,
+		password: settings.password,
+		database: settings.database
+	});
 	
 	if (settings.charset) {
 		connection.query('SET NAMES ' + settings.charset);
