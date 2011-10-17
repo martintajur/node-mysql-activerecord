@@ -162,7 +162,7 @@ exports.Adapter = function(settings) {
 		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue != 'undefined') {
 			whereClause[whereSet] = whereValue;
 		}
-		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue === 'object' && whereValue instanceof Array) {
+		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue === 'object' && whereValue instanceof Array && whereValue.length > 0) {
 			whereClause[whereSet] = whereValue;
 		}
 		return that;
