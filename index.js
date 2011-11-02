@@ -294,6 +294,14 @@ exports.Adapter = function(settings) {
 		resetQuery(sqlQueryString);
 		return that;
 	};
+	
+	this.disconnect = function() {
+		return connection.end();
+	};
+
+	this.forceDisconnect = function() {
+		return connection.destroy();
+	};
 
 	var that = this;
 	
