@@ -78,10 +78,13 @@ exports.Adapter = function(settings) {
 		offsetClause = -1;
 		joinClause = [];
 		lastQuery = (typeof newLastQuery === 'string' ? newLastQuery : '');
+		rawWhereClause = {};
 	};
 	
+	var rawWhereClause = {};
+	
 	var escapeFieldName = function(str) {
-		return '`' + str.replace('.','`.`') + '`';
+		return (!rawWhereClause[str] ? '`' + str.replace('.','`.`') + '`' : str);
 	};
 	
 	var buildDataString = function(dataSet, separator, clause) {
@@ -155,11 +158,14 @@ exports.Adapter = function(settings) {
 		return s.substring(l, r + 1);
 	};
 	
-	this.where = function(whereSet, whereValue) {
+	this.where = function(whereSet, whereValue, isRaw) {
 		if (typeof whereSet === 'object' && typeof whereValue === 'undefined') {
 			whereClause = mergeObjects(whereClause, whereSet);
 		}
 		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue != 'undefined') {
+			if (isRaw) {
+				rawWhereClause[whereSet] = true;
+			}
 			whereClause[whereSet] = whereValue;
 		}
 		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue === 'object' && whereValue instanceof Array) {
