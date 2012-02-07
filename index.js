@@ -239,14 +239,24 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 	
-	this.insert = function(tableName, dataSet, responseCallback, verb) {
+	this.insert = function(tableName, dataSet, responseCallback, verb, querySuffix) {
 		if (typeof verb === 'undefined') {
 			var verb = 'INSERT';
+		}
+		if (typeof querySuffix === 'undefined') {
+			var querySuffix = '';
+		}
+		else if (typeof querySuffix !== 'string') {
+			var querySuffix = '';
 		}
 		if (typeof tableName === 'string') {
 			
 			var combinedQueryString = verb + ' into ' + escapeFieldName(tableName)
 			+ buildDataString(dataSet, ', ', 'SET');
+			
+			if (querySuffix != '') {
+				combinedQueryString = combinedQueryString + ' ' + querySuffix;
+			}
 			
 			connection.query(combinedQueryString, responseCallback);
 			resetQuery(combinedQueryString);
@@ -254,8 +264,8 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 	
-	this.insert_ignore = function(tableName, dataSet, responseCallback) {
-		return this.insert(tableName, dataSet, responseCallback, 'INSERT IGNORE');
+	this.insert_ignore = function(tableName, dataSet, responseCallback, querySuffix) {
+		return this.insert(tableName, dataSet, responseCallback, 'INSERT IGNORE', querySuffix);
 	};
 	
 	this.get = function(tableName, responseCallback) {

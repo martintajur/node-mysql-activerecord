@@ -1,6 +1,6 @@
 {
 	"name" : "mysql-activerecord",
-	"version": "0.6.1",
+	"version": "0.6.2",
 	"author": "Martin Tajur <martin@tajur.ee>",
 	"description": "MySQL ActiveRecord pattern implementation on top of the mysql module.",
 	"homepage": "https://github.com/martintajur/node-mysql-activerecord",
