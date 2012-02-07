@@ -1,0 +1,207 @@
+info it worked if it ends with ok
+verbose cli [ 'node', '/usr/local/bin/npm', 'publish', '.' ]
+info using npm@1.0.104
+info using node@v0.6.0
+verbose config file /Users/martin/.npmrc
+verbose config file /usr/local/etc/npmrc
+verbose config file /usr/local/lib/node_modules/npm/npmrc
+verbose publish [ '.' ]
+silly testEngine { name: 'mysql-activerecord',
+silly testEngine   version: '0.6.1',
+silly testEngine   author: { name: 'Martin Tajur', email: 'martin@tajur.ee' },
+silly testEngine   description: 'MySQL ActiveRecord pattern implementation on top of the mysql module.',
+silly testEngine   homepage: 'https://github.com/martintajur/node-mysql-activerecord',
+silly testEngine   repository: 
+silly testEngine    { type: 'git',
+silly testEngine      url: 'git://github.com/martintajur/node-mysql-activerecord.git' },
+silly testEngine   dependencies: { mysql: '0.9.5' },
+silly testEngine   main: './',
+silly testEngine   engines: { node: '*' },
+silly testEngine   _npmUser: { name: 'martin.tajur', email: 'martin@tajur.ee' },
+silly testEngine   _id: 'mysql-activerecord@0.6.1',
+silly testEngine   devDependencies: {},
+silly testEngine   _engineSupported: true,
+silly testEngine   _npmVersion: '1.0.104',
+silly testEngine   _nodeVersion: 'v0.6.0',
+silly testEngine   _defaultsLoaded: true,
+silly testEngine   scripts: {} }
+verbose caching /opt/local/www/node-mysql-activerecord/package.json
+verbose loadDefaults mysql-activerecord@0.6.1
+info prepublish mysql-activerecord@0.6.1
+verbose cache add [ '.', null ]
+silly cache add: name, spec, args [ undefined, '.', [ '.', null ] ]
+verbose parsed url { pathname: '.', path: '.', href: '.' }
+silly testEngine { name: 'mysql-activerecord',
+silly testEngine   version: '0.6.1',
+silly testEngine   author: { name: 'Martin Tajur', email: 'martin@tajur.ee' },
+silly testEngine   description: 'MySQL ActiveRecord pattern implementation on top of the mysql module.',
+silly testEngine   homepage: 'https://github.com/martintajur/node-mysql-activerecord',
+silly testEngine   repository: 
+silly testEngine    { type: 'git',
+silly testEngine      url: 'git://github.com/martintajur/node-mysql-activerecord.git' },
+silly testEngine   dependencies: { mysql: '0.9.5' },
+silly testEngine   main: './',
+silly testEngine   engines: { node: '*' },
+silly testEngine   _npmUser: { name: 'martin.tajur', email: 'martin@tajur.ee' },
+silly testEngine   _id: 'mysql-activerecord@0.6.1',
+silly testEngine   devDependencies: {},
+silly testEngine   _engineSupported: true,
+silly testEngine   _npmVersion: '1.0.104',
+silly testEngine   _nodeVersion: 'v0.6.0',
+silly testEngine   _defaultsLoaded: true,
+silly testEngine   path: '/opt/local/www/node-mysql-activerecord' }
+verbose caching package.json
+verbose loadDefaults mysql-activerecord@0.6.1
+verbose pack /opt/local/www/node-mysql-activerecord /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/tmp.tgz
+verbose mkdir (expected) error ENOENT, No such file or directory '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267'
+verbose mkdir (expected) error ENOENT, No such file or directory '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334'
+verbose mkdir done: /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334 755
+verbose mkdir'ed /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334
+verbose tar about to write tar and gzip it.
+silly tar args [ '-czvf', '-', '-T', '-' ]
+silly spawning [ 'tar', [ '-czvf', '-', '-T', '-' ], '/opt/local/www' ]
+verbose mkdir (expected) error ENOENT, No such file or directory '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents'
+verbose mkdir (expected) error ENOENT, No such file or directory '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm'
+verbose mkdir done: /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm 755
+verbose unpack_ uid, gid [ undefined, undefined ]
+verbose unpackTarget /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/package
+silly gunzTarPerm modes [ '755', '644' ]
+silly spawning [ 'tar',
+silly spawning   [ '-zmvxpf',
+silly spawning     '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/tmp.tgz' ],
+silly spawning   '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm' ]
+silly tar err x node-mysql-activerecord/index.js
+silly tar err x node-mysql-activerecord/package.json
+silly tar err x node-mysql-activerecord/README.md
+silly asyncMap in gTP /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm/node-mysql-activerecord
+silly asyncMap in gTP /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm/node-mysql-activerecord/index.js
+silly asyncMap in gTP /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm/node-mysql-activerecord/package.json
+silly asyncMap in gTP /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm/node-mysql-activerecord/README.md
+verbose gunzed /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm/node-mysql-activerecord
+verbose rm'ed /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/package
+verbose renamed [ '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/___package.npm/node-mysql-activerecord',
+verbose renamed   '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/package' ]
+silly testEngine { name: 'mysql-activerecord',
+silly testEngine   version: '0.6.1',
+silly testEngine   author: { name: 'Martin Tajur', email: 'martin@tajur.ee' },
+silly testEngine   description: 'MySQL ActiveRecord pattern implementation on top of the mysql module.',
+silly testEngine   homepage: 'https://github.com/martintajur/node-mysql-activerecord',
+silly testEngine   repository: 
+silly testEngine    { type: 'git',
+silly testEngine      url: 'git://github.com/martintajur/node-mysql-activerecord.git' },
+silly testEngine   dependencies: { mysql: '0.9.5' },
+silly testEngine   main: './',
+silly testEngine   engines: { node: '*' },
+silly testEngine   _npmUser: { name: 'martin.tajur', email: 'martin@tajur.ee' },
+silly testEngine   _id: 'mysql-activerecord@0.6.1',
+silly testEngine   devDependencies: {},
+silly testEngine   _engineSupported: true,
+silly testEngine   _npmVersion: '1.0.104',
+silly testEngine   _nodeVersion: 'v0.6.0',
+silly testEngine   _defaultsLoaded: true,
+silly testEngine   path: '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/package' }
+verbose caching /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/package/package.json
+verbose loadDefaults mysql-activerecord@0.6.1
+verbose tarball contents [ 'package' ]
+verbose from cache /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/package/package.json
+verbose pack /var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents/package /Users/martin/.npm/mysql-activerecord/0.6.1/package.tgz
+verbose mkdir'ed /Users/martin/.npm/mysql-activerecord/0.6.1
+verbose tar about to write tar and gzip it.
+silly tar args [ '-czvf', '-', '-T', '-' ]
+silly spawning [ 'tar',
+silly spawning   [ '-czvf', '-', '-T', '-' ],
+silly spawning   '/var/folders/8g/gvks040s4zqbrvsjp_00hs200000gn/T/npm-1328604891267/1328604891267-0.0249554798938334/contents' ]
+verbose mkdir (expected) error ENOENT, No such file or directory '/Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm'
+verbose mkdir done: /Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm 755
+verbose unpack_ uid, gid [ undefined, undefined ]
+verbose unpackTarget /Users/martin/.npm/mysql-activerecord/0.6.1/package
+silly gunzTarPerm modes [ '755', '644' ]
+silly spawning [ 'tar',
+silly spawning   [ '-zmvxpf',
+silly spawning     '/Users/martin/.npm/mysql-activerecord/0.6.1/package.tgz' ],
+silly spawning   '/Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm' ]
+silly tar err x package/index.js
+silly tar err x package/package.json
+silly tar err x package/README.md
+silly asyncMap in gTP /Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm/package
+silly asyncMap in gTP /Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm/package/index.js
+silly asyncMap in gTP /Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm/package/package.json
+silly asyncMap in gTP /Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm/package/README.md
+verbose gunzed /Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm/package
+verbose rm'ed /Users/martin/.npm/mysql-activerecord/0.6.1/package
+verbose renamed [ '/Users/martin/.npm/mysql-activerecord/0.6.1/___package.npm/package',
+verbose renamed   '/Users/martin/.npm/mysql-activerecord/0.6.1/package' ]
+silly testEngine { name: 'mysql-activerecord',
+silly testEngine   version: '0.6.1',
+silly testEngine   author: { name: 'Martin Tajur', email: 'martin@tajur.ee' },
+silly testEngine   description: 'MySQL ActiveRecord pattern implementation on top of the mysql module.',
+silly testEngine   homepage: 'https://github.com/martintajur/node-mysql-activerecord',
+silly testEngine   repository: 
+silly testEngine    { type: 'git',
+silly testEngine      url: 'git://github.com/martintajur/node-mysql-activerecord.git' },
+silly testEngine   dependencies: { mysql: '0.9.5' },
+silly testEngine   main: './',
+silly testEngine   engines: { node: '*' },
+silly testEngine   _npmUser: { name: 'martin.tajur', email: 'martin@tajur.ee' },
+silly testEngine   _id: 'mysql-activerecord@0.6.1',
+silly testEngine   devDependencies: {},
+silly testEngine   _engineSupported: true,
+silly testEngine   _npmVersion: '1.0.104',
+silly testEngine   _nodeVersion: 'v0.6.0',
+silly testEngine   _defaultsLoaded: true,
+silly testEngine   dist: 
+silly testEngine    { shasum: '5719199f9907bd1b33667cbbcaa2e0a40efc17f0',
+silly testEngine      tarball: 'http://registry.npmjs.org/mysql-activerecord/-/mysql-activerecord-0.6.1.tgz' } }
+verbose caching /Users/martin/.npm/mysql-activerecord/0.6.1/package/package.json
+verbose loadDefaults mysql-activerecord@0.6.1
+silly updated sha bytes 10240
+info shasum 5719199f9907bd1b33667cbbcaa2e0a40efc17f0
+info shasum /Users/martin/.npm/mysql-activerecord/0.6.1/package.tgz
+verbose from cache /Users/martin/.npm/mysql-activerecord/0.6.1/package/package.json
+verbose chmod /Users/martin/.npm/mysql-activerecord/0.6.1/package.tgz 644
+verbose chown [ '/Users/martin/.npm/mysql-activerecord/0.6.1/package.tgz',
+verbose chown   501,
+verbose chown   20 ]
+silly publish { name: 'mysql-activerecord',
+silly publish   version: '0.6.1',
+silly publish   author: { name: 'Martin Tajur', email: 'martin@tajur.ee' },
+silly publish   description: 'MySQL ActiveRecord pattern implementation on top of the mysql module.',
+silly publish   homepage: 'https://github.com/martintajur/node-mysql-activerecord',
+silly publish   repository: 
+silly publish    { type: 'git',
+silly publish      url: 'git://github.com/martintajur/node-mysql-activerecord.git' },
+silly publish   dependencies: { mysql: '0.9.5' },
+silly publish   main: './',
+silly publish   engines: { node: '*' },
+silly publish   _npmUser: { name: 'martin.tajur', email: 'martin@tajur.ee' },
+silly publish   _id: 'mysql-activerecord@0.6.1',
+silly publish   devDependencies: {},
+silly publish   _engineSupported: true,
+silly publish   _npmVersion: '1.0.104',
+silly publish   _nodeVersion: 'v0.6.0',
+silly publish   _defaultsLoaded: true,
+silly publish   dist: 
+silly publish    { shasum: '5719199f9907bd1b33667cbbcaa2e0a40efc17f0',
+silly publish      tarball: 'http://registry.npmjs.org/mysql-activerecord/-/mysql-activerecord-0.6.1.tgz' } }
+verbose PUT mysql-activerecord
+verbose raw, before any munging mysql-activerecord
+verbose url resolving [ 'https://registry.npmjs.org/', './mysql-activerecord' ]
+verbose url resolved https://registry.npmjs.org/mysql-activerecord
+verbose GET mysql-activerecord
+verbose raw, before any munging mysql-activerecord
+verbose url resolving [ 'https://registry.npmjs.org/', './mysql-activerecord' ]
+verbose url resolved https://registry.npmjs.org/mysql-activerecord
+info Already published mysql-activerecord@0.6.1
+verbose uploading bin dists []
+ERR! publish fail Cannot publish over existing version.
+ERR! publish fail Bump the 'version' field, set the --force flag, or
+ERR! publish fail     npm unpublish 'mysql-activerecord@0.6.1'
+ERR! publish fail and try again
+ERR! 
+ERR! System Darwin 11.2.0
+ERR! command "node" "/usr/local/bin/npm" "publish" "."
+ERR! cwd /opt/local/www/node-mysql-activerecord
+ERR! node -v v0.6.0
+ERR! npm -v 1.0.104
+ERR! code EPUBLISHCONFLICT
+verbose exit [ 1, true ]

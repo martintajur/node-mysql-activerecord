@@ -1,5 +1,18 @@
-{ "name" : "mysql-activerecord"
-, "version": "0.5.1"
-, "devDependencies": {"mysql": "0.9.4"}
-, "main" : "./"
+{
+	"name" : "mysql-activerecord",
+	"version": "0.6.1",
+	"author": "Martin Tajur <martin@tajur.ee>",
+	"description": "MySQL ActiveRecord pattern implementation on top of the mysql module.",
+	"homepage": "https://github.com/martintajur/node-mysql-activerecord",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/martintajur/node-mysql-activerecord.git"
+	},
+	"dependencies": {
+		"mysql": "0.9.5"
+	},
+	"main" : "./",
+	"engines": {
+		"node": "*"
+	}
 }

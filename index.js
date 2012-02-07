@@ -1,11 +1,9 @@
 /**
  * MySQL ActiveRecord Adapter for Node.js
- * (C) Martin Tajur 2011
+ * (C) Martin Tajur 2011-2012
  * martin@tajur.ee
  * 
  * Active Record Database Pattern implementation for use with node-mysql as MySQL connection driver.
- * 
- * Requires: node-mysql
  * 
  * 
  * Dual licensed under the MIT (MIT-LICENSE.txt)
@@ -47,7 +45,7 @@ exports.Adapter = function(settings) {
 		settings.password = '';
 	}
 	if (!settings.database) {
-		throw new Error('Unable to start ActiveRecord - no username given.');
+		throw new Error('Unable to start ActiveRecord - no database given.');
 	}
 	
 	var connection = new require('mysql').createClient({
@@ -84,7 +82,7 @@ exports.Adapter = function(settings) {
 	var rawWhereClause = {};
 	
 	var escapeFieldName = function(str) {
-		return (!rawWhereClause[str] ? '`' + str.replace('.','`.`') + '`' : str);
+		return (typeof rawWhereClause[str] === 'undefined' ? '`' + str.replace('.','`.`') + '`' : str);
 	};
 	
 	var buildDataString = function(dataSet, separator, clause) {
@@ -95,8 +93,13 @@ exports.Adapter = function(settings) {
 		if (!separator) {
 			separator = ', ';
 		}
+		var useSeparator = true;
+		
+		var datasetSize = getObjectSize(dataSet);
 		
 		for (var key in dataSet) {
+			useSeparator = true;
+			
 			if (dataSet.hasOwnProperty(key)) {
 				if (typeof dataSet[key] !== 'object') {
 					queryString += escapeFieldName(key) + "=" + connection.escape(dataSet[key]);
@@ -104,7 +107,12 @@ exports.Adapter = function(settings) {
 				else if (typeof dataSet[key] === 'object' && dataSet[key] instanceof Array && dataSet[key].length > 0) {
 					queryString += escapeFieldName(key) + ' in ("' + dataSet[key].join('", "') + '")';
 				}
-				if (y < getObjectSize(dataSet)) {
+				else {
+					useSeparator = false;
+					datasetSize = datasetSize - 1;
+				}
+				
+				if (y < datasetSize && useSeparator) {
 					queryString += separator;
 					y++;
 				}
@@ -231,16 +239,23 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 	
-	this.insert = function(tableName, dataSet, responseCallback) {
+	this.insert = function(tableName, dataSet, responseCallback, verb) {
+		if (typeof verb === 'undefined') {
+			var verb = 'INSERT';
+		}
 		if (typeof tableName === 'string') {
 			
-			var combinedQueryString = 'INSERT into ' + escapeFieldName(tableName)
+			var combinedQueryString = verb + ' into ' + escapeFieldName(tableName)
 			+ buildDataString(dataSet, ', ', 'SET');
 			
 			connection.query(combinedQueryString, responseCallback);
 			resetQuery(combinedQueryString);
 		}
 		return that;
+	};
+	
+	this.insert_ignore = function(tableName, dataSet, responseCallback) {
+		return this.insert(tableName, dataSet, responseCallback, 'INSERT IGNORE');
 	};
 	
 	this.get = function(tableName, responseCallback) {
