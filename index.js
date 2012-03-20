@@ -77,12 +77,14 @@ exports.Adapter = function(settings) {
 		joinClause = [];
 		lastQuery = (typeof newLastQuery === 'string' ? newLastQuery : '');
 		rawWhereClause = {};
+		rawWhereString = {};
 	};
 	
 	var rawWhereClause = {};
+	var rawWhereString = {};
 	
 	var escapeFieldName = function(str) {
-		return (typeof rawWhereClause[str] === 'undefined' ? '`' + str.replace('.','`.`') + '`' : str);
+		return (typeof rawWhereString[str] === 'undefined' && typeof rawWhereClause[str] === 'undefined' ? '`' + str.replace('.','`.`') + '`' : str);
 	};
 	
 	var buildDataString = function(dataSet, separator, clause) {
@@ -101,7 +103,13 @@ exports.Adapter = function(settings) {
 			useSeparator = true;
 			
 			if (dataSet.hasOwnProperty(key)) {
-				if (typeof dataSet[key] !== 'object') {
+				if (clause == 'WHERE' && rawWhereString[key] == true) {
+					queryString += key;
+				}
+				else if (dataSet[key] === null) {
+					queryString += escapeFieldName(key) + (clause == 'WHERE' ? " is NULL" : "=NULL");
+				}
+				else if (typeof dataSet[key] !== 'object') {
 					queryString += escapeFieldName(key) + "=" + connection.escape(dataSet[key]);
 				}
 				else if (typeof dataSet[key] === 'object' && dataSet[key] instanceof Array && dataSet[key].length > 0) {
@@ -177,6 +185,10 @@ exports.Adapter = function(settings) {
 			whereClause[whereSet] = whereValue;
 		}
 		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue === 'object' && whereValue instanceof Array && whereValue.length > 0) {
+			whereClause[whereSet] = whereValue;
+		}
+		else if (typeof whereSet === 'string' && typeof whereValue === 'undefined') {
+			rawWhereString[whereSet] = true;
 			whereClause[whereSet] = whereValue;
 		}
 		return that;

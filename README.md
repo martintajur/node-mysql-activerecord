@@ -35,14 +35,6 @@ Basic support of MySQL commands
  * LIMIT and OFFSET
  * ORDER BY
  
-To Do (not supported yet)
-=========================
-
- * LIKE, NOT LIKE
- * operators such as !=, >, <, >=, <=
- * WHERE OR
- * etc.
-
 Usage examples
 ==============
 
@@ -74,6 +66,18 @@ INSERT query
 	db.insert('people', data, function(err, info) {
 		console.log('New row ID is ' + info.insertId);
 	});
+
+INSERT IGNORE query with ON DUPLICATE KEY clause
+------------------------------------------------
+	
+	var data = {
+		name: 'Martin',
+		email: 'martin@example.com'
+	};
+	
+	db.insert_ignore('people', data, function(err, info) {
+		console.log('New row ID is ' + info.insertId);
+	}, 'ON DUPLICATE KEY SET counter = counter + 1');
 	
 SELECT query with WHERE clause
 ------------------------------
@@ -128,11 +132,27 @@ Basic DELETE query
 		});
 
 
+Advanced WHERE conditions
+-------------------------
+
+	db
+		.where("title not like '%Jackson%'")
+		.where("date_created > '2012-03-10'")
+		.where({ owner_id: 32 })
+		.delete('records', function(err) {
+			if (err) {
+				console.log('Deleted!')
+			}
+		});
+
+
 Methods
 =======
 
  * .select(selectFieldName)
  * .select([selectFieldName, selectFieldName, ... ])
+ * .where(rawClause)
+ * .where(fieldName, [possibleWhereInValue, possibleWhereInValue])
  * .where(fieldName, fieldValue)
  * .where({ fieldName: fieldValue, fieldName: fieldValue, ... })
  * .order_by(orderByCondition)
@@ -141,6 +161,7 @@ Methods
  * .update(tableName, newData, responseCallback)
  * .delete(tableName, responseCallback)
  * .insert(tableName, newData, responseCallback)
+ * .insert_ignore(tableName, newData, responseCallback, onDuplicateKeyClause)
  * .get(tableName, responseCallback)
  * .limit(limitNumber)
  * .limit(limitNumber, offsetNumber)
