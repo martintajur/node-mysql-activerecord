@@ -32,6 +32,8 @@
 
 exports.Adapter = function(settings) {
 	
+	var mysql = require('mysql');
+
 	if (!settings.server) {
 		throw new Error('Unable to start ActiveRecord - no server given.');
 	}
@@ -48,7 +50,7 @@ exports.Adapter = function(settings) {
 		throw new Error('Unable to start ActiveRecord - no database given.');
 	}
 	
-	var connection = new require('mysql').createClient({
+	var connection = new mysql.createClient({
 		host: settings.server,
 		port: settings.port,
 		user: settings.username,
