@@ -104,6 +104,17 @@ SELECT query with custom fields, WHERE, JOIN and LIMIT
 			console.log(results);
 		});
 
+SELECT query with custom fields, GROUP BY
+---------------------------------------------------
+
+	db
+		.select('name, COUNT(name) AS name_count')
+		.group_by( 'name' )
+		.order_by('name_count DESC')
+		.get('people', function(err, results, fields) {
+			console.log(results);
+		});
+
 Basic UPDATE query
 ------------------
 	
@@ -157,6 +168,8 @@ Methods
  * .where({ fieldName: fieldValue, fieldName: fieldValue, ... })
  * .order_by(orderByCondition)
  * .order_by([orderByCondition, orderByCondition, ... ])
+ * .group_by(orderByCondition)
+ * .group_by([orderByCondition, orderByCondition, ... ])
  * .join(tableName, joinCondition, joinDirection)
  * .update(tableName, newData, responseCallback)
  * .delete(tableName, responseCallback)
