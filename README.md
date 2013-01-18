@@ -168,3 +168,4 @@ Methods
  * .query(sqlQueryString, responseCallback)
  * .ping()
  * ._last_query()
+ * .connection()
