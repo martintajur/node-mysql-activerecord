@@ -176,6 +176,8 @@ exports.Adapter = function(settings) {
 		return s.substring(l, r + 1);
 	};
 	
+	this.connection = function() { return connection; }
+
 	this.where = function(whereSet, whereValue, isRaw) {
 		if (typeof whereSet === 'object' && typeof whereValue === 'undefined') {
 			whereClause = mergeObjects(whereClause, whereSet);
