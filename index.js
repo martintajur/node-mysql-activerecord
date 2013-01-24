@@ -65,6 +65,7 @@ exports.Adapter = function(settings) {
 	var whereClause = {},
 		selectClause = [],
 		orderByClause = '',
+		groupByClause = '',
 		limitClause = -1,
 		offsetClause = -1,
 		joinClause = [],
@@ -74,6 +75,7 @@ exports.Adapter = function(settings) {
 		whereClause = {};
 		selectClause = [];
 		orderByClause = '';
+		groupByClause = '';
 		limitClause = -1;
 		offsetClause = -1;
 		joinClause = [];
@@ -223,20 +225,25 @@ exports.Adapter = function(settings) {
 		}
 		return that;
 	};
-	
-	this.order_by = function(orderSet) {
-		if (orderSet instanceof Array) {
-			orderByClause = '';
-			for (var i = 0; i < orderSet.length; i++) {
-				orderByClause += orderSet[i];
-				if (i + 1 !== orderSet.length) {
-					orderByClause += ', ';
-				}
-			}
+
+	this.comma_seperated_arguments = function(set) {
+		var clause = '';
+		if (set instanceof Array) {
+			clause = set.join(', ');
 		}
-		else if (typeof orderSet === 'string') {
-			orderByClause = orderSet;
+		else if (typeof set === 'string') {
+			clause = set;
 		}
+		return clause;
+	};
+
+	this.group_by = function(set) {
+		groupByClause = this.comma_seperated_arguments( set );
+		return that;
+	};
+
+	this.order_by = function(set) {
+		orderByClause = this.comma_seperated_arguments( set );
 		return that;
 	};
 	
@@ -290,6 +297,7 @@ exports.Adapter = function(settings) {
 			+ ' FROM ' + escapeFieldName(tableName)
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
+			+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
 			+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
 			+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
