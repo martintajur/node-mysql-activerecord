@@ -1,24 +1,36 @@
 MySQL ActiveRecord Adapter for Node.js
 ======================================
 
-Active Record Database Pattern implementation for use with node-mysql (https://github.com/felixge/node-mysql) as MySQL connection driver.
+Active Record Database Pattern implementation on top of node-mysql module (https://github.com/felixge/node-mysql).
 
-It enables similar database operations as in CodeIgniter (a PHP web applications framework). The main benefit and the reason I worked on this was the ability to direct JavaScript objects straight to MySQL queries without having to worry about constructing the query itself. Although Active Record is maybe a tiny step closer to ORM, I see a lot of value in the Active Record as it allows more control over database queries than traditional ORM.
+To me, the main benefit of Active Record is the ability to direct JavaScript objects straight to MySQL query components without having to worry about constructing the query itself. Although Active Record is maybe a tiny step closer to ORM, I see a lot of value in the Active Record as it allows more control over database queries than traditional ORM.
 
  * Light-weight
  * Supports all basic MySQL commands
  * Supports method chaining
  * Automatically escapes field values
+ * Does not need any other modules to operate (it already includes the underlying node-mysql module)
 
 How to install
 ==============
 
 	npm install mysql-activerecord
 
+
+Get started
+-----------
+
+	var Db = require('mysql-activerecord');
+    var db = new Db.Adapter({
+    	server: 'localhost',
+    	username: 'root',
+    	password: '12345',
+    	database: 'test'
+    });
+
 Licence info
 ============
 
-Copyright (c) 2011 Martin Tajur (martin@tajur.ee)
 Licensed under the GPL license and MIT:
 
 * http://www.opensource.org/licenses/GPL-license.php
@@ -29,20 +41,192 @@ Basic support of MySQL commands
 
  * SELECT
  * UPDATE
- * INSERT (both single and multirow)
+ * INSERT (single-row and multi-row)
  * INSERT IGNORE
  * DELETE
  * JOIN
  * LIMIT and OFFSET
  * ORDER BY
- 
-Usage examples
-==============
+ * GROUP BY
+
+Methods
+=======
+
+# .select()
+
+## .select(selectFieldName)
+Specifies the field(s) to use in the SELECT query as a atring.
+
+	db.select("id, CONCAT(first_name, ' ', last_name) as full_name, email");
+	// This would produce: SELECT id, CONCAT(first_name, ' ', last_name) as full_name, email …
+
+You can call .select() multiple times within the scope of one query — all parameters will be used in the final query. E.g.
+
+	db.select('id');
+	// do some advanced checking and calculations here (only synchronous work, though!)
+	db.select('first_name, last_name');
+	// This would procude: SELECT id, first_name, last_name …
+
+## .select([selectFieldName, selectFieldName, … ])
+Same as above, with a difference of taking in fields list as an array.
+
+	db.select(['id', 'first_name', 'last_name']);
+	// This would produce: SELECT id, first_name, last_name …
+
+# .where()
+
+## .where(rawClause)
+Specifies a where clause component.
+
+	db.where('add_time is null');
+	// This would produce: … WHERE add_time is null …
+
+You can call .where() multiple times within the scope of one query — all parameters will be used in the final query.
+
+## .where(fieldName, [possibleWhereInValue, possibleWhereInValue])
+Specifies a WHERE IN structure to use in the query.
+
+	db.where('first_name', ['John', 'Maria', 'Jason', 'Herbert']);
+	// This would produce: … WHERE first_name in ('John', 'Maria', 'Jason', 'Herbert') …
+
+## .where(fieldName, fieldValue)
+Specifies a single WHERE condition to use in the query.
+
+	db.where('first_name', 'John');
+	// This would produce: … WHERE first_name = 'John' …
+
+## .where({ fieldName: fieldValue, fieldName: fieldValue, … })
+Specifies multiple WHERE conditions to use in the query.
+
+	var conditions = {
+		first_name: 'John',
+		last_name: 'Smith'
+	};
+	db.where(conditions);
+	// This would produce: … WHERE first_name = 'John' AND last_name = 'Smith' …
+
+# .order_by()
+
+## .order_by(orderByCondition)
+Specifies the ORDER BY condition as a full string.
+
+	db.order_by('name asc');
+	// This would produce: … ORDER BY name asc …
+
+You can call .order_by() multiple times within the scope of one query — all parameters will be used in the final query.
+
+## .order_by([orderByCondition, orderByCondition, … ])
+Specifies multiple ORDER BY conditions as an array.
+
+	db.order_by(['name asc', 'last_name desc']);
+	// This would produce: … ORDER BY name asc, last_name desc …
+
+# .group_by()
+
+## .group_by(groupByCondition)
+Specifies the GROUP BY condition as a full string.
+
+	db.group_by('name asc');
+	// This would produce: … GROUP BY name asc …
+
+You can call .group_by() multiple times within the scope of one query — all parameters will be used in the final query.
+
+## .group_by([groupByCondition, groupByCondition, … ])
+Specifies the GROUP BY condition as a full string.
+
+	db.group_by(['name asc', 'last_name desc']);
+	// This would produce: … GROUP BY name asc, last_name desc …
+
+# .join()
+
+## .join(tableName, joinCondition, joinDirection)
+Join additional tables to the query.
+
+	db.join('pets', 'pets.owner_id = people.id', 'LEFT');
+	// This would produce: … LEFT JOIN pets ON pets.owner_id = people.id …
+
+	db.join('pets', 'pets.owner_id = people.id');
+	// This would produce: … JOIN pets ON pets.owner_id = people.id …
+
+# .limit()
+
+## .limit(limitNumber)
+Adds a row limit to query results.
+
+	db.limit(10);
+	// Limits query results to 10 rows.
+
+## .limit(limitNumber, offsetNumber)
+Adds a row limit with an offset pointer position to query results.
+
+	db.limit(10, 30);
+	// Limits query results to 10 rows, starting from the 30th row in the full matching set.
+
+# Query execution commands
+
+After execution of a query, all query conditions are cleared. Results are passed down to responseCallback function. The parameters handed over to responseCallback match exactly what the underlying node-mysql module produces. See documentation from https://github.com/felixge/node-mysql
+
+## .update(tableName, newData, responseCallback)
+Produces and executes UPDATE query. 
+
+	db.update('people', { first_name: 'John', last_name: 'Smith' }, function(err) { ... });
+	// This would produce: … UPDATE people SET first_name = 'John', last_name = 'Smith' …
+
+## .delete(tableName, responseCallback)
+Produces and executes DELETE query. Be sure to specify some WHERE clause components using .where() not to truncate an entire table. ✌
+
+	db.delete('people', function(err) { ... });
+	
+## .insert(tableName, newData, responseCallback)
+Produces and executes a single-row INSERT query. 
+
+	db.insert('people', { first_name: 'John', last_name: 'Smith' }, function(err, info) { ... });
+	// This would produce: … INSERT INTO people SET first_name = 'John', last_name = 'Smith' …
+
+## .insert(tableName, [newData, newData, newData, …], responseCallback)
+Produces and executes a multi-row INSERT query. 
+	
+	var person1 = { first_name: 'John', last_name: 'Smith' };
+	var person2 = { first_name: 'Jason', last_name: 'Binder' };
+	var person3 = { first_name: 'Herbert', last_name: 'von Kellogg' };
+	db.insert('people', [person1, person2, person3], function(err, info) { ... });
+	// This would produce: … INSERT INTO people (first_name, last_name) VALUES (('John','Smith'),('Jason','Binder'),('Herbert','von Kellogg')) …
+
+## .insert_ignore(tableName, newData, responseCallback, onDuplicateKeyClause)
+Produces and executes an INSERT IGNORE query. Note that the newData parameter can be either a string (produces single-row INSERT) or an array (produces multi-row INSERT). You can also specify an optional onDuplicateKeyClause, e.g.
+	
+	db.insert_ignore('people', { first_name: 'John', last_name: 'Smith' }, function(err, info) { ... }, 'ON DUPLICATE KEY UPDATE duplicate_count = duplicate_count + 1');
+	// This would produce: … INSERT IGNORE INTO people SET first_name = 'John', last_name = 'Smith' … ON DUPLICATE KEY UPDATE duplicate_count = duplicate_count + 1
+
+## .get(tableName, responseCallback)
+Produces and executes a SELECT query.
+
+	db.get('people', function(err, rows, fields) { ... });
+	// This would produce: SELECT … FROM people …
+
+## .query(sqlQueryString, responseCallback)
+Produces and executes a raw query. Note that while no set query conditions will be used in this query, they will all be reset nevertheless with the execution.
+
+	db.query('SHOW TABLES FROM test_database', function(err, results) { ... });
+
+## .ping()
+Pings the connection. This is useful when extending idle timeouts.
+
+## ._last_query()
+Returns the last executed query as a string.
+
+## .connection()
+Returns the underlying database connection object, ultimately what https://github.com/felixge/node-mysql .createConnection() returns.
+
+
+Some more usage examples
+========================
 
 Establishing a connection
 -------------------------
 
-    var db = new require('mysql-activerecord').Adapter({
+	var Db = require('mysql-activerecord');
+    var db = new Db.Adapter({
     	server: 'localhost',
     	username: 'root',
     	password: '12345',
@@ -90,7 +274,7 @@ SELECT query with WHERE clause
 		});
 
 SELECT query with custom fields, WHERE, JOIN and LIMIT
----------------------------------------------------
+------------------------------------------------------
 
 	db
 		.select(['people.id', 'people.name', 'people.email', 'songs.title'])
@@ -105,12 +289,12 @@ SELECT query with custom fields, WHERE, JOIN and LIMIT
 			console.log(results);
 		});
 
-SELECT query with custom fields, GROUP BY
----------------------------------------------------
+SELECT query with custom fields and GROUP BY
+--------------------------------------------
 
 	db
 		.select('name, COUNT(name) AS name_count')
-		.group_by( 'name' )
+		.group_by('name')
 		.order_by('name_count DESC')
 		.get('people', function(err, results, fields) {
 			console.log(results);
@@ -157,29 +341,7 @@ Advanced WHERE conditions
 			}
 		});
 
+Contribute
+==========
 
-Methods
-=======
-
- * .select(selectFieldName)
- * .select([selectFieldName, selectFieldName, ... ])
- * .where(rawClause)
- * .where(fieldName, [possibleWhereInValue, possibleWhereInValue])
- * .where(fieldName, fieldValue)
- * .where({ fieldName: fieldValue, fieldName: fieldValue, ... })
- * .order_by(orderByCondition)
- * .order_by([orderByCondition, orderByCondition, ... ])
- * .group_by(orderByCondition)
- * .group_by([orderByCondition, orderByCondition, ... ])
- * .join(tableName, joinCondition, joinDirection)
- * .update(tableName, newData, responseCallback)
- * .delete(tableName, responseCallback)
- * .insert(tableName, newData, responseCallback)
- * .insert_ignore(tableName, newData, responseCallback, onDuplicateKeyClause)
- * .get(tableName, responseCallback)
- * .limit(limitNumber)
- * .limit(limitNumber, offsetNumber)
- * .query(sqlQueryString, responseCallback)
- * .ping()
- * ._last_query()
- * .connection()
+Got a missing feature you'd like to use? Found a bug? Go ahead and fork this repo, build the feature and issue a pull request.
