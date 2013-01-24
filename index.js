@@ -1,13 +1,11 @@
 /**
  * MySQL ActiveRecord Adapter for Node.js
- * (C) Martin Tajur 2011-2012
+ * (C) Martin Tajur 2011-2013
  * martin@tajur.ee
  * 
  * Active Record Database Pattern implementation for use with node-mysql as MySQL connection driver.
  * 
- * 
- * Dual licensed under the MIT (MIT-LICENSE.txt)
- * and GPL (GPL-LICENSE.txt) licenses.
+ * Dual licensed under the MIT and GPL licenses.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -256,26 +254,31 @@ exports.Adapter = function(settings) {
 	};
 	
 	this.insert = function(tableName, dataSet, responseCallback, verb, querySuffix) {
-		if (typeof verb === 'undefined') {
-			var verb = 'INSERT';
-		}
-		if (typeof querySuffix === 'undefined') {
-			var querySuffix = '';
-		}
-		else if (typeof querySuffix !== 'string') {
-			var querySuffix = '';
-		}
-		if (typeof tableName === 'string') {
-			
-			var combinedQueryString = verb + ' into ' + escapeFieldName(tableName)
-			+ buildDataString(dataSet, ', ', 'SET');
-			
-			if (querySuffix != '') {
-				combinedQueryString = combinedQueryString + ' ' + querySuffix;
+		if (Object.prototype.toString.call(dataSet) !== '[object Array]') {
+			if (typeof verb === 'undefined') {
+				var verb = 'INSERT';
 			}
-			
-			connection.query(combinedQueryString, responseCallback);
-			resetQuery(combinedQueryString);
+			if (typeof querySuffix === 'undefined') {
+				var querySuffix = '';
+			}
+			else if (typeof querySuffix !== 'string') {
+				var querySuffix = '';
+			}
+			if (typeof tableName === 'string') {
+				
+				var combinedQueryString = verb + ' into ' + escapeFieldName(tableName)
+				+ buildDataString(dataSet, ', ', 'SET');
+				
+				if (querySuffix != '') {
+					combinedQueryString = combinedQueryString + ' ' + querySuffix;
+				}
+				
+				connection.query(combinedQueryString, responseCallback);
+				resetQuery(combinedQueryString);
+			}
+		}
+		else {
+			doBatchInsert(verb, tableName, dataSet, responseCallback);
 		}
 		return that;
 	};
@@ -283,7 +286,44 @@ exports.Adapter = function(settings) {
 	this.insert_ignore = function(tableName, dataSet, responseCallback, querySuffix) {
 		return this.insert(tableName, dataSet, responseCallback, 'INSERT IGNORE', querySuffix);
 	};
-	
+
+	var doBatchInsert = function(verb, tableName, dataSet, responseCallback) {
+		if (Object.prototype.toString.call(dataSet) !== '[object Array]') {
+			throw new Error('Array of objects must be provided for batch insert!');
+		}
+		
+		if (dataSet.length == 0) return false;
+
+		var map = [];
+		var columns = [];
+
+		for (var key in dataSet[0]) {
+			if (dataSet[0].hasOwnProperty(key)) {
+				if (columns.indexOf(key) == -1) {
+					columns.push(escapeFieldName(key));
+				}
+			}
+		}
+
+		for (var i = 0; i < dataSet.length; i++) {
+			(function(i) {
+				var row = [];
+				for (var key in dataSet[i]) {
+					if (dataSet[i].hasOwnProperty(key)) {
+						row.push(that.escape(dataSet[i][key]));
+					}
+				}
+				if (row.length != columns.length) {
+					throw new Error('Cannot use batch insert into ' + tableName + ' - fields must match on all rows (' + row.join(',') + ' vs ' + columns.join(',') + ').');
+				}
+				map.push('(' + row.join(',') + ')');
+			})(i);
+		}
+
+		that.query(verb + ' INTO ' + escapeFieldName(tableName) + ' (' + columns.join(', ') + ') VALUES' + map.join(','), responseCallback);
+		return that;
+	}
+
 	this.get = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'SELECT ' + (selectClause.length === 0 ? '*' : selectClause.join(','))

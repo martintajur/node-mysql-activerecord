@@ -29,7 +29,8 @@ Basic support of MySQL commands
 
  * SELECT
  * UPDATE
- * INSERT
+ * INSERT (both single and multirow)
+ * INSERT IGNORE
  * DELETE
  * JOIN
  * LIMIT and OFFSET
