@@ -226,7 +226,7 @@ exports.Adapter = function(settings) {
 
 	this.comma_seperated_arguments = function(set) {
 		var clause = '';
-		if (set instanceof Array) {
+		if (Object.prototype.toString.call(set) !== '[object Array]') {
 			clause = set.join(', ');
 		}
 		else if (typeof set === 'string') {
@@ -236,12 +236,12 @@ exports.Adapter = function(settings) {
 	};
 
 	this.group_by = function(set) {
-		groupByClause = this.comma_seperated_arguments( set );
+		groupByClause = this.comma_seperated_arguments(set);
 		return that;
 	};
 
 	this.order_by = function(set) {
-		orderByClause = this.comma_seperated_arguments( set );
+		orderByClause = this.comma_seperated_arguments(set);
 		return that;
 	};
 	
