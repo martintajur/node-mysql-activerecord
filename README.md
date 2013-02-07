@@ -336,7 +336,7 @@ Advanced WHERE conditions
 		.where("date_created > '2012-03-10'")
 		.where({ owner_id: 32 })
 		.delete('records', function(err) {
-			if (err) {
+			if (!err) {
 				console.log('Deleted!')
 			}
 		});
