@@ -48,6 +48,7 @@ Basic support of MySQL commands
  * LIMIT and OFFSET
  * ORDER BY
  * GROUP BY
+ * COUNT
 
 Methods
 =======
@@ -204,6 +205,12 @@ Produces and executes a SELECT query.
 	db.get('people', function(err, rows, fields) { ... });
 	// This would produce: SELECT … FROM people …
 
+## .count(tableName, responseCallback)
+Produces and executes a SELECT query with count.
+
+	db.get('people', function(err, rows, fields) { ... });
+	// This would produce: SELECT count(*) FROM people …
+
 ## .query(sqlQueryString, responseCallback)
 Produces and executes a raw query. Note that while no set query conditions will be used in this query, they will all be reset nevertheless with the execution.
 
@@ -286,6 +293,18 @@ SELECT query with custom fields, WHERE, JOIN and LIMIT
 		.limit(5, 10)
 		.order_by('people.name asc')
 		.get('people', function(err, results, fields) {
+			console.log(results);
+		});
+
+Basic counting
+------------------------------------------------------
+
+	db
+		.where({
+			'people.name': 'Martin',
+			'songs.title': 'Yesterday'
+		})
+		.count('people', function(err, results, fields) {
 			console.log(results);
 		});
 
