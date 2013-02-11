@@ -114,7 +114,7 @@ exports.Adapter = function(settings) {
 				else if (typeof dataSet[key] !== 'object') {
 					queryString += escapeFieldName(key) + "=" + connection.escape(dataSet[key]);
 				}
-				else if (typeof dataSet[key] === 'object' && dataSet[key] instanceof Array && dataSet[key].length > 0) {
+				else if (typeof dataSet[key] === 'object' && Object.prototype.toString.call(dataSet[key]) === '[object Array]' && dataSet[key].length > 0) {
 					queryString += escapeFieldName(key) + ' in ("' + dataSet[key].join('", "') + '")';
 				}
 				else {
@@ -188,7 +188,7 @@ exports.Adapter = function(settings) {
 			}
 			whereClause[whereSet] = whereValue;
 		}
-		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue === 'object' && whereValue instanceof Array && whereValue.length > 0) {
+		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue === 'object' && Object.prototype.toString.call(whereValue) === '[object Array]' && whereValue.length > 0) {
 			whereClause[whereSet] = whereValue;
 		}
 		else if (typeof whereSet === 'string' && typeof whereValue === 'undefined') {
@@ -208,7 +208,7 @@ exports.Adapter = function(settings) {
 	};
 	
 	this.select = function(selectSet) {
-		if (selectSet instanceof Array) {
+		if (Object.prototype.toString.call(selectSet) === '[object Array]') {
 			for (var i = 0; i < selectSet.length; i++) {
 				selectClause.push(selectSet[i]);
 			}
@@ -226,7 +226,7 @@ exports.Adapter = function(settings) {
 
 	this.comma_seperated_arguments = function(set) {
 		var clause = '';
-		if (Object.prototype.toString.call(set) !== '[object Array]') {
+		if (Object.prototype.toString.call(set) === '[object Array]') {
 			clause = set.join(', ');
 		}
 		else if (typeof set === 'string') {
