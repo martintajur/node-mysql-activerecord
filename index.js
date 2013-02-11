@@ -198,6 +198,19 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 	
+	this.count = function(tableName, responseCallback) {
+		if (typeof tableName === 'string') {
+			var combinedQueryString = 'SELECT COUNT(*) as count FROM ' + escapeFieldName(tableName)
+			+ buildJoinString()
+			+ buildDataString(whereClause, ' AND ', 'WHERE');
+			
+			connection.query(combinedQueryString, function(err, res) { responseCallback(null, res[0]['count'])});
+			resetQuery(combinedQueryString);
+		}
+		
+		return that;
+	}
+
 	this.join = function(tableName, relation, direction) {
 		joinClause.push({
 			table: tableName,
