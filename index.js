@@ -64,6 +64,7 @@ exports.Adapter = function(settings) {
 		selectClause = [],
 		orderByClause = '',
 		groupByClause = '',
+		havingClause = '',
 		limitClause = -1,
 		offsetClause = -1,
 		joinClause = [],
@@ -74,6 +75,7 @@ exports.Adapter = function(settings) {
 		selectClause = [];
 		orderByClause = '';
 		groupByClause = '';
+		havingClause = '',
 		limitClause = -1;
 		offsetClause = -1;
 		joinClause = [];
@@ -253,6 +255,11 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 
+	this.having = function(set) {
+		havingClause = this.comma_seperated_arguments(set);
+		return that;
+	};
+
 	this.order_by = function(set) {
 		orderByClause = this.comma_seperated_arguments(set);
 		return that;
@@ -351,6 +358,7 @@ exports.Adapter = function(settings) {
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
+			+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
 			+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
 			+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
