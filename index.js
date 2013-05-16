@@ -48,7 +48,7 @@ exports.Adapter = function(settings) {
 		throw new Error('Unable to start ActiveRecord - no database given.');
 	}
 	
-	var connection = new mysql.createClient({
+	var connection = new mysql.createConnection({
 		host: settings.server,
 		port: settings.port,
 		user: settings.username,
@@ -410,6 +410,30 @@ exports.Adapter = function(settings) {
 	this.forceDisconnect = function() {
 		return connection.destroy();
 	};
+
+	this._connection = connection;
+
+	var reconnectingTimeout = false;
+
+	function handleDisconnect(connectionInstance) {
+		connectionInstance.on('error', function(err) {
+			if (!err.fatal || reconnectingTimeout) {
+				return;
+			}
+
+			if (err.code !== 'PROTOCOL_CONNECTION_LOST' && err.code !== 'ECONNREFUSED') {
+				throw err;
+			}
+
+			var reconnectingTimeout = setTimeout(function() {
+				connection = mysql.createConnection(connectionInstance.config);
+				handleDisconnect(connection);
+				connection.connect();
+			}, 2000);
+		});
+	}
+
+	handleDisconnect(connection);
 
 	var that = this;
 	
