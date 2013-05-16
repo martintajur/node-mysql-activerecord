@@ -237,7 +237,7 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 
-	this.comma_seperated_arguments = function(set) {
+	this.comma_separated_arguments = function(set) {
 		var clause = '';
 		if (Object.prototype.toString.call(set) === '[object Array]') {
 			clause = set.join(', ');
@@ -249,12 +249,12 @@ exports.Adapter = function(settings) {
 	};
 
 	this.group_by = function(set) {
-		groupByClause = this.comma_seperated_arguments(set);
+		groupByClause = this.comma_separated_arguments(set);
 		return that;
 	};
 
 	this.order_by = function(set) {
-		orderByClause = this.comma_seperated_arguments(set);
+		orderByClause = this.comma_separated_arguments(set);
 		return that;
 	};
 	
