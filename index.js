@@ -411,8 +411,6 @@ exports.Adapter = function(settings) {
 		return connection.destroy();
 	};
 
-	this._connection = connection;
-
 	var reconnectingTimeout = false;
 
 	function handleDisconnect(connectionInstance) {

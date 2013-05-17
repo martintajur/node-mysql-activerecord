@@ -223,7 +223,7 @@ Pings the connection. This is useful when extending idle timeouts.
 Returns the last executed query as a string.
 
 ## .connection()
-Returns the underlying database connection object, ultimately what https://github.com/felixge/node-mysql .createClient() returns.
+Returns the underlying database connection object, ultimately what https://github.com/felixge/node-mysql .createConnection() returns.
 
 
 Some more usage examples
