@@ -49,6 +49,7 @@ Basic support of MySQL commands
  * ORDER BY
  * GROUP BY
  * COUNT
+ * HAVING
 
 Methods
 =======
