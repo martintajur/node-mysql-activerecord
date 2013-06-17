@@ -206,7 +206,12 @@ exports.Adapter = function(settings) {
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE');
 			
-			connection.query(combinedQueryString, function(err, res) { responseCallback(null, res[0]['count'])});
+			connection.query(combinedQueryString, function(err, res) { 
+				if (err)
+					responseCallback(err, null);
+			  else
+					responseCallback(null, res[0]['count']);
+			});
 			resetQuery(combinedQueryString);
 		}
 		
