@@ -281,10 +281,10 @@ exports.Adapter = function(settings) {
 	};
 	
 	this.insert = function(tableName, dataSet, responseCallback, verb, querySuffix) {
+		if (typeof verb === 'undefined') {
+			var verb = 'INSERT';
+		}
 		if (Object.prototype.toString.call(dataSet) !== '[object Array]') {
-			if (typeof verb === 'undefined') {
-				var verb = 'INSERT';
-			}
 			if (typeof querySuffix === 'undefined') {
 				var querySuffix = '';
 			}
