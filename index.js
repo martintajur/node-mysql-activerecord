@@ -31,15 +31,22 @@
 exports.Adapter = function(settings) {
 	
 	var mysql = require('mysql');
-
-	if (!settings.server) {
+	
+	if(settings.server) {
+		settings.host = settings.server;
+	}
+	if(settings.username) {
+		settings.user = settings.username;
+	}
+	
+	if (!settings.host) {
 		throw new Error('Unable to start ActiveRecord - no server given.');
 	}
 	if (!settings.port) {
 		settings.port = 3306;
 	}
-	if (!settings.username) {
-		settings.username = '';
+	if (!settings.user) {
+		settings.user = '';
 	}
 	if (!settings.password) {
 		settings.password = '';
@@ -48,13 +55,7 @@ exports.Adapter = function(settings) {
 		throw new Error('Unable to start ActiveRecord - no database given.');
 	}
 	
-	var connection = new mysql.createConnection({
-		host: settings.server,
-		port: settings.port,
-		user: settings.username,
-		password: settings.password,
-		database: settings.database
-	});
+	var connection = new mysql.createConnection(settings);
 	
 	if (settings.charset) {
 		connection.query('SET NAMES ' + settings.charset);
