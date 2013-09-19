@@ -226,6 +226,28 @@ Returns the last executed query as a string.
 ## .connection()
 Returns the underlying database connection object, ultimately what https://github.com/felixge/node-mysql .createConnection() returns.
 
+Pooling conections
+==================
+
+Single or multiple connections can be pooled with Pool object.
+
+	var Db = require('mysql-activerecord');
+    var pool = new Db.Pool({
+    	server: 'localhost',
+    	username: 'root',
+    	password: '12345',
+    	database: 'test'
+    });
+    pool.getNewAdapter(function(db) {
+      db
+     		.where({ name: 'Martin' })
+     		.get('people', function(err, results, fields) {
+     		  console.log(results);
+          db.releaseConnection();
+
+          // do not anything with db that has been released.
+		  });
+    });
 
 Some more usage examples
 ========================
@@ -235,10 +257,10 @@ Establishing a connection
 
 	var Db = require('mysql-activerecord');
     var db = new Db.Adapter({
-    	server: 'localhost',
-    	username: 'root',
-    	password: '12345',
-    	database: 'test'
+      server: 'localhost',
+      username: 'root',
+      password: '12345',
+      database: 'test'
     });
     
 Basic SELECT query
