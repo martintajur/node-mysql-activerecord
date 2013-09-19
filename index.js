@@ -256,7 +256,7 @@ exports.Adapter = function(settings) {
 	};
 
 	this.having = function(set) {
-		havingClause = this.comma_seperated_arguments(set);
+		havingClause = this.comma_separated_arguments(set);
 		return that;
 	};
 
