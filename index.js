@@ -28,33 +28,47 @@
  * 
 **/ 
 
-exports.Adapter = function(settings) {
+var Adapter = function(settings) {
 	
 	var mysql = require('mysql');
 
-	if (!settings.server) {
-		throw new Error('Unable to start ActiveRecord - no server given.');
+	var initializeConnectionSettings = function () {
+		if (!settings.server) {
+			throw new Error('Unable to start ActiveRecord - no server given.');
+		}
+		if (!settings.port) {
+			settings.port = 3306;
+		}
+		if (!settings.username) {
+			settings.username = '';
+		}
+		if (!settings.password) {
+			settings.password = '';
+		}
+		if (!settings.database) {
+			throw new Error('Unable to start ActiveRecord - no database given.');
+		}
+
+		return {
+			host: settings.server,
+			port: settings.port,
+			user: settings.username,
+			password: settings.password,
+			database: settings.database
+		};
+        };
+
+	var connection;
+	var connectionSettings;
+	var pool;
+
+	if (settings && settings.pool) {
+		pool = settings.pool.pool;
+		connection = settings.pool.connection;
+	} else {
+		connectionSettings = initializeConnectionSettings();
+		connection = new mysql.createConnection(connectionSettings);
 	}
-	if (!settings.port) {
-		settings.port = 3306;
-	}
-	if (!settings.username) {
-		settings.username = '';
-	}
-	if (!settings.password) {
-		settings.password = '';
-	}
-	if (!settings.database) {
-		throw new Error('Unable to start ActiveRecord - no database given.');
-	}
-	
-	var connection = new mysql.createConnection({
-		host: settings.server,
-		port: settings.port,
-		user: settings.username,
-		password: settings.password,
-		database: settings.database
-	});
 	
 	if (settings.charset) {
 		connection.query('SET NAMES ' + settings.charset);
@@ -178,7 +192,9 @@ exports.Adapter = function(settings) {
 		return s.substring(l, r + 1);
 	};
 	
-	this.connection = function() { return connection; }
+	this.connectionSettings = function() { return connectionSettings; };
+
+	this.connection = function() { return connection; };
 
 	this.where = function(whereSet, whereValue, isRaw) {
 		if (typeof whereSet === 'object' && typeof whereValue === 'undefined') {
@@ -419,6 +435,10 @@ exports.Adapter = function(settings) {
 		return connection.destroy();
 	};
 
+	this.releaseConnection = function() {
+		pool.releaseConnection(connection);
+	};
+
 	var reconnectingTimeout = false;
 
 	function handleDisconnect(connectionInstance) {
@@ -444,4 +464,47 @@ exports.Adapter = function(settings) {
 	var that = this;
 	
 	return this;
-}
+};
+
+var mysqlPool; // this should be initialized only once.
+var mysqlCharset;
+var mysqlConnectionSettings;
+
+var Pool = function (settings) {
+	if (!mysqlPool) {
+		var mysql = require('mysql');
+
+		// Confirm settings with Adapter.
+		var db = new Adapter(settings);
+		mysqlConnectionSettings = db.connectionSettings();
+
+		mysqlPool = mysql.createPool(mysqlConnectionSettings);
+		mysqlCharset = settings.charset;
+	}
+
+	this.pool = function () {
+		return mysqlPool;
+	};
+
+	this.getNewAdapter = function (responseCallback) {
+		mysqlPool.getConnection(function (err, connection) {
+			if (err) {
+				throw err;
+			}
+			var adapter = new Adapter({
+				pool: {
+					pool: mysqlPool,
+					enabled: true,
+					connection: connection
+				},
+				charset: mysqlCharset
+			});
+			responseCallback(adapter);
+		});
+	};
+
+	return this;
+};
+
+exports.Adapter = Adapter;
+exports.Pool = Pool;
