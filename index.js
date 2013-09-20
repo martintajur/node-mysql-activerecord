@@ -445,11 +445,7 @@ var Adapter = function(settings) {
 	};
 
 	this.releaseConnection = function() {
-		if (typeof connection.release === 'function') {
-			connection.release();
-		} else {
-			pool.releaseConnection(connection);
-		}
+		pool.releaseConnection(connection);
 	};
 
 	var reconnectingTimeout = false;
@@ -481,17 +477,35 @@ var Adapter = function(settings) {
 
 var mysqlPool; // this should be initialized only once.
 var mysqlCharset;
-var mysqlConnectionSettings;
 
 var Pool = function (settings) {
 	if (!mysqlPool) {
 		var mysql = require('mysql');
 
+		var poolOption = {
+			createConnection: settings.createConnection,
+			waitForConnections: settings.waitForConnections,
+			connectionLimit: settings.connectionLimit,
+			queueLimit: settings.queueLimit
+		};
+		Object.keys(poolOption).forEach(function (element) {
+			// Avoid pool option being used by mysql connection.
+			delete settings[element];
+			// Also remove undefined elements from poolOption
+			if (!poolOption[element]) {
+				delete poolOption[element];
+			}
+		});
+
 		// Confirm settings with Adapter.
 		var db = new Adapter(settings);
-		mysqlConnectionSettings = db.connectionSettings();
+		var connectionSettings = db.connectionSettings();
 
-		mysqlPool = mysql.createPool(mysqlConnectionSettings);
+		Object.keys(connectionSettings).forEach(function (element) {
+			poolOption[element] = connectionSettings[element];
+		});
+
+		mysqlPool = mysql.createPool(poolOption);
 		mysqlCharset = settings.charset;
 	}
 
