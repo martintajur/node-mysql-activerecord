@@ -29,7 +29,7 @@
 **/ 
 
 var Adapter = function(settings) {
-	
+
 	var mysql = require('mysql');
 
 	var initializeConnectionSettings = function () {
@@ -56,14 +56,8 @@ var Adapter = function(settings) {
 			throw new Error('Unable to start ActiveRecord - no database given.');
 		}
 
-		return {
-			host: settings.host,
-			port: settings.port,
-			user: settings.user,
-			password: settings.password,
-			database: settings.database
-		};
-        };
+		return settings;
+	};
 
 	var connection;
 	var connectionSettings;
@@ -200,7 +194,6 @@ var Adapter = function(settings) {
 	};
 	
 	this.connectionSettings = function() { return connectionSettings; };
-
 	this.connection = function() { return connection; };
 
 	this.where = function(whereSet, whereValue, isRaw) {
@@ -232,14 +225,14 @@ var Adapter = function(settings) {
 			connection.query(combinedQueryString, function(err, res) { 
 				if (err)
 					responseCallback(err, null);
-			  else
+				else
 					responseCallback(null, res[0]['count']);
 			});
 			resetQuery(combinedQueryString);
 		}
 		
 		return that;
-	}
+	};
 
 	this.join = function(tableName, relation, direction) {
 		joinClause.push({
@@ -377,7 +370,7 @@ var Adapter = function(settings) {
 
 		that.query(verb + ' INTO ' + escapeFieldName(tableName) + ' (' + columns.join(', ') + ') VALUES' + map.join(','), responseCallback);
 		return that;
-	}
+	};
 
 	this.get = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
@@ -446,9 +439,17 @@ var Adapter = function(settings) {
 	this.forceDisconnect = function() {
 		return connection.destroy();
 	};
-
+	
 	this.releaseConnection = function() {
 		pool.releaseConnection(connection);
+	};
+
+	this.releaseConnection = function() {
+		if (typeof connection.release === 'function') {
+			connection.release();
+		} else {
+			pool.releaseConnection(connection);
+		}
 	};
 
 	var reconnectingTimeout = false;
