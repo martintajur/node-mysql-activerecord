@@ -33,14 +33,21 @@ var Adapter = function(settings) {
 	var mysql = require('mysql');
 
 	var initializeConnectionSettings = function () {
-		if (!settings.server) {
+		if(settings.server) {
+			settings.host = settings.server;
+		}
+		if(settings.username) {
+			settings.user = settings.username;
+		}
+
+		if (!settings.host) {
 			throw new Error('Unable to start ActiveRecord - no server given.');
 		}
 		if (!settings.port) {
 			settings.port = 3306;
 		}
-		if (!settings.username) {
-			settings.username = '';
+		if (!settings.user) {
+			settings.user = '';
 		}
 		if (!settings.password) {
 			settings.password = '';
@@ -50,9 +57,9 @@ var Adapter = function(settings) {
 		}
 
 		return {
-			host: settings.server,
+			host: settings.host,
 			port: settings.port,
-			user: settings.username,
+			user: settings.user,
 			password: settings.password,
 			database: settings.database
 		};
@@ -69,7 +76,7 @@ var Adapter = function(settings) {
 		connectionSettings = initializeConnectionSettings();
 		connection = new mysql.createConnection(connectionSettings);
 	}
-	
+
 	if (settings.charset) {
 		connection.query('SET NAMES ' + settings.charset);
 	}
@@ -222,7 +229,12 @@ var Adapter = function(settings) {
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE');
 			
-			connection.query(combinedQueryString, function(err, res) { responseCallback(null, res[0]['count'])});
+			connection.query(combinedQueryString, function(err, res) { 
+				if (err)
+					responseCallback(err, null);
+			  else
+					responseCallback(null, res[0]['count']);
+			});
 			resetQuery(combinedQueryString);
 		}
 		
@@ -272,7 +284,7 @@ var Adapter = function(settings) {
 	};
 
 	this.having = function(set) {
-		havingClause = this.comma_seperated_arguments(set);
+		havingClause = this.comma_separated_arguments(set);
 		return that;
 	};
 
@@ -297,10 +309,10 @@ var Adapter = function(settings) {
 	};
 	
 	this.insert = function(tableName, dataSet, responseCallback, verb, querySuffix) {
+		if (typeof verb === 'undefined') {
+			var verb = 'INSERT';
+		}
 		if (Object.prototype.toString.call(dataSet) !== '[object Array]') {
-			if (typeof verb === 'undefined') {
-				var verb = 'INSERT';
-			}
 			if (typeof querySuffix === 'undefined') {
 				var querySuffix = '';
 			}
