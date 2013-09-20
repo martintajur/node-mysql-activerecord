@@ -530,6 +530,10 @@ var Pool = function (settings) {
 		});
 	};
 
+	this.disconnect = function (responseCallback) {
+		this.pool().end(responseCallback);
+        };
+
 	return this;
 };
 
