@@ -468,7 +468,9 @@ var Adapter = function(settings) {
 		});
 	}
 
-	handleDisconnect(connection);
+	if (!pool) {
+		handleDisconnect(connection);
+	}
 
 	var that = this;
 	
