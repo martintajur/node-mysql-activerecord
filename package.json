@@ -8,7 +8,11 @@
 		"type": "git",
 		"url": "git://github.com/martintajur/node-mysql-activerecord.git"
 	},
-	"contributors": ["Daniel Bretoi <daniel@bretoi.com>"],
+	"contributors": [
+		"Daniel Bretoi <daniel@bretoi.com>",
+		"Kyle Farris <kyle@chomponllc.com>",
+		"Daehyub Kim <lateau@gmail.com>"
+	],
 	"dependencies": {
 		"mysql": "2.0.0-alpha8"
 	},
