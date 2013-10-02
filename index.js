@@ -449,27 +449,29 @@ var Adapter = function(settings) {
 	};
 
 	var reconnectingTimeout = false;
-
-	function handleDisconnect(connectionInstance) {
-		connectionInstance.on('error', function(err) {
-			if (!err.fatal || reconnectingTimeout) {
-				return;
-			}
-
-			if (err.code !== 'PROTOCOL_CONNECTION_LOST' && err.code !== 'ECONNREFUSED') {
-				throw err;
-			}
-
-			var reconnectingTimeout = setTimeout(function() {
-				connection = mysql.createConnection(connectionInstance.config);
-				handleDisconnect(connection);
-				connection.connect();
-			}, 2000);
-		});
+	
+	if(settings && !settings.pool) {
+		function handleDisconnect(connectionInstance) {
+			connectionInstance.on('error', function(err) {
+				if (!err.fatal || reconnectingTimeout) {
+					return;
+				}
+	
+				if (err.code !== 'PROTOCOL_CONNECTION_LOST' && err.code !== 'ECONNREFUSED') {
+					throw err;
+				}
+	
+				var reconnectingTimeout = setTimeout(function() {
+					connection = mysql.createConnection(connectionInstance.config);
+					handleDisconnect(connection);
+					connection.connect();
+				}, 2000);
+			});
+		}
+	
+		handleDisconnect(connection);
 	}
-
-	handleDisconnect(connection);
-
+	
 	var that = this;
 	
 	return this;
