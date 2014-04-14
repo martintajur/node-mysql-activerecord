@@ -1,6 +1,6 @@
 {
 	"name" : "mysql-activerecord",
-	"version": "0.8.3",
+	"version": "0.8.4",
 	"author": "Martin Tajur <martin@tajur.ee>",
 	"description": "MySQL ActiveRecord pattern implementation on top of the mysql module.",
 	"homepage": "https://github.com/martintajur/node-mysql-activerecord",
@@ -14,7 +14,7 @@
 		"Daehyub Kim <lateau@gmail.com>"
 	],
 	"dependencies": {
-		"mysql": "2.0.0-alpha8"
+		"mysql": "~2.1"
 	},
 	"main" : "./",
 	"engines": {
