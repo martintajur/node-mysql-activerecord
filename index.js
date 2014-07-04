@@ -313,15 +313,17 @@ exports.Adapter = function(settings) {
 			throw new Error('Array of objects must be provided for batch insert!');
 		}
 		
-		if (dataSet.length == 0) return false;
+		if (dataSet.length === 0) return false;
 
 		var map = [];
 		var columns = [];
+		var escColumns = [];
 
-		for (var key in dataSet[0]) {
-			if (dataSet[0].hasOwnProperty(key)) {
+		for (var aSet in dataSet) {
+			for (var key in dataSet[aSet]) {
 				if (columns.indexOf(key) == -1) {
-					columns.push(escapeFieldName(key));
+					columns.push(key);
+					escColumns.push(escapeFieldName(key));
 				}
 			}
 		}
@@ -329,11 +331,15 @@ exports.Adapter = function(settings) {
 		for (var i = 0; i < dataSet.length; i++) {
 			(function(i) {
 				var row = [];
-				for (var key in dataSet[i]) {
-					if (dataSet[i].hasOwnProperty(key)) {
-						row.push(that.escape(dataSet[i][key]));
+
+				for (var key in columns) {
+					if (dataSet[i].hasOwnProperty(columns[key])) {
+						row.push(that.escape(dataSet[i][columns[key]]));
+					} else {
+						row.push('NULL');
 					}
 				}
+
 				if (row.length != columns.length) {
 					throw new Error('Cannot use batch insert into ' + tableName + ' - fields must match on all rows (' + row.join(',') + ' vs ' + columns.join(',') + ').');
 				}
@@ -341,7 +347,7 @@ exports.Adapter = function(settings) {
 			})(i);
 		}
 
-		that.query(verb + ' INTO ' + escapeFieldName(tableName) + ' (' + columns.join(', ') + ') VALUES' + map.join(','), responseCallback);
+		that.query(verb + ' INTO ' + escapeFieldName(tableName) + ' (' + escColumns.join(', ') + ') VALUES' + map.join(','), responseCallback);
 		return that;
 	}
 
