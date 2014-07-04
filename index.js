@@ -28,34 +28,49 @@
  * 
 **/ 
 
-exports.Adapter = function(settings) {
-	
+var Adapter = function(settings) {
+
 	var mysql = require('mysql');
 
-	if (!settings.server) {
-		throw new Error('Unable to start ActiveRecord - no server given.');
+	var initializeConnectionSettings = function () {
+		if(settings.server) {
+			settings.host = settings.server;
+		}
+		if(settings.username) {
+			settings.user = settings.username;
+		}
+
+		if (!settings.host) {
+			throw new Error('Unable to start ActiveRecord - no server given.');
+		}
+		if (!settings.port) {
+			settings.port = 3306;
+		}
+		if (!settings.user) {
+			settings.user = '';
+		}
+		if (!settings.password) {
+			settings.password = '';
+		}
+		if (!settings.database) {
+			throw new Error('Unable to start ActiveRecord - no database given.');
+		}
+
+		return settings;
+	};
+
+	var connection;
+	var connectionSettings;
+	var pool;
+
+	if (settings && settings.pool) {
+		pool = settings.pool.pool;
+		connection = settings.pool.connection;
+	} else {
+		connectionSettings = initializeConnectionSettings();
+		connection = new mysql.createConnection(connectionSettings);
 	}
-	if (!settings.port) {
-		settings.port = 3306;
-	}
-	if (!settings.username) {
-		settings.username = '';
-	}
-	if (!settings.password) {
-		settings.password = '';
-	}
-	if (!settings.database) {
-		throw new Error('Unable to start ActiveRecord - no database given.');
-	}
-	
-	var connection = new mysql.createClient({
-		host: settings.server,
-		port: settings.port,
-		user: settings.username,
-		password: settings.password,
-		database: settings.database
-	});
-	
+
 	if (settings.charset) {
 		connection.query('SET NAMES ' + settings.charset);
 	}
@@ -64,6 +79,7 @@ exports.Adapter = function(settings) {
 		selectClause = [],
 		orderByClause = '',
 		groupByClause = '',
+		havingClause = '',
 		limitClause = -1,
 		offsetClause = -1,
 		joinClause = [],
@@ -74,6 +90,7 @@ exports.Adapter = function(settings) {
 		selectClause = [];
 		orderByClause = '';
 		groupByClause = '';
+		havingClause = '',
 		limitClause = -1;
 		offsetClause = -1;
 		joinClause = [];
@@ -176,7 +193,8 @@ exports.Adapter = function(settings) {
 		return s.substring(l, r + 1);
 	};
 	
-	this.connection = function() { return connection; }
+	this.connectionSettings = function() { return connectionSettings; };
+	this.connection = function() { return connection; };
 
 	this.where = function(whereSet, whereValue, isRaw) {
 		if (typeof whereSet === 'object' && typeof whereValue === 'undefined') {
@@ -204,12 +222,17 @@ exports.Adapter = function(settings) {
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE');
 			
-			connection.query(combinedQueryString, function(err, res) { responseCallback(null, res[0]['count'])});
+			connection.query(combinedQueryString, function(err, res) { 
+				if (err)
+					responseCallback(err, null);
+				else
+					responseCallback(null, res[0]['count']);
+			});
 			resetQuery(combinedQueryString);
 		}
 		
 		return that;
-	}
+	};
 
 	this.join = function(tableName, relation, direction) {
 		joinClause.push({
@@ -237,7 +260,7 @@ exports.Adapter = function(settings) {
 		return that;
 	};
 
-	this.comma_seperated_arguments = function(set) {
+	this.comma_separated_arguments = function(set) {
 		var clause = '';
 		if (Object.prototype.toString.call(set) === '[object Array]') {
 			clause = set.join(', ');
@@ -249,12 +272,17 @@ exports.Adapter = function(settings) {
 	};
 
 	this.group_by = function(set) {
-		groupByClause = this.comma_seperated_arguments(set);
+		groupByClause = this.comma_separated_arguments(set);
+		return that;
+	};
+
+	this.having = function(set) {
+		havingClause = this.comma_separated_arguments(set);
 		return that;
 	};
 
 	this.order_by = function(set) {
-		orderByClause = this.comma_seperated_arguments(set);
+		orderByClause = this.comma_separated_arguments(set);
 		return that;
 	};
 	
@@ -277,7 +305,6 @@ exports.Adapter = function(settings) {
 		if (typeof verb === 'undefined') {
 			var verb = 'INSERT';
 		}
-		
 		if (Object.prototype.toString.call(dataSet) !== '[object Array]') {
 			if (typeof querySuffix === 'undefined') {
 				var querySuffix = '';
@@ -349,7 +376,7 @@ exports.Adapter = function(settings) {
 
 		that.query(verb + ' INTO ' + escapeFieldName(tableName) + ' (' + escColumns.join(', ') + ') VALUES' + map.join(','), responseCallback);
 		return that;
-	}
+	};
 
 	this.get = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
@@ -358,6 +385,7 @@ exports.Adapter = function(settings) {
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
+			+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
 			+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
 			+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
@@ -417,8 +445,105 @@ exports.Adapter = function(settings) {
 	this.forceDisconnect = function() {
 		return connection.destroy();
 	};
+	
+	this.releaseConnection = function() {
+		pool.releaseConnection(connection);
+	};
+
+	this.releaseConnection = function() {
+		pool.releaseConnection(connection);
+	};
+
+	var reconnectingTimeout = false;
+
+	function handleDisconnect(connectionInstance) {
+		connectionInstance.on('error', function(err) {
+			if (!err.fatal || reconnectingTimeout) {
+				return;
+			}
+
+			if (err.code !== 'PROTOCOL_CONNECTION_LOST' && err.code !== 'ECONNREFUSED') {
+				throw err;
+			}
+
+			var reconnectingTimeout = setTimeout(function() {
+				connection = mysql.createConnection(connectionInstance.config);
+				handleDisconnect(connection);
+				connection.connect();
+			}, 2000);
+		});
+	}
+
+	if (!pool) {
+		handleDisconnect(connection);
+	}
 
 	var that = this;
 	
 	return this;
-}
+};
+
+var mysqlPool; // this should be initialized only once.
+var mysqlCharset;
+
+var Pool = function (settings) {
+	if (!mysqlPool) {
+		var mysql = require('mysql');
+
+		var poolOption = {
+			createConnection: settings.createConnection,
+			waitForConnections: settings.waitForConnections,
+			connectionLimit: settings.connectionLimit,
+			queueLimit: settings.queueLimit
+		};
+		Object.keys(poolOption).forEach(function (element) {
+			// Avoid pool option being used by mysql connection.
+			delete settings[element];
+			// Also remove undefined elements from poolOption
+			if (!poolOption[element]) {
+				delete poolOption[element];
+			}
+		});
+
+		// Confirm settings with Adapter.
+		var db = new Adapter(settings);
+		var connectionSettings = db.connectionSettings();
+
+		Object.keys(connectionSettings).forEach(function (element) {
+			poolOption[element] = connectionSettings[element];
+		});
+
+		mysqlPool = mysql.createPool(poolOption);
+		mysqlCharset = settings.charset;
+	}
+
+	this.pool = function () {
+		return mysqlPool;
+	};
+
+	this.getNewAdapter = function (responseCallback) {
+		mysqlPool.getConnection(function (err, connection) {
+			if (err) {
+				throw err;
+			}
+			var adapter = new Adapter({
+				pool: {
+					pool: mysqlPool,
+					enabled: true,
+					connection: connection
+				},
+				charset: mysqlCharset
+			});
+			responseCallback(adapter);
+		});
+	};
+
+	this.disconnect = function (responseCallback) {
+		this.pool().end(responseCallback);
+        };
+
+	return this;
+};
+
+exports.Adapter = Adapter;
+exports.Pool = Pool;
