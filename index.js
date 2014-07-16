@@ -74,9 +74,9 @@ var Adapter = function(settings) {
 	if (settings.charset) {
 		connection.query('SET NAMES ' + settings.charset);
 	}
-
-	var whereClause = {},
-		whereArray = [],
+	
+	var whereArray = [],
+		whereInArray = [],
 		selectClause = [],
 		orderByClause = '',
 		groupByClause = '',
@@ -84,13 +84,13 @@ var Adapter = function(settings) {
 		limitClause = -1,
 		offsetClause = -1,
 		joinClause = [],
-		lastQuery = '';
+		lastQuery = '',
 		distinctClause = '',
 		aliasedTables = []
 	
 	var resetQuery = function(newLastQuery) {
 		whereArray = [];
-		whereClause = {};
+		whereInArray = [];
 		selectClause = [];
 		orderByClause = '';
 		groupByClause = '';
@@ -98,15 +98,10 @@ var Adapter = function(settings) {
 		limitClause = -1;
 		offsetClause = -1;
 		joinClause = [];
-		lastQuery = (typeof newLastQuery === 'string' ? newLastQuery : '');
 		distinctClause = '';
-		rawWhereClause = {};
-		rawWhereString = {};
+		lastQuery = (typeof newLastQuery === 'string' ? newLastQuery : '');
 		aliasedTables = [];
 	};
-	
-	var rawWhereClause = {};
-	var rawWhereString = {};
 	
 	var trackAliases = function(table) {
 		if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
@@ -228,7 +223,7 @@ var Adapter = function(settings) {
 	
 	var buildWhereClause = function() {
 		var sql = '';
-		if(whereArray.length > 0 || this.like_array.length > 0) {
+		if(whereArray.length > 0) {
 			sql += " WHERE ";
 		}
 		sql += whereArray.join(" ");
@@ -236,13 +231,10 @@ var Adapter = function(settings) {
 	}
 	
 	var buildDataString = function(dataSet, separator, clause) {
-		if (!clause) {
-			clause = 'WHERE';
-		}
+		clause = clause || 'SET';
+		separator = separator || ', ';
+		
 		var queryString = '', y = 1;
-		if (!separator) {
-			separator = ', ';
-		}
 		var useSeparator = true;
 		
 		var datasetSize = getObjectSize(dataSet);
@@ -251,17 +243,11 @@ var Adapter = function(settings) {
 			useSeparator = true;
 			
 			if (dataSet.hasOwnProperty(key)) {
-				if (clause == 'WHERE' && rawWhereString[key] == true) {
-					queryString += key;
-				}
-				else if (dataSet[key] === null) {
-					queryString += protectIdentifiers(key) + (clause == 'WHERE' ? " is NULL" : "=NULL");
+				if (dataSet[key] === null) {
+					queryString += protectIdentifiers(key) + "=NULL";
 				}
 				else if (typeof dataSet[key] !== 'object') {
 					queryString += protectIdentifiers(key) + "=" + connection.escape(dataSet[key]);
-				}
-				else if (typeof dataSet[key] === 'object' && Object.prototype.toString.call(dataSet[key]) === '[object Array]' && dataSet[key].length > 0) {
-					queryString += protectIdentifiers(key) + ' in ("' + dataSet[key].join('", "') + '")';
 				}
 				else {
 					useSeparator = false;
@@ -327,28 +313,65 @@ var Adapter = function(settings) {
 			if(str.trim().match(/(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sIN\s*\(|\s)/gi));
 	}
 	
+	var qb_escape = function(str) {
+		if (typeof str === 'string') {
+			str = "'" + this.escape(str) + "'";
+		}
+		else if (typeof str === 'boolean') {
+			str = (str === false ? 0 : 1);
+		}
+		else if (str === null) {
+			str = 'NULL';
+		}
+
+		return str;
+	}
+	
 	this.connectionSettings = function() { return connectionSettings; };
 	this.connection = function() { return connection; };
-
+	
 	this.where = function(key, value, isRaw) {
-		isRaw = isRaw || false;
+		isRaw = (typeof isRaw === 'boolean' ? isRaw : false);
 		value = value || null;
 		
 		var escape = (isRaw ? false : true);
+		if (typeof key === 'string' && typeof value === 'object' && Object.prototype.toString.call(value) === Object.prototype.toString.call([]) && value.length > 0) {
+			return this._where_in(key, value, false, 'AND ');
+		}
 		return this._where(key, value, 'AND ', escape);
 	};
 	
 	this.or_where = function(key, value, isRaw) {
-		isRaw = isRaw || false;
+		isRaw = (typeof isRaw === 'boolean' ? isRaw : false);
 		value = value || null;
 		
 		var escape = (isRaw ? false : true);
+		if (typeof key === 'string' && typeof value === 'object' && Object.prototype.toString.call(value) === Object.prototype.toString.call([]) && value.length > 0) {
+			return this._where_in(key, value, false, 'OR ');
+		}
 		return this._where(key, value, 'OR ', escape);
 	};
+	
+	this.where_in = function(key, values) {
+		return this._where_in(key,values,false,'AND ');
+	}
+	
+	this.or_where_in = function(key, values) {
+		return this._where_in(key,values,false,'OR ');
+	}
+	
+	this.where_not_in = function(key, values) {
+		return this._where_in(key,values,true,'AND ');
+	}
+	
+	this.or_where_not_in = function(key, values) {
+		return this._where_in(key,values,true,'OR ');
+	}
 	
 	this._where = function(key, value, type, escape) {
 		value = value || null;
 		type = type || 'AND ';
+		escape = (typeof escape === 'boolean' ? escape : true);
 		
 		if (Object.prototype.toString.call(key) !== Object.prototype.toString.call({})) {
 			key_array = {};
@@ -358,6 +381,11 @@ var Adapter = function(settings) {
 		
 		for (var k in key) {
 			var v = key[k];
+			
+			if (typeof v === 'object' && Object.prototype.toString.call(v) === Object.prototype.toString.call([]) && v.length > 0) {
+				return this._where_in(k,v,false,type);
+			}
+			
 			var prefix = (whereArray.length == 0 ? '' : type);
 			
 			if (v === null && !hasOperator(k)) {
@@ -382,7 +410,35 @@ var Adapter = function(settings) {
 		}
 		
 		return that;
-	}
+	};
+	
+	this._where_in = function(key, values, not, type) {
+		values = values || [];
+		type = type || 'AND ';
+		not = (not ? ' NOT' : '');
+		
+		if(key === null || values.length === 0) return;
+		
+		// Values must be an array...
+		if(Object.prototype.toString.call(value) === Object.prototype.toString.call([])) {
+			values = [values];
+		}
+		
+		for (var i in values) {
+			var value = values[i];
+			whereInArray = qb_escape(value);
+		}
+
+		prefix = (whereArray.length == 0 ? '' : type);
+
+		where_in = prefix + protect_identifiers(key) + not + " IN (" + whereInArray.join(', ') + ") ";
+
+		whereArray.push(where_in);
+
+		// reset the array for multiple calls
+		whereInArray = [];
+		return that;
+	};
 	
 	this.like = function(field, match, side) {
 		match = match || '';
