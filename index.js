@@ -77,6 +77,7 @@ var Adapter = function(settings) {
 	
 	var whereArray = [],
 		whereInArray = [],
+		fromArray = [],
 		selectClause = [],
 		orderByClause = '',
 		groupByClause = '',
@@ -91,6 +92,7 @@ var Adapter = function(settings) {
 	var resetQuery = function(newLastQuery) {
 		whereArray = [];
 		whereInArray = [];
+		fromArray = [];
 		selectClause = [];
 		orderByClause = '';
 		groupByClause = '';
@@ -107,7 +109,7 @@ var Adapter = function(settings) {
 		if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
 			for (var i in table) {
 				var t = table[i];
-				track_aliases(t);
+				trackAliases(t);
 			}
 			return;
 		}
@@ -115,7 +117,7 @@ var Adapter = function(settings) {
 		// Does the string contain a comma?  If so, we need to separate
 		// the string into discreet statements
 		if (table.indexOf(',') !== -1) {
-			return track_aliases(table.split(','));
+			return trackAliases(table.split(','));
 		}
 
 		// if a table alias is used we can recognize it by a space
@@ -229,6 +231,15 @@ var Adapter = function(settings) {
 		sql += whereArray.join(" ");
 		return sql;
 	}
+	
+	var buildFromClause = function() {
+		var sql = '';
+		if(fromArray.length > 0) {
+			sql += " FROM ";
+		}
+		sql += '(' + fromArray.join(', ') + ')';
+		return sql;
+	};
 	
 	var buildDataString = function(dataSet, separator, clause) {
 		clause = clause || 'SET';
@@ -505,7 +516,8 @@ var Adapter = function(settings) {
 	
 	this.count = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
-			var combinedQueryString = 'SELECT ' + distinctClause + 'COUNT(*) as count FROM ' + protectIdentifiers(tableName)
+			var combinedQueryString = 'SELECT ' + distinctClause + 'COUNT(*) as count'
+			+ buildFromClause()
 			+ buildJoinString()
 			+ buildWhereClause();
 			
@@ -520,6 +532,37 @@ var Adapter = function(settings) {
 		
 		return that;
 	};
+	
+	this.from = function(from) {
+		if(Object.prototype.toString.call(from) !== Object.prototype.toString.call([])) {
+			from = [from];
+		}
+		for (var i in from) {
+			var val = from[i];
+			
+			if (val.indexOf(',') !== -1) {
+				var objects = val.split(',');
+				for (var j in objects) {
+					var v = objects[j].trim();
+					
+					trackAliases(v);
+
+					fromArray.push(protectIdentifiers(v, true));
+				}
+			}
+			else {
+				val = val.trim();
+
+				// Extract any aliases that might exist.  We use this information
+				// in the protectIdentifiers function to know whether to add a table prefix
+				trackAliases(val);
+
+				fromArray.push(protectIdentifiers(val, true));
+			}
+		}
+
+		return that;
+	}
 
 	this.join = function(tableName, relation, direction) {
 		joinClause.push({
@@ -665,20 +708,32 @@ var Adapter = function(settings) {
 	};
 
 	this.get = function(tableName, responseCallback) {
-		if (typeof tableName === 'string') {
-			var combinedQueryString = 'SELECT ' + distinctClause + (selectClause.length === 0 ? '*' : selectClause.join(','))
-			+ ' FROM ' + protectIdentifiers(tableName)
-			+ buildJoinString()
-			+ buildWhereClause()
-			+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
-			+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
-			+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
-			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
-			+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
-			
-			connection.query(combinedQueryString, responseCallback);
-			resetQuery(combinedQueryString);
+		if (typeof tableName !== 'function') {
+			trackAliases(tableName);
+			this.from(tableName);
 		}
+		else {
+			if (fromArray.length == 0) {
+				throw new Error('You have not specified any tables to select from!');
+				return that;
+			}
+			else {
+				responseCallback = tableName;
+			}
+		}
+	
+		var combinedQueryString = 'SELECT ' + distinctClause + (selectClause.length === 0 ? '*' : selectClause.join(','))
+		+ buildFromClause()
+		+ buildJoinString()
+		+ buildWhereClause()
+		+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
+		+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
+		+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
+		+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
+		+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
+		
+		connection.query(combinedQueryString, responseCallback);
+		resetQuery(combinedQueryString);
 		
 		return that;
 	};
@@ -702,14 +757,27 @@ var Adapter = function(settings) {
 	};
 	
 	this.delete = function(tableName, responseCallback) {
-		if (typeof tableName === 'string') {
-			var combinedQueryString = 'DELETE FROM ' + protectIdentifiers(tableName)
-			+ buildWhereClause()
-			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
-						
-			connection.query(combinedQueryString, responseCallback);
-			resetQuery(combinedQueryString);
+		if (typeof tableName !== 'function') {
+			trackAliases(tableName);
+			this.from(tableName);
 		}
+		else {
+			if (fromArray.length == 0) {
+				throw new Error('You have not specified any tables to delete from!');
+				return that;
+			}
+			else {
+				responseCallback = tableName;
+			}
+		}
+		
+		var combinedQueryString = 'DELETE'
+		+ buildFromClause()
+		+ buildWhereClause()
+		+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
+		
+		connection.query(combinedQueryString, responseCallback);
+		resetQuery(combinedQueryString);
 		
 		return that;
 	};
