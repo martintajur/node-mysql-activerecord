@@ -8,4 +8,3 @@ you spot any mistakes.
 
 * Added this history file
 * Added the ability to do `SELECT DISTINCT` queries
-* Added the ability to do `LIKE` statements directly
