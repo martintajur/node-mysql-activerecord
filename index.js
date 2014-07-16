@@ -84,6 +84,7 @@ var Adapter = function(settings) {
 		offsetClause = -1,
 		joinClause = [],
 		lastQuery = '';
+		distinctClause = '',
 	
 	var resetQuery = function(newLastQuery) {
 		whereClause = {};
@@ -95,6 +96,7 @@ var Adapter = function(settings) {
 		offsetClause = -1;
 		joinClause = [];
 		lastQuery = (typeof newLastQuery === 'string' ? newLastQuery : '');
+		distinctClause = '';
 		rawWhereClause = {};
 		rawWhereString = {};
 	};
@@ -218,7 +220,7 @@ var Adapter = function(settings) {
 	
 	this.count = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
-			var combinedQueryString = 'SELECT COUNT(*) as count FROM ' + escapeFieldName(tableName)
+			var combinedQueryString = 'SELECT ' + distinctClause + 'COUNT(*) as count FROM ' + protectIdentifiers(tableName)
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE');
 			
@@ -257,6 +259,11 @@ var Adapter = function(settings) {
 				}
 			}
 		}
+		return that;
+	};
+	
+	this.distinct = function() {
+		distinctClause = 'DISTINCT ';
 		return that;
 	};
 
@@ -374,7 +381,7 @@ var Adapter = function(settings) {
 
 	this.get = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
-			var combinedQueryString = 'SELECT ' + (selectClause.length === 0 ? '*' : selectClause.join(','))
+			var combinedQueryString = 'SELECT ' + distinctClause + (selectClause.length === 0 ? '*' : selectClause.join(','))
 			+ ' FROM ' + escapeFieldName(tableName)
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
