@@ -384,6 +384,69 @@ var Adapter = function(settings) {
 		return that;
 	}
 	
+	this.like = function(field, match, side) {
+		match = match || '';
+		side = side || 'both';
+		
+		return this._like(field, match, 'AND ', side, '');
+	};
+	
+	this.not_like = function(field, match, side) {
+		match = match || '';
+		side = side || 'both';
+		
+		return this._like(field, match, 'AND ', side, ' NOT');
+	};
+	
+	this.or_like = function(field, match, side) {
+		match = match || '';
+		side = side || 'both';
+		
+		return this._like(field, match, 'OR ', side, '');
+	};
+	
+	this.or_not_like = function(field, match, side) {
+		match = match || '';
+		side = side || 'both';
+		
+		return this._like(field, match, 'OR ', side, ' NOT');
+	};
+	
+	this._like = function(field, match, type, side, not) {
+		match = match || '';
+		type = type || 'AND ';
+		side = side || 'both';
+		not = not || '';
+	
+		if(Object.prototype.toString.call(field) !== Object.prototype.toString.call({})) {
+			field_array = {};
+			field_array[field] = match;
+			field = field_array;
+		}
+
+		for(k in field) {
+			v = field[k];
+			k = protectIdentifiers(k.trim());
+
+			if (side === 'none') {
+				like_statement =  k + not + ' LIKE ' + "'" + v + "'";
+			} 
+			else if (side === 'before') {
+				like_statement = k + not + ' LIKE ' + "'%" + v + "'";
+			} 
+			else if (side === 'after') {
+				like_statement = k + not + ' LIKE ' + "'" + v + "%'";
+			} 
+			else {
+				like_statement = k + not + ' LIKE ' + "'%" + v + "%'";
+			}
+			
+			this._where(like_statement,null,type,false);
+		}
+
+		return that;
+	}
+	
 	this.count = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'SELECT ' + distinctClause + 'COUNT(*) as count FROM ' + protectIdentifiers(tableName)
