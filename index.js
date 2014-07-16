@@ -76,6 +76,7 @@ var Adapter = function(settings) {
 	}
 
 	var whereClause = {},
+		whereArray = [],
 		selectClause = [],
 		orderByClause = '',
 		groupByClause = '',
@@ -88,6 +89,7 @@ var Adapter = function(settings) {
 		aliasedTables = []
 	
 	var resetQuery = function(newLastQuery) {
+		whereArray = [];
 		whereClause = {};
 		selectClause = [];
 		orderByClause = '';
@@ -224,6 +226,15 @@ var Adapter = function(settings) {
 		return item + alias;
 	};
 	
+	var buildWhereClause = function() {
+		var sql = '';
+		if(whereArray.length > 0 || this.like_array.length > 0) {
+			sql += " WHERE ";
+		}
+		sql += whereArray.join(" ");
+		return sql;
+	}
+	
 	var buildDataString = function(dataSet, separator, clause) {
 		if (!clause) {
 			clause = 'WHERE';
@@ -311,34 +322,73 @@ var Adapter = function(settings) {
 		return s.substring(l, r + 1);
 	};
 	
+	var hasOperator = function (str) {
+		if(typeof str === 'string')
+			if(str.trim().match(/(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sIN\s*\(|\s)/gi));
+	}
+	
 	this.connectionSettings = function() { return connectionSettings; };
 	this.connection = function() { return connection; };
 
-	this.where = function(whereSet, whereValue, isRaw) {
-		if (typeof whereSet === 'object' && typeof whereValue === 'undefined') {
-			whereClause = mergeObjects(whereClause, whereSet);
-		}
-		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue != 'undefined') {
-			if (isRaw) {
-				rawWhereClause[whereSet] = true;
-			}
-			whereClause[whereSet] = whereValue;
-		}
-		else if ((typeof whereSet === 'string' || typeof whereSet === 'number') && typeof whereValue === 'object' && Object.prototype.toString.call(whereValue) === '[object Array]' && whereValue.length > 0) {
-			whereClause[whereSet] = whereValue;
-		}
-		else if (typeof whereSet === 'string' && typeof whereValue === 'undefined') {
-			rawWhereString[whereSet] = true;
-			whereClause[whereSet] = whereValue;
-		}
-		return that;
+	this.where = function(key, value, isRaw) {
+		isRaw = isRaw || false;
+		value = value || null;
+		
+		var escape = (isRaw ? false : true);
+		return this._where(key, value, 'AND ', escape);
 	};
+	
+	this.or_where = function(key, value, isRaw) {
+		isRaw = isRaw || false;
+		value = value || null;
+		
+		var escape = (isRaw ? false : true);
+		return this._where(key, value, 'OR ', escape);
+	};
+	
+	this._where = function(key, value, type, escape) {
+		value = value || null;
+		type = type || 'AND ';
+		
+		if (Object.prototype.toString.call(key) !== Object.prototype.toString.call({})) {
+			key_array = {};
+			key_array[key] = value;
+			key = key_array;
+		}
+		
+		for (var k in key) {
+			var v = key[k];
+			var prefix = (whereArray.length == 0 ? '' : type);
+			
+			if (v === null && !hasOperator(k)) {
+				k += ' IS NULL';
+			}
+			
+			if (v !== null) {
+				if (escape === true) {
+					k = protectIdentifiers(k);
+					v = ' ' + this.escape(v);
+				}
+				
+				if (!hasOperator(k)) {
+					k += ' =';
+				}
+			}
+			else {
+				k = protectIdentifiers(k);
+			}
+			
+			whereArray.push(prefix+k+v);
+		}
+		
+		return that;
+	}
 	
 	this.count = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'SELECT ' + distinctClause + 'COUNT(*) as count FROM ' + protectIdentifiers(tableName)
 			+ buildJoinString()
-			+ buildDataString(whereClause, ' AND ', 'WHERE');
+			+ buildWhereClause();
 			
 			connection.query(combinedQueryString, function(err, res) { 
 				if (err)
@@ -500,7 +550,7 @@ var Adapter = function(settings) {
 			var combinedQueryString = 'SELECT ' + distinctClause + (selectClause.length === 0 ? '*' : selectClause.join(','))
 			+ ' FROM ' + protectIdentifiers(tableName)
 			+ buildJoinString()
-			+ buildDataString(whereClause, ' AND ', 'WHERE')
+			+ buildWhereClause()
 			+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
 			+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
 			+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
@@ -518,7 +568,7 @@ var Adapter = function(settings) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'UPDATE ' + protectIdentifiers(tableName)
 			+ buildDataString(newData, ', ', 'SET')
-			+ buildDataString(whereClause, ' AND ', 'WHERE')
+			+ buildWhereClause()
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
 						
 			connection.query(combinedQueryString, responseCallback);
@@ -535,7 +585,7 @@ var Adapter = function(settings) {
 	this.delete = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'DELETE FROM ' + protectIdentifiers(tableName)
-			+ buildDataString(whereClause, ' AND ', 'WHERE')
+			+ buildWhereClause()
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
 						
 			connection.query(combinedQueryString, responseCallback);

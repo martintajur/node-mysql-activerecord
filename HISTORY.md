@@ -10,3 +10,4 @@ you spot any mistakes.
 * Added the ability to do `SELECT DISTINCT` queries
 * We're doing better escaping of identifiers now
 * Added the ability to use table/view prefixes directly (ex. `select * from users u`)
+* Added the ability to do `OR WHERE` statements with `or_where()` method.
