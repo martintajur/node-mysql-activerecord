@@ -85,6 +85,7 @@ var Adapter = function(settings) {
 		joinClause = [],
 		lastQuery = '';
 		distinctClause = '',
+		aliasedTables = []
 	
 	var resetQuery = function(newLastQuery) {
 		whereClause = {};
@@ -99,13 +100,128 @@ var Adapter = function(settings) {
 		distinctClause = '';
 		rawWhereClause = {};
 		rawWhereString = {};
+		aliasedTables = [];
 	};
 	
 	var rawWhereClause = {};
 	var rawWhereString = {};
 	
-	var escapeFieldName = function(str) {
-		return (typeof rawWhereString[str] === 'undefined' && typeof rawWhereClause[str] === 'undefined' ? '`' + str.replace('.','`.`') + '`' : str);
+	var trackAliases = function(table) {
+		if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
+			for (var i in table) {
+				var t = table[i];
+				track_aliases(t);
+			}
+			return;
+		}
+
+		// Does the string contain a comma?  If so, we need to separate
+		// the string into discreet statements
+		if (table.indexOf(',') !== -1) {
+			return track_aliases(table.split(','));
+		}
+
+		// if a table alias is used we can recognize it by a space
+		if (table.indexOf(' ') !== -1) {
+			// if the alias is written with the AS keyword, remove it
+			table = table.replace(/\s+AS\s+/gi, ' ');
+			
+			// Grab the alias
+			alias = table.slice(table.lastIndexOf(' ')).trim();
+
+			// Store the alias, if it doesn't already exist
+			if(aliasedTables.indexOf(table) == -1) {
+				aliasedTables.push(table);
+			}
+		}
+	}
+	
+	var escapeIdentifiers = function(item) {
+		if (!item || item === '*') {
+			return item;
+		}
+		
+		var str;
+		if (item.indexOf('.') !== -1) {
+			str = '`' + item.replace(/\./g,'`.`') + '`';
+		}
+		else {
+			str = '`' + item + '`';
+		}
+		
+		// remove duplicates if the user already included the escape
+		return str.replace(/[`]+/,'`');
+	}
+	
+	var protectIdentifiers = function(item,escape) {
+		escape = (typeof escape === 'boolean' ? escape : true);
+		
+		if(Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
+			var escaped_array = {};
+
+			for (k in item) {
+				var v = item[k];
+				escaped_array[protectIdentifiers(k)] = protectIdentifiers(v);
+			}
+
+			return escaped_array;
+		}
+		
+		// Convert tabs or multiple spaces into single spaces
+		item = item.replace(/\s+/, ' ');
+		
+		// If the item has an alias declaration we remove it and set it aside.
+		// Basically we remove everything to the right of the first space
+		if (item.indexOf(' ') !== -1) {
+			var alias_index = item.lastIndexOf(' ');
+			var alias = item.slice(alias_index);
+			item = item.slice(0,alias_index);
+		}
+		else {
+			alias = '';
+		}
+		
+		// This is basically a bug fix for queries that use MAX, MIN, etc.
+		// If a parenthesis is found we know that we do not need to
+		// escape the data or add a prefix.
+		if (item.indexOf('(') !== -1) {
+			return item + alias;
+		}
+		
+		// Break the string apart if it contains periods, then insert the table prefix
+		// in the correct location, assuming the period doesn't indicate that we're dealing
+		// with an alias. While we're at it, we will escape the components
+		if (item.indexOf('.') !== -1) {
+			parts	= item.split('.');
+
+			// Does the first segment of the exploded item match
+			// one of the aliases previously identified?  If so,
+			// we have nothing more to do other than escape the item
+			if (aliasedTables.indexOf(parts[0]) !== -1) {
+				if (escape === true) {
+					for (var key in parts) {
+						var val = parts[key];
+						if (val !== '*') {
+							parts[key] = escapeIdentifiers(val);
+						}
+					}
+
+					item = parts.join('.');
+				}
+				return item + alias;
+			}
+
+			if (escape === true) {
+				item = escapeIdentifiers(item);
+			}
+
+			return item + alias;
+		}
+		if (escape === true) {
+			item = escapeIdentifiers(item);
+		}
+		
+		return item + alias;
 	};
 	
 	var buildDataString = function(dataSet, separator, clause) {
@@ -128,13 +244,13 @@ var Adapter = function(settings) {
 					queryString += key;
 				}
 				else if (dataSet[key] === null) {
-					queryString += escapeFieldName(key) + (clause == 'WHERE' ? " is NULL" : "=NULL");
+					queryString += protectIdentifiers(key) + (clause == 'WHERE' ? " is NULL" : "=NULL");
 				}
 				else if (typeof dataSet[key] !== 'object') {
-					queryString += escapeFieldName(key) + "=" + connection.escape(dataSet[key]);
+					queryString += protectIdentifiers(key) + "=" + connection.escape(dataSet[key]);
 				}
 				else if (typeof dataSet[key] === 'object' && Object.prototype.toString.call(dataSet[key]) === '[object Array]' && dataSet[key].length > 0) {
-					queryString += escapeFieldName(key) + ' in ("' + dataSet[key].join('", "') + '")';
+					queryString += protectIdentifiers(key) + ' in ("' + dataSet[key].join('", "') + '")';
 				}
 				else {
 					useSeparator = false;
@@ -157,7 +273,7 @@ var Adapter = function(settings) {
 		var joinString = '';
 		
 		for (var i = 0; i < joinClause.length; i++) {
-			joinString += (joinClause[i].direction !== '' ? ' ' + joinClause[i].direction : '') + ' JOIN ' + escapeFieldName(joinClause[i].table) + ' ON ' + joinClause[i].relation;
+			joinString += (joinClause[i].direction !== '' ? ' ' + joinClause[i].direction : '') + ' JOIN ' + protectIdentifiers(joinClause[i].table) + ' ON ' + joinClause[i].relation;
 		}
 		
 		return joinString;
@@ -321,7 +437,7 @@ var Adapter = function(settings) {
 			}
 			if (typeof tableName === 'string') {
 				
-				var combinedQueryString = verb + ' into ' + escapeFieldName(tableName)
+				var combinedQueryString = verb + ' into ' + protectIdentifiers(tableName)
 				+ buildDataString(dataSet, ', ', 'SET');
 				
 				if (querySuffix != '') {
@@ -355,7 +471,7 @@ var Adapter = function(settings) {
 		for (var key in dataSet[0]) {
 			if (dataSet[0].hasOwnProperty(key)) {
 				if (columns.indexOf(key) == -1) {
-					columns.push(escapeFieldName(key));
+					columns.push(protectIdentifiers(key));
 				}
 			}
 		}
@@ -375,14 +491,14 @@ var Adapter = function(settings) {
 			})(i);
 		}
 
-		that.query(verb + ' INTO ' + escapeFieldName(tableName) + ' (' + columns.join(', ') + ') VALUES' + map.join(','), responseCallback);
+		that.query(verb + ' INTO ' + protectIdentifiers(tableName) + ' (' + columns.join(', ') + ') VALUES' + map.join(','), responseCallback);
 		return that;
 	};
 
 	this.get = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'SELECT ' + distinctClause + (selectClause.length === 0 ? '*' : selectClause.join(','))
-			+ ' FROM ' + escapeFieldName(tableName)
+			+ ' FROM ' + protectIdentifiers(tableName)
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
@@ -400,7 +516,7 @@ var Adapter = function(settings) {
 	
 	this.update = function(tableName, newData, responseCallback) {
 		if (typeof tableName === 'string') {
-			var combinedQueryString = 'UPDATE ' + escapeFieldName(tableName)
+			var combinedQueryString = 'UPDATE ' + protectIdentifiers(tableName)
 			+ buildDataString(newData, ', ', 'SET')
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
@@ -418,7 +534,7 @@ var Adapter = function(settings) {
 	
 	this.delete = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
-			var combinedQueryString = 'DELETE FROM ' + escapeFieldName(tableName)
+			var combinedQueryString = 'DELETE FROM ' + protectIdentifiers(tableName)
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
 						
