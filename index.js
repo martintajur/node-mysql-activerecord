@@ -418,7 +418,7 @@ var Adapter = function(settings) {
 			if (v !== null) {
 				if (escape === true) {
 					k = protectIdentifiers(k);
-					v = ' ' + this.escape(v);
+					v = ' ' + qb_escape(v);
 				}
 				
 				if (!hasOperator(k)) {

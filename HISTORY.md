@@ -16,3 +16,4 @@ you spot any mistakes.
 * Added the ability to do `[OR] WHERE [NOT] IN(...)` statements directly (new methods: `where_in()`, `or_where_in()`, `where_not_in()`, `or_where_not_in()`)
 * Added the ability to do `FROM` statements directly for `SELECT` and `DELETE` queries (new method: `from()`) (ex. db.from('foo').get(function() { ... }))
 * Identifiers will now be properly escaped in `JOIN` statements.
+* Added the ability to call `get_where()` as a shorthand to `get()` and `where()` (ex. `db.get_where('table',{foo: 'bar'},function() { ... });`)
