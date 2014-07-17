@@ -336,6 +336,20 @@ var Adapter = function(settings) {
 		return str;
 	}
 	
+	var compileSelect = function() {
+		var sql = 'SELECT ' + distinctClause + (selectClause.length === 0 ? '*' : selectClause.join(','))
+		+ buildFromClause()
+		+ buildJoinString()
+		+ buildWhereClause()
+		+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
+		+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
+		+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
+		+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
+		+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
+		
+		return sql;
+	}
+	
 	this.connectionSettings = function() { return connectionSettings; };
 	this.connection = function() { return connection; };
 	
@@ -728,10 +742,10 @@ var Adapter = function(settings) {
 		return that;
 	};
 
-	this.get = function(tableName, responseCallback) {
-		if (typeof tableName !== 'function') {
-			trackAliases(tableName);
-			this.from(tableName);
+	this.get = function(table, callback) {
+		if (typeof table !== 'function') {
+			trackAliases(table);
+			this.from(table);
 		}
 		else {
 			if (fromArray.length == 0) {
@@ -739,22 +753,31 @@ var Adapter = function(settings) {
 				return that;
 			}
 			else {
-				responseCallback = tableName;
+				callback = table;
 			}
 		}
 	
-		var combinedQueryString = 'SELECT ' + distinctClause + (selectClause.length === 0 ? '*' : selectClause.join(','))
-		+ buildFromClause()
-		+ buildJoinString()
-		+ buildWhereClause()
-		+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
-		+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
-		+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
-		+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
-		+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
+		var sql = compileSelect();
 		
-		connection.query(combinedQueryString, responseCallback);
-		resetQuery(combinedQueryString);
+		connection.query(sql, callback);
+		resetQuery(sql);
+		
+		return that;
+	};
+	
+	this.get_where = function(table, where, callback) {
+		if (table !== '') {
+			this.from(table);
+		}
+		
+		if (where !== null) {
+			this.where(where);
+		}
+		
+		var sql = compileSelect();
+		
+		connection.query(sql, callback);
+		resetQuery(sql);
 		
 		return that;
 	};
