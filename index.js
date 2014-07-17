@@ -78,6 +78,7 @@ var Adapter = function(settings) {
 	var whereArray = [],
 		whereInArray = [],
 		fromArray = [],
+		joinArray = [],
 		selectClause = [],
 		orderByClause = '',
 		groupByClause = '',
@@ -93,6 +94,7 @@ var Adapter = function(settings) {
 		whereArray = [];
 		whereInArray = [];
 		fromArray = [];
+		joinArray = [];
 		selectClause = [];
 		orderByClause = '';
 		groupByClause = '';
@@ -278,13 +280,9 @@ var Adapter = function(settings) {
 	};
 	
 	var buildJoinString = function() {
-		var joinString = '';
-		
-		for (var i = 0; i < joinClause.length; i++) {
-			joinString += (joinClause[i].direction !== '' ? ' ' + joinClause[i].direction : '') + ' JOIN ' + protectIdentifiers(joinClause[i].table) + ' ON ' + joinClause[i].relation;
-		}
-		
-		return joinString;
+		var sql = ' ';
+		sql += joinArray.join(' ');
+		return sql;
 	};
 	
 	var mergeObjects = function() {
@@ -437,12 +435,12 @@ var Adapter = function(settings) {
 		
 		for (var i in values) {
 			var value = values[i];
-			whereInArray = qb_escape(value);
+			whereInArray.push(qb_escape(value));
 		}
 
 		prefix = (whereArray.length == 0 ? '' : type);
 
-		where_in = prefix + protect_identifiers(key) + not + " IN (" + whereInArray.join(', ') + ") ";
+		where_in = prefix + protectIdentifiers(key) + not + " IN (" + whereInArray.join(', ') + ") ";
 
 		whereArray.push(where_in);
 
@@ -565,11 +563,33 @@ var Adapter = function(settings) {
 	}
 
 	this.join = function(tableName, relation, direction) {
-		joinClause.push({
-			table: tableName,
-			relation: relation,
-			direction: (typeof direction === 'string' ? trim(direction.toUpperCase()) : '')
-		});
+		direction = (!direction || typeof direction !== 'string' ? '' : direction);
+		
+		var valid_directions = ['LEFT','RIGHT','OUTER','INNER','LEFT INNER','LEFT OUTER','RIGHT INNER','RIGHT OUTER'];
+		
+		if (direction != '') {
+			direction = direction.toUpperCase();
+			if (valid_directions.indexOf(direction) === -1) {
+				direction = '';
+			}
+			else {
+				direction += ' ';
+			}
+		}
+		
+		trackAliases(tableName);
+		
+		var match;
+		if (match = relation.match(/([\w\.]+)([\W\s]+)(.+)/)) {
+			match[1] = protectIdentifiers(match[1]);
+			match[3] = protectIdentifiers(match[3]);
+			
+			relation = match[1] + match[2] + match[3];
+		}
+		
+		join = direction + 'JOIN ' + protectIdentifiers(tableName, true) + ' ON ' + relation;
+		
+		joinArray.push(join);
 		return that;
 	};
 	
