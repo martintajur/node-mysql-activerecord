@@ -422,14 +422,15 @@ var Adapter = function(settings) {
 	};
 	
 	this._where_in = function(key, values, not, type) {
+		key = key || null;
 		values = values || [];
 		type = type || 'AND ';
 		not = (not ? ' NOT' : '');
 		
-		if(key === null || values.length === 0) return;
+		if(key === null || values.length === 0) return that;
 		
 		// Values must be an array...
-		if(Object.prototype.toString.call(value) === Object.prototype.toString.call([])) {
+		if(Object.prototype.toString.call(value) !== Object.prototype.toString.call([])) {
 			values = [values];
 		}
 		
