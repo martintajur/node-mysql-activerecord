@@ -79,7 +79,7 @@ var Adapter = function(settings) {
 		whereInArray = [],
 		fromArray = [],
 		joinArray = [],
-		selectClause = [],
+		selectArray = [],
 		orderByClause = '',
 		groupByClause = '',
 		havingClause = '',
@@ -95,7 +95,7 @@ var Adapter = function(settings) {
 		whereInArray = [];
 		fromArray = [];
 		joinArray = [];
-		selectClause = [];
+		selectArray = [];
 		orderByClause = '';
 		groupByClause = '';
 		havingClause = '',
@@ -154,8 +154,8 @@ var Adapter = function(settings) {
 		return str.replace(/[`]+/,'`');
 	}
 	
-	var protectIdentifiers = function(item,escape) {
-		escape = (typeof escape === 'boolean' ? escape : true);
+	var protectIdentifiers = function(item,protect_identifiers) {
+		protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
 		
 		if(Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
 			var escaped_array = {};
@@ -199,7 +199,7 @@ var Adapter = function(settings) {
 			// one of the aliases previously identified?  If so,
 			// we have nothing more to do other than escape the item
 			if (aliasedTables.indexOf(parts[0]) !== -1) {
-				if (escape === true) {
+				if (protect_identifiers === true) {
 					for (var key in parts) {
 						var val = parts[key];
 						if (val !== '*') {
@@ -218,7 +218,7 @@ var Adapter = function(settings) {
 
 			return item + alias;
 		}
-		if (escape === true) {
+		if (protect_identifiers === true) {
 			item = escapeIdentifiers(item);
 		}
 		
@@ -280,8 +280,9 @@ var Adapter = function(settings) {
 	};
 	
 	var buildJoinString = function() {
-		var sql = ' ';
+		var sql = '';
 		sql += joinArray.join(' ');
+		if(sql.length > 0) sql = ' ' + sql;
 		return sql;
 	};
 	
@@ -337,18 +338,31 @@ var Adapter = function(settings) {
 	}
 	
 	var compileSelect = function() {
-		var sql = 'SELECT ' + distinctClause + (selectClause.length === 0 ? '*' : selectClause.join(','))
-		+ buildFromClause()
-		+ buildJoinString()
-		+ buildWhereClause()
-		+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
-		+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
-		+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
-		+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
-		+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
+		var sql = 'SELECT ' + distinctClause;
+		if (selectArray.length === 0) {
+			sql += '*';
+		}
+		
+		sql += selectArray.join(',')
+			+ buildFromClause()
+			+ buildJoinString()
+			+ buildWhereClause()
+			+ (groupByClause !== '' ? ' GROUP BY ' + groupByClause : '')
+			+ (havingClause !== '' ? ' HAVING ' + havingClause : '')
+			+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
+			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
+			+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
 		
 		return sql;
 	}
+	
+	var createAliasFromTable = function(item) {
+		if (item.indexOf('.') !== -1) {
+			return item.split('.').reverse()[0];
+		}
+
+		return item;
+	};
 	
 	this.connectionSettings = function() { return connectionSettings; };
 	this.connection = function() { return connection; };
@@ -608,22 +622,80 @@ var Adapter = function(settings) {
 		return that;
 	};
 	
-	this.select = function(selectSet) {
-		if (Object.prototype.toString.call(selectSet) === '[object Array]') {
+	this.select = function(select,escape) {
+		if (typeof escape !== 'boolean') escape = null;
+		
+		if (typeof select === 'string') {
+			select = select.split(',');
+		}
+		
+		for (var i in select) {
+			var val = select[i];
+			
+			if(val !== '') {
+				selectArray.push(val);
+			}
+		}
+		
+		if (Object.prototype.toString.call(selectSet) === Object.prototype.toString.call([])) {
 			for (var i = 0; i < selectSet.length; i++) {
-				selectClause.push(selectSet[i]);
+				selectArray.push(selectSet[i]);
 			}
 		}
 		else {
 			if (typeof selectSet === 'string') {
 				var selectSetItems = selectSet.split(',');
 				for (var i = 0; i < selectSetItems.length; i++) {
-					selectClause.push(trim(selectSetItems[i]));
+					selectArray.push(trim(selectSetItems[i]));
 				}
 			}
 		}
 		return that;
 	};
+	
+	this.select_min = function(select,alias) {
+		return this._min_max_avg_sum(select,alias,'MIN');
+	};
+	
+	this.select_max = function(select,alias) {
+		return this._min_max_avg_sum(select,alias,'MAX');
+	};
+	
+	this.select_avg = function(select,alias) {
+		return this._min_max_avg_sum(select,alias,'AVG');
+	};
+	
+	this.select_sum = function(select,alias) {
+		return this._min_max_avg_sum(select,alias,'SUM');
+	};
+	
+	this._min_max_avg_sum = function(select,alias,type) {
+		select = select || '';
+		alias = alias || '';
+		type = type || 'MAX';
+		
+		if (typeof select !== 'string' || select === '') {
+			throw Error("Invalid query!");
+			return that;
+		}
+		
+		type = type.toUpperCase();
+		
+		if (['MAX','MIN','AVG','SUM'].indexOf(type) === -1) {
+			throw Error("Invalid function type!");
+			return that;
+		}
+		
+		if (alias == '') {
+			alias = createAliasFromTable(select.trim());
+		}
+		
+		sql = type + '(' + protectIdentifiers(select.trim()) + ') AS ' + alias;
+		
+		selectArray.push(sql);
+		
+		return that;
+	}
 	
 	this.distinct = function() {
 		distinctClause = 'DISTINCT ';
