@@ -18,3 +18,4 @@ you spot any mistakes.
 * Identifiers will now be properly escaped in `JOIN` statements.
 * Added the ability to call `get_where()` as a shorthand to `get()` and `where()` (ex. `db.get_where('table',{foo: 'bar'},function() { ... });`)
 * Added the ability to call `select_min()`, `select_max()`, `select_avg()`, and `select_sum()`.
+* Significanly improved security, helping to prevent SQL injection attacks.

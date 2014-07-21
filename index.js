@@ -169,14 +169,20 @@ var Adapter = function(settings) {
 		}
 		
 		// Convert tabs or multiple spaces into single spaces
-		item = item.replace(/\s+/, ' ');
+		item = item.replace(/\s+/g, ' ');
 		
 		// If the item has an alias declaration we remove it and set it aside.
 		// Basically we remove everything to the right of the first space
-		if (item.indexOf(' ') !== -1) {
-			var alias_index = item.lastIndexOf(' ');
-			var alias = item.slice(alias_index);
-			item = item.slice(0,alias_index);
+		if (item.match(/\sAS\s/ig)) {
+			var alias_index = item.indexOf(item.match(/\sAS\s/ig)[0]);
+			var alias = (protect_identifiers ? item.substr(alias_index,4) + escapeIdentifiers(item.slice(alias_index + 4)) : item.substr(alias_index));
+			item = item.substr(0,alias_index);
+		}
+		else if (item.indexOf(' ') !== -1) {
+			var alias_index = item.indexOf(' ');
+			
+			var alias = (protect_identifiers && ! hasOperator(item.substr(alias_index + 1)) ? ' ' + escapeIdentifiers(item.substr(alias_index + 1)) : item.substr(alias_index));
+			item = item.substr(0,alias_index);
 		}
 		else {
 			alias = '';
@@ -185,8 +191,8 @@ var Adapter = function(settings) {
 		// This is basically a bug fix for queries that use MAX, MIN, etc.
 		// If a parenthesis is found we know that we do not need to
 		// escape the data or add a prefix.
-		if (item.indexOf('(') !== -1) {
-			return item + alias;
+		if (item.indexOf('(') !== -1 || item.indexOf("'") !== -1) {
+			return item;
 		}
 		
 		// Break the string apart if it contains periods, then insert the table prefix
@@ -212,7 +218,7 @@ var Adapter = function(settings) {
 				return item + alias;
 			}
 
-			if (escape === true) {
+			if (protect_identifiers === true) {
 				item = escapeIdentifiers(item);
 			}
 
@@ -319,8 +325,12 @@ var Adapter = function(settings) {
 	};
 	
 	var hasOperator = function (str) {
-		if(typeof str === 'string')
-			if(str.trim().match(/(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sIN\s*\(|\s)/gi));
+		if(typeof str === 'string') {
+			if(!str.trim().match(/(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sIN\s*\(|\s)/gi)) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	var qb_escape = function(str) {
@@ -343,7 +353,7 @@ var Adapter = function(settings) {
 			sql += '*';
 		}
 		
-		sql += selectArray.join(',')
+		sql += selectArray.join(', ')
 			+ buildFromClause()
 			+ buildJoinString()
 			+ buildWhereClause()
@@ -443,7 +453,12 @@ var Adapter = function(settings) {
 				k = protectIdentifiers(k);
 			}
 			
-			whereArray.push(prefix+k+v);
+			if (v) {
+				whereArray.push(prefix+k+v);
+			} 
+			else {
+				whereArray.push(prefix+k);
+			}
 		}
 		
 		return that;
@@ -539,23 +554,25 @@ var Adapter = function(settings) {
 		}
 
 		return that;
-	}
+	};
 	
-	this.count = function(tableName, responseCallback) {
-		if (typeof tableName === 'string') {
-			var combinedQueryString = 'SELECT ' + distinctClause + 'COUNT(*) as count'
+	this.count = function(table, responseCallback) {
+		if (typeof table === 'string') {
+			trackAliases(table);
+			this.from(table);
+		}
+		var sql = this.query('SELECT COUNT(*) AS ' + protectIdentifiers('count')
 			+ buildFromClause()
 			+ buildJoinString()
-			+ buildWhereClause();
+			+ buildWhereClause());
 			
-			connection.query(combinedQueryString, function(err, res) { 
-				if (err)
-					responseCallback(err, null);
-				else
-					responseCallback(null, res[0]['count']);
-			});
-			resetQuery(combinedQueryString);
-		}
+		connection.query(sql, function(err, res) { 
+			if (err)
+				responseCallback(err, null);
+			else
+				responseCallback(null, res[0]['count']);
+		});
+		resetQuery(sql);
 		
 		return that;
 	};
@@ -594,7 +611,7 @@ var Adapter = function(settings) {
 	this.join = function(tableName, relation, direction) {
 		direction = (!direction || typeof direction !== 'string' ? '' : direction);
 		
-		var valid_directions = ['LEFT','RIGHT','OUTER','INNER','LEFT INNER','LEFT OUTER','RIGHT INNER','RIGHT OUTER'];
+		var valid_directions = ['LEFT','RIGHT','OUTER','INNER','LEFT OUTER','RIGHT OUTER'];
 		
 		if (direction != '') {
 			direction = direction.toUpperCase();
@@ -623,31 +640,17 @@ var Adapter = function(settings) {
 	};
 	
 	this.select = function(select,escape) {
-		if (typeof escape !== 'boolean') escape = null;
+		if (typeof escape !== 'boolean') escape = true;
 		
 		if (typeof select === 'string') {
 			select = select.split(',');
 		}
 		
 		for (var i in select) {
-			var val = select[i];
+			var val = select[i].trim();
 			
 			if(val !== '') {
-				selectArray.push(val);
-			}
-		}
-		
-		if (Object.prototype.toString.call(selectSet) === Object.prototype.toString.call([])) {
-			for (var i = 0; i < selectSet.length; i++) {
-				selectArray.push(selectSet[i]);
-			}
-		}
-		else {
-			if (typeof selectSet === 'string') {
-				var selectSetItems = selectSet.split(',');
-				for (var i = 0; i < selectSetItems.length; i++) {
-					selectArray.push(trim(selectSetItems[i]));
-				}
+				selectArray.push(protectIdentifiers(val));
 			}
 		}
 		return that;
