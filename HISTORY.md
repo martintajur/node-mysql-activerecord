@@ -19,3 +19,11 @@ you spot any mistakes.
 * Added the ability to call `get_where()` as a shorthand to `get()` and `where()` (ex. `db.get_where('table',{foo: 'bar'},function() { ... });`)
 * Added the ability to call `select_min()`, `select_max()`, `select_avg()`, and `select_sum()`.
 * Significanly improved security, helping to prevent SQL injection attacks.
+* Added ability to do `OR HAVING` statements with `or_having()` method
+* Added ability to add an offset directly without using the `limit()` method by using the `offset()` method.
+* Added ability to set `SET` values for updates and inserts using the `set()` method.
+* `UPDATE` statements now support `ORDER BY` clauses which can be added to the query using the `order_by()` method.
+* The `update()` method's 3rd parameter can now either be the callback (as always) or a `WHERE` clause (ex. 'foo = "bar"' or {foo:'bar', id: 3}). If a where clause is provided, the callback is now the 4th parameter. This change is fully backwards-compatible with the previous version of this module.
+* New package dependencies (for testing): chai and mocha.
+* Tests have been written for better-ensuring future enhancements and fixes to not break functionality
+* Library has been broken into 3 objects to allow for prpoer testing. This won't affect the API and is fully-backwards compatible with the previous version.

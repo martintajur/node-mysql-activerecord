@@ -3,6 +3,9 @@
 	"version": "0.8.4",
 	"author": "Martin Tajur <martin@tajur.ee>",
 	"description": "MySQL ActiveRecord pattern implementation on top of the mysql module.",
+    "scripts": {
+        "test": "make test"
+    },
 	"homepage": "https://github.com/martintajur/node-mysql-activerecord",
 	"repository": {
 		"type": "git",
@@ -14,7 +17,9 @@
 		"Daehyub Kim <lateau@gmail.com>"
 	],
 	"dependencies": {
-		"mysql": "~2.1"
+		"mysql": "~2.1",
+		"chai": "~1.4.2",
+		"mocha": "*"
 	},
 	"main" : "./",
 	"engines": {

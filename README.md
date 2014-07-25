@@ -40,6 +40,13 @@ Basic support of MySQL commands
 ===============================
 
  * SELECT
+ * DISTINCT
+ * FROM
+ * IN
+ * MIN
+ * MAX
+ * AVG
+ * SUM
  * UPDATE
  * INSERT (single-row and multi-row)
  * INSERT IGNORE
