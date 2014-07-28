@@ -119,4 +119,22 @@ describe('select()', function() {
 		qb.select('foo as bar, bar as foo, foobar as `Foo Bar`');
 		qb.selectArray.should.eql(['`foo` as `bar`','`bar` as `foo`','`foobar` as `Foo Bar`']);
 	});
+	it('should allow for namespacing in field name (host.db.table.field)', function() {
+		qb.resetQuery();
+		qb.select('star_system.planet');
+		qb.selectArray.should.eql(['`star_system`.`planet`']);
+		
+		qb.resetQuery();
+		qb.select('galaxy.star_system.planet');
+		qb.selectArray.should.eql(['`galaxy`.`star_system`.`planet`']);
+		
+		qb.resetQuery();
+		qb.select('universe.galaxy.star_system.planet');
+		qb.selectArray.should.eql(['`universe`.`galaxy`.`star_system`.`planet`']);
+	});
+	it('should allow for namespacing in field name (host.db.table.column) + alias', function() {
+		qb.resetQuery();
+		qb.select('universe.galaxy.star_system.planet as planet');
+		qb.selectArray.should.eql(['`universe`.`galaxy`.`star_system`.`planet` as `planet`']);
+	});
 });

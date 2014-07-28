@@ -81,11 +81,30 @@ describe('from()', function() {
 	it('should add aliases to alias-tracking array', function() {
 		qb.resetQuery();
 		qb.from(['`universe` `u`', '`galaxy` `g`']);
-		qb.aliasedTables.should.eql(['`universe` `u`','`galaxy` `g`']);
+		qb.aliasedTables.should.eql(['u','g']);
 	});
 	it('should allow for an comma-delimited list of item + aliases and it should escape them all properly', function() {
 		qb.resetQuery();
 		qb.from(['universe u, galaxy g']);
 		qb.fromArray.should.eql(['`universe` `u`','`galaxy` `g`']);
 	});
+	it('should allow for namespacing in field name (host.db.table)', function() {
+		qb.resetQuery();
+		qb.from('star_system.planet');
+		qb.fromArray.should.eql(['`star_system`.`planet`']);
+		
+		qb.resetQuery();
+		qb.from('galaxy.star_system.planet');
+		qb.fromArray.should.eql(['`galaxy`.`star_system`.`planet`']);
+	});
+	it('should allow for namespacing in field name (host.db.table.column) + alias', function() {
+		qb.resetQuery();
+		qb.from('universe.galaxy.star_system planet');
+		qb.fromArray.should.eql(['`universe`.`galaxy`.`star_system` `planet`']);
+	});
+	it('should allow for namespacing in field name (host.db.table.column) + alias (declare with AS)', function() {
+		qb.resetQuery();
+		qb.from('universe.galaxy.star_system as planet');
+		qb.fromArray.should.eql(['`universe`.`galaxy`.`star_system` as `planet`']);
+	})
 });
