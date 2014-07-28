@@ -141,5 +141,9 @@ describe('select()', function() {
 		qb.resetQuery();
 		qb.select('count(*) as count', false);
 		qb.selectArray.should.eql(['count(*) as count']);
+		
+		qb.resetQuery();
+		qb.select('count(*) as count');
+		qb.selectArray.should.eql(['count(*) as `count`']);
 	});
 });
