@@ -92,4 +92,19 @@ describe('join()', function() {
 		qb.join('universe.galaxy.star_system s');
 		qb.aliasedTables.should.eql(['s']);
 	});
+	it('should properly place join direction into join clause', function() {
+		qb.resetQuery();
+		qb.join('universe.galaxy.star_system s', 's.type_id = st.id', 'left outer');
+		qb.joinArray.should.eql(['LEFT OUTER JOIN `universe`.`galaxy`.`star_system` `s` ON `s`.`type_id` = `st`.`id`']);
+	});
+	it('should be chainable to allow for multiple join clauses', function() {
+		qb.resetQuery();
+		qb.join('star_system s', 's.type_id = st.id', 'left outer').join('planets p','p.star_system_id = s.id','left');
+		qb.joinArray.should.eql(['LEFT OUTER JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id`', 'LEFT JOIN `planets` `p` ON `p`.`star_system_id` = `s`.`id`']);
+	});
+	it('should escape complex join conditions', function() {
+		qb.resetQuery();
+		qb.join('star_system s', "s.type_id = st.id AND st.active = 1 AND st.created_on > '2014-01-01'", 'left');
+		qb.joinArray.should.eql(["LEFT JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id` AND `st`.`active` = 1 AND `st`.`created_on` > '2014-01-01'"]);
+	});
 });
