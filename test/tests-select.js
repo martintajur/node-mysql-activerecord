@@ -137,4 +137,9 @@ describe('select()', function() {
 		qb.select('universe.galaxy.star_system.planet as planet');
 		qb.selectArray.should.eql(['`universe`.`galaxy`.`star_system`.`planet` as `planet`']);
 	});
+	it('should allow for functions in select statement without escaping them if second param is false', function() {
+		qb.resetQuery();
+		qb.select('count(*) as count', false);
+		qb.selectArray.should.eql(['count(*) as count']);
+	});
 });
