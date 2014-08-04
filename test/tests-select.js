@@ -137,13 +137,32 @@ describe('select()', function() {
 		qb.select('universe.galaxy.star_system.planet as planet');
 		qb.selectArray.should.eql(['`universe`.`galaxy`.`star_system`.`planet` as `planet`']);
 	});
-	it('should allow for functions in select statement without escaping them if second param is false', function() {
+	it('should not allow subqueries or functions with commas in them without the second parameter being false', function() {
+		qb.resetQuery();
+		expect(function() { 
+			qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets');
+		}).to.throw(Error);
+		
+		expect(function() { 
+			qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets',false);
+		}).to.not.throw(Error);
+	});
+	it('should allow for functions and subqueries in statement without escaping them (aliases at the end will still be escaped)', function() {
 		qb.resetQuery();
 		qb.select('count(*) as count', false);
-		qb.selectArray.should.eql(['count(*) as count']);
+		qb.selectArray.should.eql(['count(*) AS `count`']);
 		
 		qb.resetQuery();
-		qb.select('count(*) as count');
-		qb.selectArray.should.eql(['count(*) as `count`']);
+		qb.select('count(*) as count, m.*, MIN(id) as min', false);
+		qb.selectArray.should.eql(['count(*) as count, m.*, MIN(id) AS `min`']);
+		
+		qb.resetQuery();
+		qb.select('(select count(p.*) as count from planets p) as num_planets', false);
+		qb.selectArray.should.eql(['(select count(p.*) as count from planets p) AS `num_planets`']);
+		
+		qb.resetQuery();
+		qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id = s.id) as num_planets', false);
+		qb.selectArray.should.eql(['s.star_systems, (select count(p.*) as count from planets p where p.star_system_id = s.id) AS `num_planets`']);
+		
 	});
 });
