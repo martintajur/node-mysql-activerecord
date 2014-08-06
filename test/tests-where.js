@@ -107,9 +107,14 @@ describe('where()', function() {
 		qb.where({star_system:'Solar',planet:['Earth','Mars']},false);
 		qb.whereArray.should.eql(["star_system = 'Solar'", "AND planet IN ('Earth', 'Mars')"]);
 	});
-	it("should even escape complex/compound where clauses when provided as a string in the first and only parameter", function() {
+	it("should not try to escape where clauses utilizing functions or subqueries when provided as a string in the first and only parameter", function() {
 		qb.resetQuery();
-		qb.where("planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Mikly Way','Andromeda'))");
-		qb.whereArray.should.eql("planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Mikly Way','Andromeda'))");
+		qb.where("planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
+		qb.whereArray.should.eql(["planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))"]);
+	});
+	it("should escape (quote) functions and subqueries as strings when provided as second parameter", function() {
+		qb.resetQuery();
+		qb.where('galaxy_id >', "(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
+		qb.whereArray.should.eql(["`galaxy_id` > '(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN(\\'Milky Way\\',\\'Andromeda\\'))'"]);
 	});
 });
