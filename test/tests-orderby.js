@@ -10,7 +10,26 @@ describe('order_by()', function() {
 	it('should be a function', function() {
 		qb.order_by.should.be.a('function');
 	});
+	it('should require non-empty string or array as first param unless random is provided as second parameter', function() {
+		qb.order_by('planet_position asc');
+		expect(function() { qb.order_by(); 		}, 'nothing provided').to.throw(Error);
+		expect(function() { qb.order_by(null); 	}, 'null provided').to.throw(Error);
+		expect(function() { qb.order_by(false); }, 'false provided').to.throw(Error);
+		expect(function() { qb.order_by(true); 	}, 'true provided').to.throw(Error);
+		expect(function() { qb.order_by({}); 	}, 'empty object provided').to.throw(Error);
+		expect(function() { qb.order_by(3); 	}, 'integer provided').to.throw(Error);
+		expect(function() { qb.order_by(3.5); 	}, 'float provided').to.throw(Error);
+		expect(function() { qb.order_by([]); 	}, 'empty array provided').to.throw(Error);
+		expect(function() { qb.order_by(''); 	}, 'empty string provided').to.throw(Error);
+		// If random
+		expect(function() { qb.order_by('','rand'); }, 'empty string and random direction provided').to.not.throw(Error);
+		expect(function() { qb.order_by(undefined,'rand'); }, 'undefined and random direction provided').to.not.throw(Error);
+		expect(function() { qb.order_by(null,'rand'); }, 'null and random direction provided').to.not.throw(Error);
+		expect(function() { qb.order_by(false,'rand'); }, 'false and random direction provided').to.not.throw(Error);
+		expect(function() { qb.order_by([],'rand'); }, 'empty array and random direction provided').to.not.throw(Error);
+	});
 	it('should accept a field and direction separated by a space as first parameter and escape the field', function() {
+		qb.resetQuery();
 		qb.order_by('planet_position asc');
 		qb.orderByArray.should.eql(['`planet_position` ASC']);
 	});
