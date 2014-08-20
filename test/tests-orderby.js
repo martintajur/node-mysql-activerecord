@@ -10,8 +10,13 @@ describe('order_by()', function() {
 	it('should be a function', function() {
 		qb.order_by.should.be.a('function');
 	});
+	it('should have an array to put fields into', function() {
+		qb.should.have.property('orderByArray');
+	});
+	it('should have an empty array to put fields into at the beginning', function() {
+		qb.orderByArray.should.be.empty;
+	});
 	it('should require non-empty string or array as first param unless random is provided as second parameter', function() {
-		qb.order_by('planet_position asc');
 		expect(function() { qb.order_by(); 		}, 'nothing provided').to.throw(Error);
 		expect(function() { qb.order_by(null); 	}, 'null provided').to.throw(Error);
 		expect(function() { qb.order_by(false); }, 'false provided').to.throw(Error);

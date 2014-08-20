@@ -166,3 +166,20 @@ describe('select()', function() {
 		
 	});
 });
+var prefixes = ['min','max','avg','sum'];
+for (var i in prefixes) {
+	var type = prefixes[i];
+	describe('select_' + type+'()', function() {
+		it('should exist', function() {
+			should.exist(qb['select_' + type]);
+		});
+		it('should be a function', function() {
+			qb['select_' + type].should.be.a('function');
+		});
+		it('should place given field as parameter in a ' + type.toUpperCase() + '() MySQL function and alias the result with the original field name', function() {
+			qb.resetQuery();
+			qb['select_' + type]('s.star_systems');
+			qb.selectArray.should.eql([type.toUpperCase() + '(`s`.`star_systems`) AS star_systems']);
+		});
+	});
+}
