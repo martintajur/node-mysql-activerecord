@@ -91,6 +91,13 @@ describe('set()', function() {
 		qb.set({galaxy_name: 'Milky Way'}, null, false);
 		qb.set({galaxy_class: 'C'});
 		qb.set('galaxy_class','D');
-		qb.setArray.should.eql({galaxy_name: 'Milky Way', "`galaxy_size`": "'D'"});
+		qb.setArray.should.eql({galaxy_name: 'Milky Way', "`galaxy_class`": "'D'"});
+	});
+	it('should NOT overwrite values of keys that are the same but have different escape flags', function() {
+		qb.resetQuery();
+		qb.set({galaxy_name: 'Milky Way'}, null, false);
+		qb.set({galaxy_class: 'C'});
+		qb.set('galaxy_class','D', false);
+		qb.setArray.should.eql({galaxy_name: 'Milky Way', "`galaxy_class`": "'C'", galaxy_class: 'D'});
 	});
 });

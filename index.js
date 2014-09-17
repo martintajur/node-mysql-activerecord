@@ -84,6 +84,11 @@ var Adapter = function(settings) {
 	this.order_by 		 	= this.qb.order_by;
 	this.limit 			 	= this.qb.limit;
 	this.offset 		 	= this.qb.offset;
+	this.set				= this.qb.set;
+	this.get_compiled_select = this.qb.get_compiled_select;
+	this.get_compiled_insert = this.qb.get_compiled_insert;
+	this.get_compiled_update = this.qb.get_compiled_update;
+	this.get_compiled_delete = this.qb.get_compiled_delete;
 	this._last_query 	 	= this.qb._last_query;
 	this.last_query 	 	= this.qb._last_query;
 	
@@ -159,16 +164,47 @@ var Adapter = function(settings) {
 		return that;
 	};
 	
-	this.delete = function(table,callback) {
-		var sql = this.delete(table,callback);
+	this.update_batch = function() {
 		
-		if (typeof table === 'function') {
-			callback = table;
+		return that;
+	};
+	
+	this.delete = function(table, where, callback) {
+		if (typeof where === 'function' && typeof callback !== 'function') {
+			callback = where;
+			where = undefined;
 		}
+		
+		if (typeof table === 'function' && typeof callback !== 'function') {
+			callback = table;
+			table = undefined;
+			where = undefined;
+		}
+		
+		if (typeof callback !== 'function') {
+			throw new Error("delete(): No callback function has been provided!");
+		}
+		
+		var sql = this.delete(table, where);
+		
 		this.resetQuery(sql);
 		connection.query(sql, callback);
 		return that;
 	};
+	
+	this.empty_table - function(table, callback) {
+		var sql = this.qb.empty_table(table,callback);
+		this.resetQuery(sql);
+		connection.query(sql);
+		return that;
+	});
+	
+	this.truncate - function(table, callback) {
+		var sql = this.qb.truncate(table,callback);
+		this.resetQuery(sql);
+		connection.query(sql);
+		return that;
+	});
 
 	var initializeConnectionSettings = function () {
 		if(settings.server) {
