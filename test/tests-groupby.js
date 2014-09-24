@@ -11,28 +11,28 @@ describe('group_by()', function() {
 		qb.group_by.should.be.a('function');
 	});
 	it('should have an array to put fields into', function() {
-		qb.should.have.property('groupByArray');
+		qb.should.have.property('group_by_array');
 	});
 	it('should have an empty array to put fields into at the beginning', function() {
-		qb.groupByArray.should.be.empty;
+		qb.group_by_array.should.be.empty;
 	});
 	it('should accept a single field in string form', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.group_by('planet_type');
-		qb.groupByArray.should.eql(['`planet_type`']);
+		qb.group_by_array.should.eql(['`planet_type`']);
 	});
 	it('should accept a multiple fields delimited by commas', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.group_by('planet_type, planet_position');
-		qb.groupByArray.should.eql(['`planet_type`','`planet_position`']);
+		qb.group_by_array.should.eql(['`planet_type`','`planet_position`']);
 	});
 	it('should accept an array of fields', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.group_by(['planet_type', 'planet_position']);
-		qb.groupByArray.should.eql(['`planet_type`','`planet_position`']);
+		qb.group_by_array.should.eql(['`planet_type`','`planet_position`']);
 	});
 	it('should not accept anything but a string or an array of strings', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		expect(function() { qb.group_by(); 		}, 'nothing provided').to.throw(Error);
 		expect(function() { qb.group_by(null); 	}, 'null provided').to.throw(Error);
 		expect(function() { qb.group_by(false); }, 'false provided').to.throw(Error);

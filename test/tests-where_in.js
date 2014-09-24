@@ -11,13 +11,13 @@ describe('where_in()', function() {
 		qb.where_in.should.be.a('function');
 	});
 	it('should have an array to put fields into', function() {
-		qb.should.have.property('whereInArray');
+		qb.should.have.property('where_in_array');
 	});
 	it('should have an empty array to put fields into at the beginning', function() {
-		qb.whereInArray.should.be.empty;
+		qb.where_in_array.should.be.empty;
 	});
 	it('should not accept anything but a non-empty string as first parameter', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		expect(function() { qb.where_in(); 				}, 'nothing provided').to.throw(Error);
 		expect(function() { qb.where_in(null); 			}, 'null provided').to.throw(Error);
 		expect(function() { qb.where_in(false); 		}, 'false provided').to.throw(Error);
@@ -36,7 +36,7 @@ describe('where_in()', function() {
 		expect(function() { qb.where_in('planet_position',[1,2,3]); }, 'valid string provided').to.not.throw(Error);
 	});
 	it('should not accept anything but a non-empty array of values as second parameter', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		expect(function() { qb.where_in('planet'); 				}, 'nothing provided').to.throw(Error);
 		expect(function() { qb.where_in('planet',null); 		}, 'null provided').to.throw(Error);
 		expect(function() { qb.where_in('planet',false); 		}, 'false provided').to.throw(Error);
@@ -54,25 +54,25 @@ describe('where_in()', function() {
 		expect(function() { qb.where_in('planet',['Mars','Earth','Venus','Mercury']); }, 'non-empty array provided').to.not.throw(Error);
 	});
 	it('should require both a field name an array of values as first and second parameters, respectively', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where_in('planet_position',[1,2,3]);
-		qb.whereArray.should.eql(['`planet_position` IN (1, 2, 3)']);
+		qb.where_array.should.eql(['`planet_position` IN (1, 2, 3)']);
 	});
 	it('should concatenate multiple WHERE IN clauses with AND ', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where_in('planet',['Mercury','Venus','Earth','Mars']);
 		qb.where_in('galaxy_id',[123,456,789,0110]);
-		qb.whereArray.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `galaxy_id` IN (123, 456, 789, 72)"]);
+		qb.where_array.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `galaxy_id` IN (123, 456, 789, 72)"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where_in('planet',['Mercury','Venus','Earth','Mars']).where_in('planet_position',[1,2,3,4]);
-		qb.whereArray.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `planet_position` IN (1, 2, 3, 4)"]);
+		qb.where_array.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `planet_position` IN (1, 2, 3, 4)"]);
 	});
 	it('should not escape fields if asked not to', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where_in('planet_position',[1,2,3],false);
-		qb.whereArray.should.eql(['planet_position IN (1, 2, 3)']);
+		qb.where_array.should.eql(['planet_position IN (1, 2, 3)']);
 	});
 });
 
@@ -84,30 +84,30 @@ describe('where_not_in()', function() {
 		qb.where_not_in.should.be.a('function');
 	});
 	it('should prepend "NOT " to "IN"', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where_not_in('planet_position',[1,2,3]);
-		qb.whereArray.should.eql(['`planet_position` NOT IN (1, 2, 3)']);
+		qb.where_array.should.eql(['`planet_position` NOT IN (1, 2, 3)']);
 	});
 	it('should prepend tertiary WHERE clauses with "AND"', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where_not_in('planet_position',[1,2,3]);
 		qb.where_not_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(['`planet_position` NOT IN (1, 2, 3)', "AND `planet_position` NOT IN (5, 6, 7)"]);
+		qb.where_array.should.eql(['`planet_position` NOT IN (1, 2, 3)', "AND `planet_position` NOT IN (5, 6, 7)"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where_not_in('planet_position',[1,2,3]).where_not_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(['`planet_position` NOT IN (1, 2, 3)', "AND `planet_position` NOT IN (5, 6, 7)"]);
+		qb.where_array.should.eql(['`planet_position` NOT IN (1, 2, 3)', "AND `planet_position` NOT IN (5, 6, 7)"]);
 	});
 	it('should be chainable with normal where', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet','Mars').where('galaxy','Milky Way').where_not_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'",  "AND `planet_position` NOT IN (5, 6, 7)"]);
+		qb.where_array.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'",  "AND `planet_position` NOT IN (5, 6, 7)"]);
 	});
 	it('should not escape fields if asked not to', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where_not_in('planet_position',[1,2,3],false);
-		qb.whereArray.should.eql(['planet_position NOT IN (1, 2, 3)']);
+		qb.where_array.should.eql(['planet_position NOT IN (1, 2, 3)']);
 	});
 });
 
@@ -119,25 +119,25 @@ describe('or_where_in()', function() {
 		qb.or_where_in.should.be.a('function');
 	});
 	it('should prepend tertiary WHERE clauses with "OR"', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where_in('planet_position',[1,2,3]);
 		qb.or_where_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(['`planet_position` IN (1, 2, 3)', "OR `planet_position` IN (5, 6, 7)"]);
+		qb.where_array.should.eql(['`planet_position` IN (1, 2, 3)', "OR `planet_position` IN (5, 6, 7)"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where_in('planet_position',[1,2,3]).or_where_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(['`planet_position` IN (1, 2, 3)', "OR `planet_position` IN (5, 6, 7)"]);
+		qb.where_array.should.eql(['`planet_position` IN (1, 2, 3)', "OR `planet_position` IN (5, 6, 7)"]);
 	});
 	it('should be chainable with normal where', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet','Mars').where('galaxy','Milky Way').or_where_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'",  "OR `planet_position` IN (5, 6, 7)"]);
+		qb.where_array.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'",  "OR `planet_position` IN (5, 6, 7)"]);
 	});
 	it('should not escape fields if asked not to', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where_in('planet_position',[1,2,3],false);
-		qb.whereArray.should.eql(['planet_position IN (1, 2, 3)']);
+		qb.where_array.should.eql(['planet_position IN (1, 2, 3)']);
 	});
 });
 
@@ -149,29 +149,29 @@ describe('or_where_not_in()', function() {
 		qb.or_where_in.should.be.a('function');
 	});
 	it('should prepend "NOT " to "IN"', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where_not_in('planet_position',[1,2,3]);
-		qb.whereArray.should.eql(['`planet_position` NOT IN (1, 2, 3)']);
+		qb.where_array.should.eql(['`planet_position` NOT IN (1, 2, 3)']);
 	});
 	it('should prepend tertiary WHERE clauses with "OR"', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where_not_in('planet_position',[1,2,3]);
 		qb.or_where_not_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(['`planet_position` NOT IN (1, 2, 3)', "OR `planet_position` NOT IN (5, 6, 7)"]);
+		qb.where_array.should.eql(['`planet_position` NOT IN (1, 2, 3)', "OR `planet_position` NOT IN (5, 6, 7)"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where_not_in('planet_position',[1,2,3]).or_where_not_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(['`planet_position` NOT IN (1, 2, 3)', "OR `planet_position` NOT IN (5, 6, 7)"]);
+		qb.where_array.should.eql(['`planet_position` NOT IN (1, 2, 3)', "OR `planet_position` NOT IN (5, 6, 7)"]);
 	});
 	it('should be chainable with normal where', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet','Mars').where('galaxy','Milky Way').or_where_not_in('planet_position',[5,6,7]);
-		qb.whereArray.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'",  "OR `planet_position` NOT IN (5, 6, 7)"]);
+		qb.where_array.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'",  "OR `planet_position` NOT IN (5, 6, 7)"]);
 	});
 	it('should not escape fields if asked not to', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where_not_in('planet_position',[1,2,3],false);
-		qb.whereArray.should.eql(['planet_position NOT IN (1, 2, 3)']);
+		qb.where_array.should.eql(['planet_position NOT IN (1, 2, 3)']);
 	});
 });

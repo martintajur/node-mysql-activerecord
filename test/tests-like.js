@@ -64,42 +64,42 @@ describe('like()', function() {
 		expect(function() { qb.like('galaxy_name','milk','after'); 	}, 'after as third param').to.not.throw(Error);
 	});
 	it('should put percentage signs on the right side of the condition if "right" or "after" are passed as the 3rd parameter', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'after');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE 'milky%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE 'milky%'"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE 'milky%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE 'milky%'"]);
 	});
 	it('should put percentage signs on the left side of the condition if "before" or "left" are passed as the 3rd parameter', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'before');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky'"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'left');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky'"]);
 	});
 	it('should put percentage signs on both sides of the condition if "both" or undefined are passed as the 3rd parameter', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'both');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'"]);
 	});
 	it('should put AND in between multiple LIKE clauses', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky');
 		qb.like('planet_name', 'ear', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` LIKE 'ear%'"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky').like('planet_name', 'ear', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` LIKE 'ear%'"]);
 	});
 });
 
@@ -111,20 +111,20 @@ describe('or_like()', function() {
 		qb.or_like.should.be.a('function');
 	});
 	it('should put OR in between multiple OR LIKE clauses', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_like('galaxy_name', 'milky');
 		qb.or_like('planet_name', 'ear', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'", "OR `planet_name` LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'", "OR `planet_name` LIKE 'ear%'"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_like('galaxy_name', 'milky').or_like('planet_name', 'ear', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'", "OR `planet_name` LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'", "OR `planet_name` LIKE 'ear%'"]);
 	});
 	it('should be chainable with regular like clauses', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky').like('planet_name', 'ear', 'right').or_like('planet_name','Jup','right');
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` LIKE 'ear%'", "OR `planet_name` LIKE 'Jup%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` LIKE 'ear%'", "OR `planet_name` LIKE 'Jup%'"]);
 	});
 });
 
@@ -136,25 +136,25 @@ describe('not_like()', function() {
 		qb.not_like.should.be.a('function');
 	});
 	it('should put NOT before LIKE', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.not_like('galaxy_name', 'milky');
-		qb.whereArray.should.eql(["`galaxy_name` NOT LIKE '%milky%'"]);
+		qb.where_array.should.eql(["`galaxy_name` NOT LIKE '%milky%'"]);
 	});
 	it('should put AND in between multiple NOT LIKE clauses', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.not_like('galaxy_name', 'milky');
 		qb.not_like('planet_name', 'ear', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` NOT LIKE '%milky%'", "AND `planet_name` NOT LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` NOT LIKE '%milky%'", "AND `planet_name` NOT LIKE 'ear%'"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.not_like('galaxy_name', 'milky').not_like('planet_name', 'ear', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` NOT LIKE '%milky%'", "AND `planet_name` NOT LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` NOT LIKE '%milky%'", "AND `planet_name` NOT LIKE 'ear%'"]);
 	});
 	it('should be chainable with regular like clauses', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky').not_like('planet_name', 'ear', 'right')
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` NOT LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` NOT LIKE 'ear%'"]);
 	});
 });
 
@@ -166,24 +166,24 @@ describe('or_not_like()', function() {
 		qb.or_not_like.should.be.a('function');
 	});
 	it('should put NOT before LIKE', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_not_like('galaxy_name', 'milky');
-		qb.whereArray.should.eql(["`galaxy_name` NOT LIKE '%milky%'"]);
+		qb.where_array.should.eql(["`galaxy_name` NOT LIKE '%milky%'"]);
 	});
 	it('should put OR in between multiple NOT LIKE clauses', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_not_like('galaxy_name', 'milky');
 		qb.or_not_like('planet_name', 'ear', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` NOT LIKE '%milky%'", "OR `planet_name` NOT LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` NOT LIKE '%milky%'", "OR `planet_name` NOT LIKE 'ear%'"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_not_like('galaxy_name', 'milky').or_not_like('planet_name', 'ear', 'right');
-		qb.whereArray.should.eql(["`galaxy_name` NOT LIKE '%milky%'", "OR `planet_name` NOT LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` NOT LIKE '%milky%'", "OR `planet_name` NOT LIKE 'ear%'"]);
 	});
 	it('should be chainable with regular like clauses', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.like('galaxy_name', 'milky').like('galaxy_name', 'meda', 'before').or_not_like('planet_name', 'ear', 'right')
-		qb.whereArray.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `galaxy_name` LIKE '%meda'", "OR `planet_name` NOT LIKE 'ear%'"]);
+		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `galaxy_name` LIKE '%meda'", "OR `planet_name` NOT LIKE 'ear%'"]);
 	});
 });

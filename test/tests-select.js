@@ -11,10 +11,10 @@ describe('select()', function() {
 		qb.select.should.be.a('function');
 	});
 	it('should have an array to put fields into', function() {
-		qb.should.have.property('selectArray');
+		qb.should.have.property('select_array');
 	});
 	it('should have an empty array to put fields into at the beginning', function() {
-		qb.selectArray.should.be.empty;
+		qb.select_array.should.be.empty;
 	});
 	it('should require an array or string to be passed as first parameter', function() {
 		var invalid_match = /requires a string or array/;
@@ -31,114 +31,114 @@ describe('select()', function() {
 		expect(function() { qb.select('blah'); 	}, 'valid string provided').to.not.throw(Error);
 	});
 	it('should add field to array and escape it properly', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('notes');
-		qb.selectArray.should.eql(['`notes`']);
+		qb.select_array.should.eql(['`notes`']);
 	});
 	it('should trim fields properly before placing them into the select array', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('   notes         ');
-		qb.selectArray.should.eql(['`notes`']);
+		qb.select_array.should.eql(['`notes`']);
 	});
 	it('should have an empty array after resetting', function() {
-		qb.resetQuery();
-		qb.selectArray.should.be.empty;
+		qb.reset_query();
+		qb.select_array.should.be.empty;
 	});
 	it('should not escape fields if asked not to', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('foo',false);
-		qb.selectArray.should.eql(['foo']);
+		qb.select_array.should.eql(['foo']);
 	});
 	it('should accept a comma-delimited string of field names and trim and escape each properly', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('do,re  ,  mi, fa');
-		qb.selectArray.should.eql(['`do`','`re`','`mi`','`fa`']);
+		qb.select_array.should.eql(['`do`','`re`','`mi`','`fa`']);
 	});
 	it('should be allowed to be called multiple times to add multiple fields to the select array', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('do').select('re').select('mi').select('fa');
-		qb.selectArray.should.eql(['`do`','`re`','`mi`','`fa`']);
+		qb.select_array.should.eql(['`do`','`re`','`mi`','`fa`']);
 	});
 	it('should be allowed to be called multiple times to add multiple escaped and/or non-escaped fields to the select array', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('do').select('re',false).select('mi',false).select('fa');
-		qb.selectArray.should.eql(['`do`','re','mi','`fa`']);
+		qb.select_array.should.eql(['`do`','re','mi','`fa`']);
 	});
 	it('should accept an array of fields and add them individually to the select array', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select(['sol','la','ti','do']);
-		qb.selectArray.should.eql(['`sol`','`la`','`ti`','`do`']);
+		qb.select_array.should.eql(['`sol`','`la`','`ti`','`do`']);
 	});
 	it('should accept an array of fields and add them individually to the select array without escaping, if asked not to', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select(['sol','la','ti','do'],false);
-		qb.selectArray.should.eql(['sol','la','ti','do']);
+		qb.select_array.should.eql(['sol','la','ti','do']);
 	});
 	it('should accept an array of fields (some manually escaped) and add them individually to the select array without auto-escaping, if asked not to', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select(['`sol`','la','ti','`do`'],false);
-		qb.selectArray.should.eql(['`sol`','la','ti','`do`']);
+		qb.select_array.should.eql(['`sol`','la','ti','`do`']);
 	});
 	it('should not double-escape a field', function() { 
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('`do`');
-		qb.selectArray.should.eql(['`do`']);
+		qb.select_array.should.eql(['`do`']);
 	});
 	it('should not double-escape fields when provided with an array of pre-escaped fields', function() { 
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select(['`do`','`re`','`mi`']);
-		qb.selectArray.should.eql(['`do`','`re`','`mi`']);
+		qb.select_array.should.eql(['`do`','`re`','`mi`']);
 	});
 	it('should not double-escape fields when provided with an array of pre-escaped fields but should escpae non-pre-escaped fields', function() { 
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select(['`do`','re','`mi`']);
-		qb.selectArray.should.eql(['`do`','`re`','`mi`']);
+		qb.select_array.should.eql(['`do`','`re`','`mi`']);
 	});
 	it('should allow for field aliases to be provided and those fields and aliases should be properly escaped', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('foo as bar');
-		qb.selectArray.should.eql(['`foo` as `bar`']);
+		qb.select_array.should.eql(['`foo` as `bar`']);
 	});
 	it('should not double-escape aliases', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select(['foo as `bar`']);
-		qb.selectArray.should.eql(['`foo` as `bar`']);
+		qb.select_array.should.eql(['`foo` as `bar`']);
 	});
 	it('should allow for multiple fields with aliases to be provided and those fields and aliases should be properly escaped', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select(['foo as bar','bar as foo']);
-		qb.selectArray.should.eql(['`foo` as `bar`','`bar` as `foo`']);
+		qb.select_array.should.eql(['`foo` as `bar`','`bar` as `foo`']);
 	});
 	it('should allow for field aliases with spaces in them', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('notes as The Notes');
-		qb.selectArray.should.eql(['`notes` as `The Notes`']);
+		qb.select_array.should.eql(['`notes` as `The Notes`']);
 	});
 	it('should allow for a comma-delimited list of fields with aliases to be provided and those fields and aliases should be properly escaped', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('foo as bar, bar as foo, foobar as `Foo Bar`');
-		qb.selectArray.should.eql(['`foo` as `bar`','`bar` as `foo`','`foobar` as `Foo Bar`']);
+		qb.select_array.should.eql(['`foo` as `bar`','`bar` as `foo`','`foobar` as `Foo Bar`']);
 	});
 	it('should allow for namespacing in field name (host.db.table.field)', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('star_system.planet');
-		qb.selectArray.should.eql(['`star_system`.`planet`']);
+		qb.select_array.should.eql(['`star_system`.`planet`']);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('galaxy.star_system.planet');
-		qb.selectArray.should.eql(['`galaxy`.`star_system`.`planet`']);
+		qb.select_array.should.eql(['`galaxy`.`star_system`.`planet`']);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('universe.galaxy.star_system.planet');
-		qb.selectArray.should.eql(['`universe`.`galaxy`.`star_system`.`planet`']);
+		qb.select_array.should.eql(['`universe`.`galaxy`.`star_system`.`planet`']);
 	});
 	it('should allow for namespacing in field name (host.db.table.column) + alias', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('universe.galaxy.star_system.planet as planet');
-		qb.selectArray.should.eql(['`universe`.`galaxy`.`star_system`.`planet` as `planet`']);
+		qb.select_array.should.eql(['`universe`.`galaxy`.`star_system`.`planet` as `planet`']);
 	});
 	it('should not allow subqueries or functions with commas in them without the second parameter being false', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		expect(function() { 
 			qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets');
 		}).to.throw(Error);
@@ -148,21 +148,21 @@ describe('select()', function() {
 		}).to.not.throw(Error);
 	});
 	it('should allow for functions and subqueries in statement without escaping them (aliases at the end will still be escaped)', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('count(*) as count', false);
-		qb.selectArray.should.eql(['count(*) AS `count`']);
+		qb.select_array.should.eql(['count(*) AS `count`']);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('count(*) as count, m.*, MIN(id) as min', false);
-		qb.selectArray.should.eql(['count(*) as count, m.*, MIN(id) AS `min`']);
+		qb.select_array.should.eql(['count(*) as count, m.*, MIN(id) AS `min`']);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('(select count(p.*) as count from planets p) as num_planets', false);
-		qb.selectArray.should.eql(['(select count(p.*) as count from planets p) AS `num_planets`']);
+		qb.select_array.should.eql(['(select count(p.*) as count from planets p) AS `num_planets`']);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id = s.id) as num_planets', false);
-		qb.selectArray.should.eql(['s.star_systems, (select count(p.*) as count from planets p where p.star_system_id = s.id) AS `num_planets`']);
+		qb.select_array.should.eql(['s.star_systems, (select count(p.*) as count from planets p where p.star_system_id = s.id) AS `num_planets`']);
 		
 	});
 });
@@ -177,9 +177,9 @@ for (var i in prefixes) {
 			qb['select_' + type].should.be.a('function');
 		});
 		it('should place given field as parameter in a ' + type.toUpperCase() + '() MySQL function and alias the result with the original field name', function() {
-			qb.resetQuery();
+			qb.reset_query();
 			qb['select_' + type]('s.star_systems');
-			qb.selectArray.should.eql([type.toUpperCase() + '(`s`.`star_systems`) AS star_systems']);
+			qb.select_array.should.eql([type.toUpperCase() + '(`s`.`star_systems`) AS star_systems']);
 		});
 	});
 }

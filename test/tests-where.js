@@ -11,13 +11,13 @@ describe('where()', function() {
 		qb.where.should.be.a('function');
 	});
 	it('should have an array to put fields into', function() {
-		qb.should.have.property('whereArray');
+		qb.should.have.property('where_array');
 	});
 	it('should have an empty array to put fields into at the beginning', function() {
-		qb.whereArray.should.be.empty;
+		qb.where_array.should.be.empty;
 	});
 	it('should not accept anything but a non-empty string or a non-empty object', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		expect(function() { qb.where(); 		}, 'nothing provided').to.throw(Error);
 		expect(function() { qb.where(null); 	}, 'null provided').to.throw(Error);
 		expect(function() { qb.where(false); 	}, 'false provided').to.throw(Error);
@@ -34,112 +34,112 @@ describe('where()', function() {
 		
 	});
 	it('should accept a field name in the form of a string as the first parameter', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet');
-		qb.whereArray.should.eql(['`planet` IS NULL']);
+		qb.where_array.should.eql(['`planet` IS NULL']);
 	});
 	it('should assume second param is NULL if not provided', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet');
-		qb.whereArray.should.eql(['`planet` IS NULL']);
+		qb.where_array.should.eql(['`planet` IS NULL']);
 	});
 	it('should accept NULL as second parameter and assume IS NULL', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet',null);
-		qb.whereArray.should.eql(['`planet` IS NULL']);
+		qb.where_array.should.eql(['`planet` IS NULL']);
 	});
 	it('should accept boolean values and will transform them properly', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet',true);
-		qb.whereArray.should.eql(['`planet` = 1']);
+		qb.where_array.should.eql(['`planet` = 1']);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet',false);
-		qb.whereArray.should.eql(['`planet` = 0']);
+		qb.where_array.should.eql(['`planet` = 0']);
 	});
 	it('should accept integer and float values', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet',5);
-		qb.whereArray.should.eql(['`planet` = 5']);
+		qb.where_array.should.eql(['`planet` = 5']);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet',123.456);
-		qb.whereArray.should.eql(['`planet` = 123.456']);
+		qb.where_array.should.eql(['`planet` = 123.456']);
 	});
 	it('should accept string values', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet','Earth');
-		qb.whereArray.should.eql(["`planet` = 'Earth'"]);
+		qb.where_array.should.eql(["`planet` = 'Earth'"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('galaxy','Milky Way');
-		qb.whereArray.should.eql(["`galaxy` = 'Milky Way'"]);
+		qb.where_array.should.eql(["`galaxy` = 'Milky Way'"]);
 	});
 	it('should accept arrays of values and assume a WHERE IN clause', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet',['Mercury','Venus','Earth','Mars']);
-		qb.whereArray.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')"]);
+		qb.where_array.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')"]);
 	});
 	it('should concatenate multiple where clauses with AND by default', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet',['Mercury','Venus','Earth','Mars']);
 		qb.where('galaxy','Milky Way');
-		qb.whereArray.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `galaxy` = 'Milky Way'"]);
+		qb.where_array.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `galaxy` = 'Milky Way'"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet',['Mercury','Venus','Earth','Mars']).where('galaxy','Milky Way');
-		qb.whereArray.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `galaxy` = 'Milky Way'"]);
+		qb.where_array.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `galaxy` = 'Milky Way'"]);
 	});
 	it('should accept an object of key/value pairs (field: value)', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where({planet:'Earth',star_system:'Solar'});
-		qb.whereArray.should.eql(["`planet` = 'Earth'", "AND `star_system` = 'Solar'"]);
+		qb.where_array.should.eql(["`planet` = 'Earth'", "AND `star_system` = 'Solar'"]);
 	});
 	it('should accept an object of key/value pairs (field: value) where values can be arrays', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where({star_system:'Solar',planet:['Earth','Mars']});
-		qb.whereArray.should.eql(["`star_system` = 'Solar'", "AND `planet` IN ('Earth', 'Mars')"]);
+		qb.where_array.should.eql(["`star_system` = 'Solar'", "AND `planet` IN ('Earth', 'Mars')"]);
 	});
 	it('should accept an operators in the first parameter', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('position >',3);
-		qb.whereArray.should.eql(["`position` > 3"]);
+		qb.where_array.should.eql(["`position` > 3"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('position <',3);
-		qb.whereArray.should.eql(["`position` < 3"]);
+		qb.where_array.should.eql(["`position` < 3"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('position >=',3);
-		qb.whereArray.should.eql(["`position` >= 3"]);
+		qb.where_array.should.eql(["`position` >= 3"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('position <=',3);
-		qb.whereArray.should.eql(["`position` <= 3"]);
+		qb.where_array.should.eql(["`position` <= 3"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('position <>',3);
-		qb.whereArray.should.eql(["`position` <> 3"]);
+		qb.where_array.should.eql(["`position` <> 3"]);
 		
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('position !=',3);
-		qb.whereArray.should.eql(["`position` != 3"]);
+		qb.where_array.should.eql(["`position` != 3"]);
 	});
 	it('should not escape fields if asked not to', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where({star_system:'Solar',planet:['Earth','Mars']},false);
-		qb.whereArray.should.eql(["star_system = 'Solar'", "AND planet IN ('Earth', 'Mars')"]);
+		qb.where_array.should.eql(["star_system = 'Solar'", "AND planet IN ('Earth', 'Mars')"]);
 	});
 	it("should not try to escape where clauses utilizing functions or subqueries when provided as a string in the first and only parameter", function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where("planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
-		qb.whereArray.should.eql(["planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))"]);
+		qb.where_array.should.eql(["planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))"]);
 	});
 	it("should escape (quote) functions and subqueries as strings when provided as second parameter", function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('galaxy_id >', "(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
-		qb.whereArray.should.eql(["`galaxy_id` > '(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN(\\'Milky Way\\',\\'Andromeda\\'))'"]);
+		qb.where_array.should.eql(["`galaxy_id` > '(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN(\\'Milky Way\\',\\'Andromeda\\'))'"]);
 	});
 });
 
@@ -151,19 +151,19 @@ describe('or_where()', function() {
 		qb.or_where.should.be.a('function');
 	});
 	it('should prepend tertiary WHERE clauses with "OR"', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where('planet','Mars');
 		qb.or_where('planet','Venus');
-		qb.whereArray.should.eql(["`planet` = 'Mars'", "OR `planet` = 'Venus'"]);
+		qb.where_array.should.eql(["`planet` = 'Mars'", "OR `planet` = 'Venus'"]);
 	});
 	it('should be chainable', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.or_where('planet','Mars').or_where('planet','Venus');
-		qb.whereArray.should.eql(["`planet` = 'Mars'", "OR `planet` = 'Venus'"]);
+		qb.where_array.should.eql(["`planet` = 'Mars'", "OR `planet` = 'Venus'"]);
 	});
 	it('should be chainable with normal where', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.where('planet','Mars').where('galaxy','Milky Way').or_where('planet','Venus');
-		qb.whereArray.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'", "OR `planet` = 'Venus'"]);
+		qb.where_array.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'", "OR `planet` = 'Venus'"]);
 	});
 });

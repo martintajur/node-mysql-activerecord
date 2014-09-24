@@ -12,10 +12,10 @@ describe('join()', function() {
 		qb.join.should.be.a('function');
 	});
 	it('should have an array to put fields into', function() {
-		qb.should.have.property('joinArray');
+		qb.should.have.property('join_array');
 	});
 	it('should have an empty array to put fields into at the beginning', function() {
-		qb.joinArray.should.be.empty;
+		qb.join_array.should.be.empty;
 	});
 	it('should require a string to be passed as first parameter', function() {
 		var invalid_match = /must provide a table/;
@@ -31,14 +31,14 @@ describe('join()', function() {
 		expect(function() { qb.join('foo');	}, 'valid string provided').to.not.throw(Error);
 	});
 	it('should except single item and add it to join array as basic join and escape item', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.join('universe');
-		qb.joinArray.should.eql(['JOIN `universe` ']);
+		qb.join_array.should.eql(['JOIN `universe` ']);
 	});
 	it('should except single item with alias and add it to join array as basic join and escape each part', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.join('universe u');
-		qb.joinArray.should.eql(['JOIN `universe` `u` ']);
+		qb.join_array.should.eql(['JOIN `universe` `u` ']);
 	});
 	it('should allow a string (and only a string) to be passed as second parameter but only if a valid (or no) third parameter is provided', function() {
 		var invalid_2nd_param = /You must provide a valid condition to join on when providing a join direction/;
@@ -78,33 +78,33 @@ describe('join()', function() {
 		expect(function() { qb.join('universe','foo = bar','LEFT OUTER');	}, 'two word direction').to.not.throw(Error);
 	});
 	it('should except a valid second parameter as a join condition and escape it properly', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.join('universe u','u.type_id = ut.id');
-		qb.joinArray.should.eql(['JOIN `universe` `u` ON `u`.`type_id` = `ut`.`id`']);
+		qb.join_array.should.eql(['JOIN `universe` `u` ON `u`.`type_id` = `ut`.`id`']);
 	});
 	it('should escape compound objects properly', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.join('universe.galaxy.star_system s','s.type_id = st.id');
-		qb.joinArray.should.eql(['JOIN `universe`.`galaxy`.`star_system` `s` ON `s`.`type_id` = `st`.`id`']);
+		qb.join_array.should.eql(['JOIN `universe`.`galaxy`.`star_system` `s` ON `s`.`type_id` = `st`.`id`']);
 	});
 	it('should add aliases to alias-tracking array', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.join('universe.galaxy.star_system s');
-		qb.aliasedTables.should.eql(['s']);
+		qb.aliased_tables.should.eql(['s']);
 	});
 	it('should properly place join direction into join clause', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.join('universe.galaxy.star_system s', 's.type_id = st.id', 'left outer');
-		qb.joinArray.should.eql(['LEFT OUTER JOIN `universe`.`galaxy`.`star_system` `s` ON `s`.`type_id` = `st`.`id`']);
+		qb.join_array.should.eql(['LEFT OUTER JOIN `universe`.`galaxy`.`star_system` `s` ON `s`.`type_id` = `st`.`id`']);
 	});
 	it('should be chainable to allow for multiple join clauses', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.join('star_system s', 's.type_id = st.id', 'left outer').join('planets p','p.star_system_id = s.id','left');
-		qb.joinArray.should.eql(['LEFT OUTER JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id`', 'LEFT JOIN `planets` `p` ON `p`.`star_system_id` = `s`.`id`']);
+		qb.join_array.should.eql(['LEFT OUTER JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id`', 'LEFT JOIN `planets` `p` ON `p`.`star_system_id` = `s`.`id`']);
 	});
 	it('should escape complex join conditions', function() {
-		qb.resetQuery();
+		qb.reset_query();
 		qb.join('star_system s', "s.type_id = st.id AND st.active = 1 AND st.created_on > '2014-01-01'", 'left');
-		qb.joinArray.should.eql(["LEFT JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id` AND `st`.`active` = 1 AND `st`.`created_on` > '2014-01-01'"]);
+		qb.join_array.should.eql(["LEFT JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id` AND `st`.`active` = 1 AND `st`.`created_on` > '2014-01-01'"]);
 	});
 });

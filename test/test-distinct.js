@@ -10,9 +10,9 @@ describe('distinct()', function() {
 	it('should be a function', function() {
 		qb.distinct.should.be.a('function');
 	});
-	it('should override the default distinctClause with the "DISTINCT " keyword', function() {
-		qb.resetQuery();
+	it('should override the default distinct_clause with the "DISTINCT " keyword', function() {
+		qb.reset_query();
 		qb.distinct();
-		qb.distinctClause.should.eql('DISTINCT ');
+		qb.distinct_clause.should.eql('DISTINCT ');
 	});
 });
