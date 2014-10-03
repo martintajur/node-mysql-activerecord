@@ -1,8 +1,8 @@
 {
-	"name" : "mysql-activerecord",
-	"version": "0.8.4",
-	"author": "Martin Tajur <martin@tajur.ee>",
-	"description": "MySQL ActiveRecord pattern implementation on top of the mysql module.",
+	"name" : "node-querybuilder",
+	"version": "0.9.0",
+	"author": "Kyle Farris <kyle@chomponllc.com>",
+	"description": "MySQL QueryBuilder pattern implementation on top of the mysql module.",
     "scripts": {
         "test": "make test"
     },
@@ -12,12 +12,12 @@
 		"url": "git://github.com/martintajur/node-mysql-activerecord.git"
 	},
 	"contributors": [
+		"Martin Tajur <martin@tajur.ee>",
 		"Daniel Bretoi <daniel@bretoi.com>",
-		"Kyle Farris <kyle@chomponllc.com>",
 		"Daehyub Kim <lateau@gmail.com>"
 	],
 	"dependencies": {
-		"mysql": "~2.1",
+		"mysql": "2.5.*",
 		"chai": "~1.4.2",
 		"mocha": "*"
 	},

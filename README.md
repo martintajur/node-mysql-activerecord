@@ -1,34 +1,45 @@
-MySQL ActiveRecord Adapter for Node.js
+Universal QueryBuilder for Node.js
 ======================================
 
-Active Record Database Pattern implementation on top of node-mysql module (https://github.com/felixge/node-mysql).
+Node-QueryBuilder is an ambitious attempt to create a kind of "universal translator" which provides programmers a consistent API to connect to and query *any* database (traditional and NoSQL) supported by the module. The module is highly extensible and, in theory, can suppport any database provided that the driver has been written for it.
 
-To me, the main benefit of Active Record is the ability to direct JavaScript objects straight to MySQL query components without having to worry about constructing the query itself. Although Active Record is maybe a tiny step closer to ORM, I see a lot of value in the Active Record as it allows more control over database queries than traditional ORM.
+The API of this module very closely mimics Codeigniter's Active Record (now called "Query Builder") library and much of the code has been directly translated from the PHP libraries in Codeigniter to JavaScript. A lot of credit needs to go to he folks over at EllisLab (https://ellislab.com/codeigniter) and all the contributors to the Codeigniter project (of which I am one): https://github.com/EllisLab/CodeIgniter/
 
- * Light-weight
- * Supports all basic MySQL commands
+The primary benefits of this module (currently) are:
+
+ * Ability to write queries agnostically to the database you intend to query
+ * Supports all basic database commands (insert, update, delete, select, etc...)
+ * Extend commands from the most popular native database drivers in NPM.
  * Supports method chaining
  * Automatically escapes field values
- * Does not need any other modules to operate (it already includes the underlying node-mysql module)
+ * Is fully unit tested
+ * Allows for greater flexibility and more control over a full ORM
+ * Ligher-weight than an ORM
+ * Allows you to drop down to the native methods of your driver if you choose
+ * Allows for different drivers for different versions (SQLite 2 vs SQLite 3)
+ 
+Database Drivers 
+=================
+
+Currently Written:
+------------------
+* MySQL
+ 
+Coming Soon:
+------------
+ 
+* Postgres
+* Microsoft SQL Server
+* Oracle
+* SQLite
+* MongoDB
 
 How to install
 ==============
 
-	npm install mysql-activerecord
+	npm install node-querybuilder
 
-
-Get started
------------
-
-	var Db = require('mysql-activerecord');
-    var db = new Db.Adapter({
-    	server: 'localhost',
-    	username: 'root',
-    	password: '12345',
-    	database: 'test'
-    });
-
-Licence info
+Licence Info
 ============
 
 Licensed under the GPL license and MIT:
@@ -36,7 +47,116 @@ Licensed under the GPL license and MIT:
 * http://www.opensource.org/licenses/GPL-license.php
 * http://www.opensource.org/licenses/mit-license.php
 
-Basic support of MySQL commands
+Quick Example
+=============
+
+```javascript
+var settings = {
+	host: 'localhost',
+	database: 'mydatabase',
+	user: 'myuser',
+	password: 'MyP@ssw0rd'
+};
+var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'standard');
+
+qb.select('name','position').where({type: 'rocky', 'diameter <': 12000}).get('planets', function(err,rows) {
+	if (err) console.error("Uh oh! Couldn't get results: " + err.msg);
+	
+	// SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
+	console.log("Query Ran: " + qb.last_query());
+	
+	// [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
+	console.dir(rows);
+});
+```
+
+Connecting to Your Database
+===========================
+
+Quick Reference
+---------------
+
+| Driver    | Default | Active 	| standard 	| pool | cluster | Additional Connection Options						    |
+| :--------	| :------ | :----- 	| :------- 	| :--- | :------ | :------------------------------------------------------- | 
+| mysql	 	| X       | Yes    	| Yes		| Yes  | Yes	 | https://github.com/felixge/node-mysql#connection-options |
+| mssql	 	|         | No  	| Yes		| ???  | ???	 | 														    |
+| sqlite 	|         | No  	| Yes		| ???  | ???	 | 														    |
+| oracle 	|         | No  	| Yes		| ???  | ???	 | 														    |
+| postgres	|         | No  	| Yes		| ???  | ???	 | 														    |
+| mongodb	|         | No	 	| Yes		| ???  | ???	 | 														    |
+
+
+Standard Connection Settings
+----------------------------
+
+The options listed below are available for all database drivers. Additional properties may be passed if the driver of the database you are connecting to supports them. See the "Additional Connection Options" column above for a link to the a specific driver's connection options documentation.
+
+| Option	| Default 	| Description 									|
+| :--------	| :-----  	| :-------------------------------------------- | 
+| host	 	| localhost | The server you're connecting to				|
+| user	 	| NULL 	  	| The database user 							|
+| password 	| NULL 	  	| The database `user`'s password				|
+| database 	| NULL 	  	| The database to connect to					|
+| pool_size	| 10 	  	| Max connections for `pool` connection type	|
+
+The best way to store these options is in a JSON file outsite of your web root where only root and the server user can access them.
+
+**Example JSON File**
+
+We'll call this `db.json` (you can also just have a normal javascript object directly within your code somwhere if you're risky like that).
+
+```javascript
+{
+	"host": "db.myserver.com",
+	"user": "myusername",
+	"password": "P@s$w0rD",
+	"database": "myDB",
+	"pool_size": 50
+}
+```
+
+**Example App**
+
+```javascript
+var settings = require('db.json');
+var qb = require('node-querybuilder').QueryBuilder(settings);
+```
+
+Choosing the Database Type
+--------------------------
+
+This part is super simple. Just pass which one you'd like to use as the second paramter to the constructor (`mysql` is the default):
+
+***Example:***
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(settings, 'postgres');
+```
+
+Choosing the Connection Type
+----------------------------
+
+This library currently supports 3 connection methods:
+
+* standard (default)
+	* This will use the driver's basic single connection capabilities. All connections to your app will use this single database connection. This is usually less than ideal for most web applications buy might be quite suitable for command line scripts and the like. 
+	* **All drivers must have this connection type**.
+* pool
+	* This will utilize the driver's connection pooling capabilities if it is provided. Connection pooling allows your application to pull from a pool of connections that were created by the driver. Typically the connections will be handed out to requesting methods in a round-robin fashion. This is ideal for a web application.
+* cluster
+	* When you have a cluster of servers and you want to create pools of connections to different servers to help load balance your stack, using the `cluster` connection type can come in handy.
+
+**Note:**
+You will specify the type of connection as the third parameter to the contructor
+
+**Example:**
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+```
+
+
+API Methods
 ===============================
 
  * SELECT
@@ -59,337 +179,58 @@ Basic support of MySQL commands
  * HAVING
 
 Methods
-=======
+-------
 
-# .select()
+### SELECT
 
-## .select(selectFieldName)
-Specifies the field(s) to use in the SELECT query as a atring.
+This method is used to specify the fields to pull into the resultset when running SELECT-like queries.
 
-	db.select("id, CONCAT(first_name, ' ', last_name) as full_name, email");
-	// This would produce: SELECT id, CONCAT(first_name, ' ', last_name) as full_name, email …
+| Parameter	| Type			| Default 	| Description 									|
+| :--------	| :-------- 	| :-----  	| :-------------------------------------------- | 
+| fields 	| String|Array	| N/A 		| The fields in which to grab from the database |
+| escape 	| Boolean		| true 		| TRUE: auto-escape fields; FALSE: don't escape |
 
-You can call .select() multiple times within the scope of one query — all parameters will be used in the final query. E.g.
 
-	db.select('id');
-	// do some advanced checking and calculations here (only synchronous work, though!)
-	db.select('first_name, last_name');
-	// This would procude: SELECT id, first_name, last_name …
+#### .select(fields)
 
-## .select([selectFieldName, selectFieldName, … ])
-Same as above, with a difference of taking in fields list as an array.
+The fields provided to this method will be automatically escaped by the database driver. The `fields` paramter can be passed in 1 of 2 ways:
 
-	db.select(['id', 'first_name', 'last_name']);
-	// This would produce: SELECT id, first_name, last_name …
-
-# .where()
-
-## .where(rawClause)
-Specifies a where clause component.
-
-	db.where('add_time is null');
-	// This would produce: … WHERE add_time is null …
-
-You can call .where() multiple times within the scope of one query — all parameters will be used in the final query.
-
-## .where(fieldName, [possibleWhereInValue, possibleWhereInValue])
-Specifies a WHERE IN structure to use in the query.
-
-	db.where('first_name', ['John', 'Maria', 'Jason', 'Herbert']);
-	// This would produce: … WHERE first_name in ('John', 'Maria', 'Jason', 'Herbert') …
-
-## .where(fieldName, fieldValue)
-Specifies a single WHERE condition to use in the query.
-
-	db.where('first_name', 'John');
-	// This would produce: … WHERE first_name = 'John' …
-
-## .where({ fieldName: fieldValue, fieldName: fieldValue, … })
-Specifies multiple WHERE conditions to use in the query.
-
-	var conditions = {
-		first_name: 'John',
-		last_name: 'Smith'
-	};
-	db.where(conditions);
-	// This would produce: … WHERE first_name = 'John' AND last_name = 'Smith' …
-
-# .order_by()
-
-## .order_by(orderByCondition)
-Specifies the ORDER BY condition as a full string.
-
-	db.order_by('name asc');
-	// This would produce: … ORDER BY name asc …
-
-You can call .order_by() multiple times within the scope of one query — all parameters will be used in the final query.
-
-## .order_by([orderByCondition, orderByCondition, … ])
-Specifies multiple ORDER BY conditions as an array.
-
-	db.order_by(['name asc', 'last_name desc']);
-	// This would produce: … ORDER BY name asc, last_name desc …
-
-# .group_by()
-
-## .group_by(groupByCondition)
-Specifies the GROUP BY condition as a full string.
-
-	db.group_by('name asc');
-	// This would produce: … GROUP BY name asc …
-
-You can call .group_by() multiple times within the scope of one query — all parameters will be used in the final query.
-
-## .group_by([groupByCondition, groupByCondition, … ])
-Specifies the GROUP BY condition as a full string.
-
-	db.group_by(['name asc', 'last_name desc']);
-	// This would produce: … GROUP BY name asc, last_name desc …
-
-# .join()
-
-## .join(tableName, joinCondition, joinDirection)
-Join additional tables to the query.
-
-	db.join('pets', 'pets.owner_id = people.id', 'LEFT');
-	// This would produce: … LEFT JOIN pets ON pets.owner_id = people.id …
-
-	db.join('pets', 'pets.owner_id = people.id');
-	// This would produce: … JOIN pets ON pets.owner_id = people.id …
-
-# .limit()
-
-## .limit(limitNumber)
-Adds a row limit to query results.
-
-	db.limit(10);
-	// Limits query results to 10 rows.
-
-## .limit(limitNumber, offsetNumber)
-Adds a row limit with an offset pointer position to query results.
-
-	db.limit(10, 30);
-	// Limits query results to 10 rows, starting from the 30th row in the full matching set.
-
-# Query execution commands
-
-After execution of a query, all query conditions are cleared. Results are passed down to responseCallback function. The parameters handed over to responseCallback match exactly what the underlying node-mysql module produces. See documentation from https://github.com/felixge/node-mysql
-
-## .update(tableName, newData, responseCallback)
-Produces and executes UPDATE query. 
-
-	db.update('people', { first_name: 'John', last_name: 'Smith' }, function(err) { ... });
-	// This would produce: … UPDATE people SET first_name = 'John', last_name = 'Smith' …
-
-## .delete(tableName, responseCallback)
-Produces and executes DELETE query. Be sure to specify some WHERE clause components using .where() not to truncate an entire table. ✌
-
-	db.delete('people', function(err) { ... });
+* String with fields seperated by a comma:
+	* `.select('foo, bar, baz')`
+* Array of field names
+	* `.select(['foo','bar','baz'])`
 	
-## .insert(tableName, newData, responseCallback)
-Produces and executes a single-row INSERT query. 
+**Examples**
 
-	db.insert('people', { first_name: 'John', last_name: 'Smith' }, function(err, info) { ... });
-	// This would produce: … INSERT INTO people SET first_name = 'John', last_name = 'Smith' …
+```javascript
+// SELECT `foo`, `bar`, `baz`
+qb.select(['foo','bar','baz']);
+```
 
-## .insert(tableName, [newData, newData, newData, …], responseCallback)
-Produces and executes a multi-row INSERT query. 
-	
-	var person1 = { first_name: 'John', last_name: 'Smith' };
-	var person2 = { first_name: 'Jason', last_name: 'Binder' };
-	var person3 = { first_name: 'Herbert', last_name: 'von Kellogg' };
-	db.insert('people', [person1, person2, person3], function(err, info) { ... });
-	// This would produce: … INSERT INTO people (first_name, last_name) VALUES (('John','Smith'),('Jason','Binder'),('Herbert','von Kellogg')) …
+You can chain the method together using different patterns if you want:
 
-## .insert_ignore(tableName, newData, responseCallback, onDuplicateKeyClause)
-Produces and executes an INSERT IGNORE query. Note that the newData parameter can be either a string (produces single-row INSERT) or an array (produces multi-row INSERT). You can also specify an optional onDuplicateKeyClause, e.g.
-	
-	db.insert_ignore('people', { first_name: 'John', last_name: 'Smith' }, function(err, info) { ... }, 'ON DUPLICATE KEY UPDATE duplicate_count = duplicate_count + 1');
-	// This would produce: … INSERT IGNORE INTO people SET first_name = 'John', last_name = 'Smith' … ON DUPLICATE KEY UPDATE duplicate_count = duplicate_count + 1
+```javascript
+// SELECT `foo`, `bar`, `baz`, `this`, `that`, `the_other`
+qb.select(['foo','bar','baz']).select('this,that,the_other');
+```
 
-## .get(tableName, responseCallback)
-Produces and executes a SELECT query.
+You can alias your field names and they will be escaped properly as well:
 
-	db.get('people', function(err, rows, fields) { ... });
-	// This would produce: SELECT … FROM people …
+```javascript
+// SELECT `foo` as `f`, `bar` as `b`, `baz` as `z`
+qb.select(['foo as f','bar as b','baz as z']);
+```
 
-## .count(tableName, responseCallback)
-Produces and executes a SELECT query with count.
+#### .select(fields,escape)
 
-	db.get('people', function(err, rows, fields) { ... });
-	// This would produce: SELECT count(*) FROM people …
+You can optionally choose not to have the driver auto-escape the fieldnames (dangerous, but useful if you a function in your select statement, for instance):
 
-## .query(sqlQueryString, responseCallback)
-Produces and executes a raw query. Note that while no set query conditions will be used in this query, they will all be reset nevertheless with the execution.
+**Example**
 
-	db.query('SHOW TABLES FROM test_database', function(err, results) { ... });
-
-## .ping()
-Pings the connection. This is useful when extending idle timeouts.
-
-## ._last_query()
-Returns the last executed query as a string.
-
-## .connection()
-Returns the underlying database connection object, ultimately what https://github.com/felixge/node-mysql .createConnection() returns.
-
-Pooling connections
-===================
-
-Single or multiple connections can be pooled with the Pool object.
-
-	var Db = require('mysql-activerecord');
-
-	var pool = new Db.Pool({
-		server: 'localhost',
-		username: 'root',
-		password: '12345',
-		database: 'test'
-	});
-	
-	pool.getNewAdapter(function(db) {
-		db
-			.where({ name: 'Martin' })
-			.get('people', function(err, results, fields) {
-				console.log(results);
-				db.releaseConnection();
-				// do not do anything with db that has been released.
-			});
-    });
-
-Some more usage examples
-========================
-
-Establishing a connection
--------------------------
-
-	var Db = require('mysql-activerecord');
-	var db = new Db.Adapter({
-		server: 'localhost',
-		username: 'root',
-		password: '12345',
-		database: 'test'
-	});
-    
-Basic SELECT query
-------------------
-
-	db.get('people', function(err, results, fields) {
-		console.log(results);
-	});
-
-INSERT query
-------------
-	
-	var data = {
-		name: 'Martin',
-		email: 'martin@example.com'
-	};
-	
-	db.insert('people', data, function(err, info) {
-		console.log('New row ID is ' + info.insertId);
-	});
-
-INSERT IGNORE query with ON DUPLICATE KEY clause
-------------------------------------------------
-	
-	var data = {
-		name: 'Martin',
-		email: 'martin@example.com'
-	};
-	
-	db.insert_ignore('people', data, function(err, info) {
-		console.log('New row ID is ' + info.insertId);
-	}, 'ON DUPLICATE KEY SET counter = counter + 1');
-	
-SELECT query with WHERE clause
-------------------------------
-
-	db
-		.where({ name: 'Martin' })
-		.get('people', function(err, results, fields) {
-			console.log(results);
-		});
-
-SELECT query with custom fields, WHERE, JOIN and LIMIT
-------------------------------------------------------
-
-	db
-		.select(['people.id', 'people.name', 'people.email', 'songs.title'])
-		.join('songs', 'people.favorite_song_id', 'left')
-		.where({
-			'people.name': 'Martin',
-			'songs.title': 'Yesterday'
-		})
-		.limit(5, 10)
-		.order_by('people.name asc')
-		.get('people', function(err, results, fields) {
-			console.log(results);
-		});
-
-Basic counting
-------------------------------------------------------
-
-	db
-		.where({
-			'people.name': 'Martin',
-			'songs.title': 'Yesterday'
-		})
-		.count('people', function(err, results, fields) {
-			console.log(results);
-		});
-
-SELECT query with custom fields and GROUP BY
---------------------------------------------
-
-	db
-		.select('name, COUNT(name) AS name_count')
-		.group_by('name')
-		.order_by('name_count DESC')
-		.get('people', function(err, results, fields) {
-			console.log(results);
-		});
-
-Basic UPDATE query
-------------------
-	
-	var newData = {
-		name: 'John',
-		email: 'john@doe.com'
-	};
-	
-	db
-		.where({ id: 1 });
-		.update('people', newData, function(err) {
-			if (!err) {
-				console.log('Updated!');
-			}
-		});
-
-Basic DELETE query
-------------------
-
-	db
-		.where({ id: 1 })
-		.delete('people', function(err) {
-			if (!err) {
-				console.log('Deleted!')
-			}
-		});
-
-
-Advanced WHERE conditions
--------------------------
-
-	db
-		.where("title not like '%Jackson%'")
-		.where("date_created > '2012-03-10'")
-		.where({ owner_id: 32 })
-		.delete('records', function(err) {
-			if (!err) {
-				console.log('Deleted!')
-			}
-		});
+```javascript
+// SELECT MAX(id) as `max_id`
+qb.select('MAX(id) as `max_id`',false);
+```
 
 Contribute
 ==========

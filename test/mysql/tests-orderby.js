@@ -1,6 +1,6 @@
 var should = require('chai').should();
 var expect = require('chai').expect;
-var QueryBuilder = require('../lib/query_builder.js');
+var QueryBuilder = require('../../drivers/mysql/query_builder.js');
 var qb = new QueryBuilder();
 
 describe('order_by()', function() {

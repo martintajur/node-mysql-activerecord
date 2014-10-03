@@ -4,7 +4,7 @@ This file is a manually maintained list of changes for each release. Feel free
 to add your changes here when sending pull requests. Also send corrections if
 you spot any mistakes.
 
-## v0.9.0 (2014-07-17)
+## v0.9.0 (2014-09-24)
 
 * Added this history file
 * Added the ability to do `SELECT DISTINCT` queries
@@ -27,4 +27,8 @@ you spot any mistakes.
 * New package dependencies (for testing): chai and mocha.
 * Tests have been written for better-ensuring future enhancements and fixes to not break functionality
 * Library has been broken into 3 objects to allow for prpoer testing. This won't affect the API and is fully-backwards compatible with the previous version.
-* Officially announcing that how third parameter of the `where()` method works is deprecated... starting with v1.0.0, third param will be `(bool) escape` and not `(bool) isRaw`. So, all calls to this method using the 3rd parameter will, in future, have to be changed by converting `true` to `false` and vice versa. This is so that we have a consistent API throughout.
+* Officially announcing that how third parameter of the `where()` method works is deprecated... starting with v1.0.0, third param will be `(bool) escape` and not `(bool) isRaw`. So, all calls to this method using the 3rd parameter will, in future, have to be changed by converting `true` to `false` and vice versa. This is so that we have a consistent API throughout the library.
+* Name officially changed to node-mysql-querybuilder.
+* Author officially changed to Kyle Farris due to the substantial changes to this fork and Martin Tajur demoted to primary contributor (thanks for the great starting place Martin!!)
+* Name of internal methods and properties have been normalized to use the "lower_case" syntax.
+* Dependency for node-mysql upgraded to 2.5.*.

@@ -1,9 +1,20 @@
 /**
- * MySQL ActiveRecord Adapter for Node.js
- * (C) Martin Tajur 2011-2013
- * martin@tajur.ee
+ * QueryBuilder for Node.js
+ * (C) Kyle Farris 2014
+ * kyle@chomponllc.com
  * 
- * Active Record Database Pattern implementation for use with node-mysql as MySQL connection driver.
+ * A generic Query Builder for any SQL or NOSQL database adapter. 
+ * 
+ * Current adapters:
+ * - MySQL
+ *
+ * Requested Adapters:
+ * - MSSQL
+ * - postgres
+ * - sqlite
+ * - sqlite3
+ * - oracle
+ * - mongo
  * 
  * Dual licensed under the MIT and GPL licenses.
  * 
@@ -27,10 +38,75 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  * 
 **/
-var Adapter = function(settings) {
-	var mysql = require('mysql');
+var QueryBuilder = function(settings,driver,type) {
 	
-	this.qb = require('./lib/query_builder.js').QueryBuilder();
+	this.settings = settings || {};
+	this.driver = driver || 'mysql';
+	this.connection_type = type || 'standard';
+	this.drivers = require('./drivers/drivers.json');
+	this.driver_version = 'default';
+	this.driver_info = null;
+	this.connection = null;
+	this.qb = null;
+	this.qe = null;
+	this.adapter = null;
+	
+	// ****************************************************************************
+	// Get information about the driver the user wants to use and modify QB object
+	// -----
+	// @param	Object	qb	The QueryBuilder object
+	// @return	Object		Modified QueryBuilder object
+	// ****************************************************************************
+	var get_driver_info = function(qb) {
+		// A driver must be specified
+		if (typeof driver !== 'string') {
+			throw new Error("No database driver specified!");
+		}
+		
+		qb.driver = driver.toLowerCase();
+		
+		// Verify that the driver is one we fundamentally support
+		if (Object.keys(qb.drivers).indexOf(qb.driver) === -1) {
+			throw new Error("Invalid driver specified!");
+		}
+		
+		// Determine version of driver to use
+		if (qb.settings.hasOwnProperty('version') && (typeof qb.settings.version).match(/^(string|number)$/i)) {
+			qb.driver_version = qb.settings.version;
+			delete qb.settings.version;
+		}
+		
+		// Retrieve info about driver if available, error if not
+		if (Object.keys(qb.drivers[qb.driver].versions).indexOf(qb.driver_version) !== -1) {
+			qb.driver_info = qb.drivers[qb.driver].versions[qb.driver_version];
+		} else {
+			throw new Error(qb.driver_version + " is not a version of the " + qb.driver + " driver that this library specifically supports. Try being more generic.");
+		}
+		
+		// Fail if specified driver is inactive
+		if (qb.driver_info.active === false) {
+			var err = (qb.driver_version == 'default' ? 'The default version' : "Version " + qb.driver_version) 
+					+ " of the " + qb.driver + " driver you are attempting to load is not currently available!";
+			throw new Error(err);
+		}
+	};
+	get_driver_info(this);
+	
+	// ****************************************************************************
+	// Try to load the driver's query builder library and modify QueryBuilder object
+	// -----
+	// @param	Object	qb	The QueryBuilder object
+	// @return	Object		Modified QueryBuilder object
+	// ****************************************************************************
+	var get_query_builder = function(qb) {
+		try {
+			qb.qb = require(qb.driver_info.path + 'query_builder.js').QueryBuilder();
+		} catch(e) {
+			throw new Error("Couldn't load the QueryBuilder library for " + qb.driver + ": " + e);
+		}
+		return qb;
+	};
+	get_query_builder(this);
 	
 	// Non-Public QueryBuilder APIs
 	this._where				= this.qb._where;
@@ -39,27 +115,26 @@ var Adapter = function(settings) {
 	this._min_max_avg_sum	= this.qb._min_max_avg_sum;
 	this._having			= this.qb._having;
 	this._update			= this.qb._update;
-	this.resetQuery			= this.qb.resetQuery;
+	this.reset_query		= this.qb.reset_query;
 	
 	// QueryBuilder Properties
-	this.whereArray			= this.qb.whereArray;
-	this.whereInArray		= this.qb.whereInArray;
-	this.fromArray			= this.qb.fromArray;
-	this.joinArray			= this.qb.joinArray;
-	this.selectArray		= this.qb.selectArray;
-	this.setArray			= this.qb.setArray;
-	this.orderByArray		= this.qb.orderByArray;
-	this.orderByDir			= this.qb.orderByDir;
-	this.groupByArray		= this.qb.groupByArray;
-	this.havingArray		= this.qb.havingArray;
-	this.limitTo			= this.qb.limitTo;
-	this.offsetVal			= this.qb.offsetVal;
-	this.joinClause			= this.qb.joinClause;
-	this.lastQueryString	= this.qb.lastQueryString;
-	this.distinctClause		= this.qb.distinctClause;
-	this.aliasedTables		= this.qb.aliasedTables;
+	this.where_array		= this.qb.where_array;
+	this.where_in_array		= this.qb.where_in_array;
+	this.from_array			= this.qb.from_array;
+	this.join_array			= this.qb.join_array;
+	this.select_array		= this.qb.select_array;
+	this.set_array			= this.qb.set_array;
+	this.order_by_array		= this.qb.order_by_array;
+	this.group_by_array		= this.qb.group_by_array;
+	this.having_array		= this.qb.having_array;
+	this.limit_to			= this.qb.limit_to;
+	this.offset_val			= this.qb.offset_val;
+	this.join_clause		= this.qb.join_clause;
+	this.last_query_string	= this.qb.last_query_string;
+	this.distinct_clause	= this.qb.distinct_clause;
+	this.aliased_tables		= this.qb.aliased_tables;
 	
-	// QueryBuilder method mappings for backwards compatibility
+	// QueryBuilder method mappings
 	this.where 			 	= this.qb.where;
 	this.or_where 		 	= this.qb.or_where;
 	this.where_in 		 	= this.qb.where_in;
@@ -89,290 +164,89 @@ var Adapter = function(settings) {
 	this.get_compiled_insert = this.qb.get_compiled_insert;
 	this.get_compiled_update = this.qb.get_compiled_update;
 	this.get_compiled_delete = this.qb.get_compiled_delete;
-	this._last_query 	 	= this.qb._last_query;
 	this.last_query 	 	= this.qb._last_query;
 	
-	// QueryBuilder "Query Execution" methods:
-	this.count = function(table, callback) {
-		var sql = this.qb.count(table);
-		
-		connection.query(sql, function(err, res) { 
-			if (err)
-				callback(err, null);
-			else
-				callback(null, res[0]['count']);
-		});
-		
-		return that;
-	};
-	
-	this.get = function(table,callback) {
-		// The table parameter is optional, it could be the callback...
-		if (typeof table === 'function' && typeof callback !== 'function') {
-			callback = table;
+	// ****************************************************************************
+	// Determine the type of connection (single, pool, cluster, etc...)
+	// -----
+	// @param	Object	qb	The QueryBuilder object
+	// @return	Object		Modified QueryBuilder object
+	// ****************************************************************************
+	var get_connection_type = function(qb) {
+		if (Object.keys(qb.drivers[qb.driver].connection_types).indexOf(qb.connection_type) === -1) {
+			throw new Error("You have specified a invalid database connection method.");
 		}
-		else if (typeof table === 'undefined' && typeof callback !== 'function') {
-			throw new Error("No callback function has been provided in your 'get' call!");
+		if (qb.drivers[qb.driver].connection_types[qb.connection_type] !== true) {
+			throw new Error("You cannot connect to a " + qb.driver + " database using the " + qb.connection_type + " connection type using this library.");
 		}
-	
-		var sql = this.qb.get(table,callback);
-		this.resetQuery(sql);
-		connection.query(sql, callback);
-		return that;
-	};
-	
-	this.get_where = function(table,where,callback) {
-		var sql = this.qb.get_where(table,where);
-		this.resetQuery(sql);
-		connection.query(sql, callback);
-		return that;
-	};
-	
-	this.insert	= function(table,set,callback,verb,suffix) {
-		var sql = this.qb.insert(table,set,callback,verb,suffix);
-		this.resetQuery(sql);
-		connection.query(sql);
-		return that;
-	};
-	
-	this.insert_ignore 	= function(table,set,callback) {
-		var sql = this.qb.insert_ignore(table,set,callback);
-		this.resetQuery(sql);
-		connection.query(sql, callback);
-		return that;
-	};
-	
-	this.insert_batch = function(table,set,callback) {
-		var sql = this.qb.insert_batch(table,set,callback);
-		this.resetQuery(sql);
-		connection.query(sql, callback);
-		return that;
-	};
-	
-	this.update = function(table,set,where,callback) {
-		// The where parameter is optional, it could be the callback...
-		if (typeof where === 'function' && typeof callback !== 'function') {
-			callback = where;
-		}
-		else if (typeof where === 'undefined' && typeof callback !== 'function') {
-			throw new Error("No callback function has been provided in your 'update' call!");
-		}
-		
-		var sql = this.qb.update(table,set,where,callback);
-		this.resetQuery(sql);
-		connection.query(sql, callback);
-		return that;
-	};
-	
-	this.update_batch = function() {
-		
-		return that;
-	};
-	
-	this.delete = function(table, where, callback) {
-		if (typeof where === 'function' && typeof callback !== 'function') {
-			callback = where;
-			where = undefined;
-		}
-		
-		if (typeof table === 'function' && typeof callback !== 'function') {
-			callback = table;
-			table = undefined;
-			where = undefined;
-		}
-		
-		if (typeof callback !== 'function') {
-			throw new Error("delete(): No callback function has been provided!");
-		}
-		
-		var sql = this.delete(table, where);
-		
-		this.resetQuery(sql);
-		connection.query(sql, callback);
-		return that;
-	};
-	
-	this.empty_table - function(table, callback) {
-		var sql = this.qb.empty_table(table,callback);
-		this.resetQuery(sql);
-		connection.query(sql);
-		return that;
-	});
-	
-	this.truncate - function(table, callback) {
-		var sql = this.qb.truncate(table,callback);
-		this.resetQuery(sql);
-		connection.query(sql);
-		return that;
-	});
-
-	var initializeConnectionSettings = function () {
-		if(settings.server) {
-			settings.host = settings.server;
-		}
-		if(settings.username) {
-			settings.user = settings.username;
-		}
-
-		if (!settings.host) {
-			throw new Error('Unable to start ActiveRecord - no server given.');
-		}
-		if (!settings.port) {
-			settings.port = 3306;
-		}
-		if (!settings.user) {
-			settings.user = '';
-		}
-		if (!settings.password) {
-			settings.password = '';
-		}
-		if (!settings.database) {
-			throw new Error('Unable to start ActiveRecord - no database given.');
-		}
-
-		return settings;
-	};
-
-	var connection;
-	var connectionSettings;
-	var pool;
-
-	if (settings && settings.pool) {
-		pool = settings.pool.pool;
-		connection = settings.pool.connection;
-	} else {
-		connectionSettings = initializeConnectionSettings();
-		connection = new mysql.createConnection(connectionSettings);
+		return qb;
 	}
+	get_connection_type(this);
 	
-	if (settings.charset) {
-		connection.query('SET NAMES ' + settings.charset);
-	}
-	
-	this.connectionSettings = function() { return connectionSettings; };
-	this.connection = function() { return connection; };
-	
-	this.query = function(sqlQueryString, responseCallback) {
-		connection.query(sqlQueryString, responseCallback);
-		this.resetQuery(sqlQueryString);
-		return that;
-	};
-	
-	this.disconnect = function() {
-		return connection.end();
-	};
-
-	this.forceDisconnect = function() {
-		return connection.destroy();
-	};
-	
-	this.releaseConnection = function() {
-		pool.releaseConnection(connection);
-	};
-
-	this.releaseConnection = function() {
-		pool.releaseConnection(connection);
-	};
-	
-	this.ping = function() {
-		connection.ping();
-		return that;
-	};
-	
-	this.escape = function(str) {
-		return connection.escape(str);
-	};
-
-	var reconnectingTimeout = false;
-
-	function handleDisconnect(connectionInstance) {
-		connectionInstance.on('error', function(err) {
-			if (!err.fatal || reconnectingTimeout) {
-				return;
-			}
-
-			if (err.code !== 'PROTOCOL_CONNECTION_LOST' && err.code !== 'ECONNREFUSED') {
-				throw err;
-			}
-
-			var reconnectingTimeout = setTimeout(function() {
-				connection = mysql.createConnection(connectionInstance.config);
-				handleDisconnect(connection);
-				connection.connect();
-			}, 2000);
+	// ****************************************************************************
+	// Try to create a connection to the database using the driver's connection library
+	// -----
+	// @param	Object	qb	The QueryBuilder object
+	// @return	Object		Modified QueryBuilder object
+	// ****************************************************************************
+	var get_adapter = function(qb) {
+		try {
+			qb.adapter = require(qb.driver_info.path + 'connect.js').Adapter(qb.settings);
+		} catch(e) {
+			throw new Error("Could not connect to database: " + e);
+		}
+		
+		if (!qb.adapter.hasOwnProperty(qb.connection_type)) {
+			throw new Error('"' + qb.connection_type + '" is an invalid connection type for ' + qb.driver + '!');
+		}
+		
+		// Create connection
+		qb.adapter[qb.connection_type]();
+		qb.adapter.get_connection(function(connection) {
+			this.connection = connection;
+			return qb;
 		});
 	}
-
-	if (!pool) {
-		handleDisconnect(connection);
-	}
-
-	var that = this;
+	get_adapter(this);
 	
+	this.disconnect = this.adapter.disconnect;
+	this.destroy = this.adapter.destroy;
+	this.escape = this.adapter.escape;
+	this.get_connection_id = this.adapter.get_connection_id;
+	this.query = this.adapter.query;
+	
+	// ****************************************************************************
+	// Get the the driver's QueryExec object so that queries can actually be
+	// executed by this library.
+	// -----
+	// @param	Object	qb	The QueryBuilder object
+	// @return	Object		Modified QueryBuilder object
+	// ****************************************************************************
+	var get_query_exec = function(qb) {
+		try {
+			qb.qe = require(qb.driver_info.path + 'query_exec.js').QueryExec(qb.qb, qb.adapter);
+		} catch(e) {
+			throw new Error("Couldn't load the QueryExec library for " + qb.driver + ": " + e);
+		}
+		return qb;
+	};
+	get_query_exec(this);
+	
+	// QueryExecute method mappings:
+	this.count 			= this.qe.count;
+	this.get 			= this.qe.get;
+	this.get_where 		= this.qe.get_where;
+	this.insert			= this.qe.insert;
+	this.insert_ignore 	= this.qe.insert_ignore;
+	this.insert_batch 	= this.qe.insert_batch;
+	this.update 		= this.qe.insert_batch;
+	this.update_batch 	= this.qe.update_batch;
+	this.delete 		= this.qe.delete;
+	this.empty_table	= this.qe.empty_table;
+	this.truncate		= this.qe.truncate; 
+	
+	var that = this;	
 	return this;
 };
 
-var mysqlPool; // this should be initialized only once.
-var mysqlCharset;
-
-var Pool = function (settings) {
-	if (!mysqlPool) {
-		var mysql = require('mysql');
-
-		var poolOption = {
-			createConnection: settings.createConnection,
-			waitForConnections: settings.waitForConnections,
-			connectionLimit: settings.connectionLimit,
-			queueLimit: settings.queueLimit
-		};
-		Object.keys(poolOption).forEach(function (element) {
-			// Avoid pool option being used by mysql connection.
-			delete settings[element];
-			// Also remove undefined elements from poolOption
-			if (!poolOption[element]) {
-				delete poolOption[element];
-			}
-		});
-
-		// Confirm settings with Adapter.
-		var db = new Adapter(settings);
-		var connectionSettings = db.connectionSettings();
-
-		Object.keys(connectionSettings).forEach(function (element) {
-			poolOption[element] = connectionSettings[element];
-		});
-
-		mysqlPool = mysql.createPool(poolOption);
-		mysqlCharset = settings.charset;
-	}
-
-	this.pool = function () {
-		return mysqlPool;
-	};
-
-	this.getNewAdapter = function (responseCallback) {
-		mysqlPool.getConnection(function (err, connection) {
-			if (err) {
-				throw err;
-			}
-			var adapter = new Adapter({
-				pool: {
-					pool: mysqlPool,
-					enabled: true,
-					connection: connection
-				},
-				charset: mysqlCharset
-			});
-			responseCallback(adapter);
-		});
-	};
-
-	this.disconnect = function (responseCallback) {
-		this.pool().end(responseCallback);
-        };
-
-	return this;
-};
-
-exports.Adapter = Adapter;
-exports.Pool = Pool;
+exports.QueryBuilder = QueryBuilder;

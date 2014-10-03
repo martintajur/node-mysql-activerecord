@@ -1,0 +1,69 @@
+{
+	"mysql": {
+		"connection_types": { "standard": true, "pool": true, "cluster": true },
+		"versions": {
+			"default": {
+				"path": "./drivers/mysql/",
+				"active": true
+			},
+			"6": {
+				"path": "./drivers/mysql/6/",
+				"active": false
+			}
+		}
+	},
+	"mssql": {
+		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"versions": {
+			"default": {
+				"path": "./drivers/mssql/",
+				"active": false
+			}
+		}
+	},
+	"oracle": {
+		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"versions": {
+			"default": {
+				"path": "./drivers/mssql/",
+				"active": false
+			}
+		}
+	},
+	"postgres": {
+		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"versions": {
+			"default": {
+				"path": "./drivers/postgres/",
+				"active": false
+			}
+		}
+	},
+	"sqlite": {
+		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"versions": {
+			"default": {
+				"path": "./drivers/sqlite/",
+				"active": false
+			}
+		}
+	},
+	"sqlite3": {
+		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"versions": {
+			"default": {
+				"path": "./drivers/sqlite3/",
+				"active": false
+			}
+		}
+	},
+	"mongo": {
+		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"versions": {
+			"default": {
+				"path": "./drivers/mongo/",
+				"active": false
+			}
+		}
+	}
+}

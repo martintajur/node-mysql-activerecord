@@ -86,6 +86,11 @@ var QueryBuilder = function() {
 		return key_array;
 	}
 	
+	// Simply setting all properties to [] causes reference issues in the parent class.
+	var clear_array = function(a) {
+		while (a.length) { a.pop(); }
+	};
+	
 	// ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
 	var track_aliases = function(qb,table) {
 		if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
@@ -258,7 +263,7 @@ var QueryBuilder = function() {
 		if(qb.hasOwnProperty('escape')) {
 			var do_escape = qb.escape;
 		} else {
-			var SqlString = require('../node_modules/mysql/lib/protocol/SqlString.js');
+			var SqlString = require('../../node_modules/mysql/lib/protocol/SqlString.js');
 			var do_escape = SqlString.escape;
 		}
 	
@@ -326,10 +331,6 @@ var QueryBuilder = function() {
 		var sql = ' ORDER BY ';
 		sql += qb.order_by_array.join(', ');
 		
-		if (qb.order_by_dir !== false) {
-			sql += (qb.order_by_dir == 'desc' ? ' DESC' : ' ASC');
-		}
-		
 		return sql;
 	};
 
@@ -348,7 +349,8 @@ var QueryBuilder = function() {
 	};
 
 	var compile_select = function(qb) {
-		var sql = 'SELECT ' + qb.distinct_clause;
+		var distinct_clause = qb.distinct_clause[0] || '';
+		var sql = 'SELECT ' + distinct_clause;
 		if (qb.select_array.length === 0) {
 			sql += '*';
 		} else {
@@ -362,7 +364,10 @@ var QueryBuilder = function() {
 			+ build_having_clause(qb)
 			+ build_order_by_clause(qb);
 		
-		sql = build_limit_clause(sql,qb.limit_to,qb.offset_val);
+		var limit_to = qb.limit_to[0] || false;
+		var offset_val = qb.offset_val[0] || false;
+		
+		sql = build_limit_clause(sql,limit_to,offset_val);
 		return sql;
 	};
 	
@@ -372,8 +377,11 @@ var QueryBuilder = function() {
 			return this;
 		}
 		
+		var limit_to = qb.limit_to[0] || false;
+		var offset_val = qb.offset_val[0] || false;
+		
 		var sql = 'DELETE' + build_from_clause(qb) + build_where_clause(qb);
-		return build_limit_clause(sql,qb.limit_to,qb.offset_val);
+		return build_limit_clause(sql,limit_to,offset_val);
 	};
 	
 	var compile_update = function(qb) {		
@@ -388,7 +396,10 @@ var QueryBuilder = function() {
 			throw new Error("You haven't provided any tables to build UPDATE query with!");
 			return '';
 		}
-		var limit = (!qb.limit_to ? '' : ' LIMIT ' + qb.limit_to);
+		
+		var limit_to = qb.limit_to[0] || false;
+		
+		var limit = (!limit_to ? '' : ' LIMIT ' + limit_to);
 		sql = 'UPDATE ' + table + " SET " + valstr.join(', ');
 		sql += build_where_clause(qb);
 		sql += build_order_by_clause(qb);
@@ -406,33 +417,35 @@ var QueryBuilder = function() {
 		select_array: [],
 		set_array: [],
 		order_by_array: [],
-		order_by_dir: false,
 		group_by_array: [],
 		having_array: [],
-		limit_to: false,
-		offset_val: false,
+		limit_to: [], 			// has to be array to work as reference
+		offset_val: [], 		// has to be array to work as reference
 		join_clause: [],
-		last_query_string: '',
-		distinct_clause: '',
+		last_query_string: [],	// has to be array to work as reference
+		distinct_clause: [],	// has to be array to work as reference
 		aliased_tables: [],
 		
 		reset_query: function(new_last_query) {
-			this.where_array = [];
-			this.where_in_array = [];
-			this.from_array = [];
-			this.join_array = [];
-			this.select_array = [];
-			this.set_array = [];
-			this.order_by_array = [];
-			this.order_by_dir = false;
-			this.group_by_array = [];
-			this.having_array = [];
-			this.limit_to = false;
-			this.offset_val = false;
-			this.join_clause = [];
-			this.distinct_clause = '';
-			this.last_query_string = (typeof new_last_query === 'string' ? new_last_query : '');
-			this.aliased_tables = [];
+			clear_array(this.where_array);
+			clear_array(this.where_in_array);
+			clear_array(this.from_array);
+			clear_array(this.join_array);
+			clear_array(this.select_array);
+			clear_array(this.set_array);
+			clear_array(this.order_by_array);
+			clear_array(this.group_by_array);
+			clear_array(this.having_array);
+			clear_array(this.limit_to);
+			clear_array(this.offset_val);
+			clear_array(this.join_clause);
+			clear_array(this.distinct_clause);
+			clear_array(this.aliased_tables);
+			
+			clear_array(this.last_query_string);
+			if (typeof new_last_query === 'string') {
+				this.last_query_string.push(new_last_query);
+			}
 		},
 		
 		where: function(key, value, escape) {
@@ -570,7 +583,7 @@ var QueryBuilder = function() {
 			this.where_array.push(where_in);
 
 			// reset the array for multiple calls
-			this.where_in_array = [];
+			clear_array(this.where_in_array);
 			return this;
 		},
 		
@@ -769,7 +782,7 @@ var QueryBuilder = function() {
 		},
 		
 		select: function(select,escape) {
-			// First param must be a non-empty string or object
+			// First param must be a non-empty string or array
 			if (typeof select === 'string') {
 				select = select.trim();
 				if (select.length == 0) {
@@ -870,10 +883,11 @@ var QueryBuilder = function() {
 			do_distinct = (typeof do_distinct !== 'boolean' ? true : do_distinct);
 			
 			if (do_distinct) {
-				this.distinct_clause = 'DISTINCT ';
+				clear_array(this.distinct_clause);
+				this.distinct_clause.push('DISTINCT ');
 			}
 			else {
-				this.distinct_clause = '';
+				clear_array(this.distinct_clause);
 			}
 			return this;
 		},
@@ -1045,7 +1059,8 @@ var QueryBuilder = function() {
 		},
 		
 		limit: function(limit, offset) {
-			this.limit_to = prepare_for_limit_and_offset(limit,'limit');
+			clear_array(this.limit_to);
+			this.limit_to.push(prepare_for_limit_and_offset(limit,'limit'));
 			
 			if (offset !== undefined) {
 				return this.offset(offset);
@@ -1055,7 +1070,8 @@ var QueryBuilder = function() {
 		},
 		
 		offset: function(offset) {
-			this.offset_val = prepare_for_limit_and_offset(offset,'offset');
+			clear_array(this.limit_to);
+			this.offset_val.push(prepare_for_limit_and_offset(offset,'offset'));
 			return this;
 		},
 		
@@ -1140,7 +1156,7 @@ var QueryBuilder = function() {
 				}
 				table = this.from_array[0];
 			} else {
-				this.from_array = [];
+				clear_array(this.from_array);
 				this.from(table);
 			}
 			
@@ -1169,7 +1185,7 @@ var QueryBuilder = function() {
 
 				table = this.from_array[0];
 			} else {
-				this.from_array = [];
+				clear_array(this.from_array);
 				this.from(table);
 			}
 			
@@ -1219,7 +1235,7 @@ var QueryBuilder = function() {
 			return verb + 'INTO ' + this.from_array[0] + ' (' + columns.join(', ') + ') VALUES ' + map.join(', ') + suffix;
 		},
 
-		get: function(table, callback) {
+		get: function(table) {
 			if (typeof table !== 'function') {
 				track_aliases(this,table);
 				this.from(table);
@@ -1250,19 +1266,8 @@ var QueryBuilder = function() {
 			return compile_select(this);
 		},
 		
-		update: function(table, set, where, callback) {
+		update: function(table, set, where) {
 			set = set || null;
-			
-			// The where parameter is optional, it could be the callback...
-			if (typeof where === 'function' && typeof callback !== 'function') {
-				callback = where;
-			}
-			else if (typeof where === 'undefined' && typeof callback !== 'function') {
-				throw new Error("No callback function has been provided in your update call!");
-			}
-			else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && where.length == 0)) {
-				where = null;
-			}
 			
 			if (set !== null) {
 				this.set(set);
@@ -1279,7 +1284,7 @@ var QueryBuilder = function() {
 
 				table = this.from_array[0];
 			} else {
-				this.from_array = [];
+				clear_array(this.from_array);
 				this.from(table);
 				
 				table = this.from_array[0];
@@ -1347,9 +1352,9 @@ var QueryBuilder = function() {
 		},
 		
 		_last_query: function() {
-			return this.last_query_string;
+			return this.last_query_string[0] || '';
 		}
 	}
 };
 
-module.exports = QueryBuilder;
+exports.QueryBuilder = QueryBuilder;
