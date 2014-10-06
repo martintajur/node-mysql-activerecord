@@ -177,29 +177,31 @@ API Methods
 SQL Commands
 -------------
 
-| SQL Command		| API Method						| Notes 						|
-| :------------		| :----------------					| :---- 						|
-| SELECT			| [select()](#select)				|								|
-| DISTINCT 			| [distinct()](#distinct)			|								|
-| MIN 				| [select_min()](#select_min)		|								|
-| MAX 				| [select_max()](#select_max)		|								|
-| AVG 				| [select_avg()](#select_avg)		|								|
-| SUM 				| [select_sum()](#select_sum)		|								|
-| FROM 				| [from()](#from)					|								|
-| JOIN				| [join()](#join)					|								|
-| WHERE 			| [where()](#where)					|								|
-| IN 				| [where_in()](#where_in)			|								|
-| GROUP BY			| [group_by()](#group_by)			|								|
-| HAVING			| [having()](#having)				|								|
-| ORDER BY			| [order_by()](#order_by)			|								|
-| LIMIT				| [limit()](#limit)					|								|
-| OFFSET			| [offset()](#offset)				|								|
-| COUNT				| [count()](#count)					|								|
-| SET				| [set()](#set)						|								|
-| UPDATE 			| [update()](#update)				|								|
-| INSERT 			| [insert()](#insert)				| single-row and multi-row		|
-| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	|								|
-| DELETE			| [delete()](#delete)				|								|
+***NOTE:*** This table is subject to change
+
+| SQL Command		| API Method						| MySQL | MSSQL | Oracle | SQLite | Postgres | Mongo |
+| :------------		| :----------------					| :---: | :---: | :----: | :-----:| :------: | :---: |
+| SELECT			| [select()](#select)				| x		| x		| x		 | x	  |	x		 |		 |
+| DISTINCT 			| [distinct()](#distinct)			| x		| x		| x		 |		  |	x		 |		 |
+| MIN 				| [select_min()](#min)				| x		| x		| x		 |		  |	x		 |		 |
+| MAX 				| [select_max()](#max)				| x		| x		| x		 |		  |	x		 |		 |
+| AVG 				| [select_avg()](#avg)				| x		| x		| x		 |		  |	x		 |		 |
+| SUM 				| [select_sum()](#sum)				| x		| x		| x		 |		  |	x		 |		 |
+| FROM 				| [from()](#from)					| x		| x		| x		 | x	  |	x		 |		 |
+| JOIN				| [join()](#join)					| x		| x		| x		 |		  |	x		 |		 |
+| WHERE 			| [where()](#where)					| x		| x		| x		 | x	  |	x		 |		 |
+| IN 				| [where_in()](#where_in)			| x		| x		| x		 | x	  |	x		 |		 |
+| GROUP BY			| [group_by()](#group_by)			| x		| x		| x		 | x	  |	x		 |		 |
+| HAVING			| [having()](#having)				| x		| x		| x		 | x	  |	x		 |		 |
+| ORDER BY			| [order_by()](#order_by)			| x		| x		| x		 | x	  |	x		 |		 |
+| LIMIT				| [limit()](#limit)					| x		| x		| x		 | x	  |	x		 |		 |
+| OFFSET			| [offset()](#offset)				| x		| x		| x		 | x	  |	x		 |		 |
+| COUNT				| [count()](#count)					| x		| x		| x		 | x	  |	x		 |		 |
+| SET				| [set()](#set)						| x		| x		| x		 | x	  |	x		 |		 |
+| UPDATE 			| [update()](#update)				| x		| x		| x		 | x	  |	x		 |		 |
+| INSERT 			| [insert()](#insert)				| x		| x 	| x 	 | x	  | x		 | 	 	 |
+| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	| x		| x		| x		 |		  |	x		 |		 |
+| DELETE			| [delete()](#delete)				| x		| x		| x		 | x	  |	x		 |		 |
 
 Library-Specific Methods
 ------------------------
