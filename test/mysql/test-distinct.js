@@ -1,7 +1,6 @@
 var should = require('chai').should();
 var expect = require('chai').expect;
-var QueryBuilder = require('../../drivers/mysql/query_builder.js');
-var qb = new QueryBuilder();
+var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('distinct()', function() {
 	it('should exist', function() {
@@ -13,6 +12,6 @@ describe('distinct()', function() {
 	it('should override the default distinct_clause with the "DISTINCT " keyword', function() {
 		qb.reset_query();
 		qb.distinct();
-		qb.distinct_clause.should.eql('DISTINCT ');
+		qb.distinct_clause.should.eql(['DISTINCT ']);
 	});
 });

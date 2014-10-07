@@ -55,10 +55,10 @@ var QueryBuilder = function() {
 	var extract_having_parts = function(key,key_array) {
 		var m;
 		key = key.trim().replace(/\s+/g,' ');
-		var str_condition  = /^([^\s]+\s(<|>|<=|>=|<>|=|!=))+\s"([^"]+)"$/;  //"// had to do this for syntax highlighting
-		var sstr_condition = /^([^\s]+\s(<|>|<=|>=|<>|=|!=))+\s'([^']+)'$/;  //'// had to do this for syntax highlighting
-		var num_condition  = /^([^\s]+\s(<|>|<=|>=|<>|=|!=))+\s((?=.)([+-]?([0-9]*)(\.([0-9]+))?))$/;
-		var bool_condition = /^([^\s]+\s(<|>|<=|>=|<>|=|!=))+\s((true|false)+)$/;
+		var str_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s"([^"]+)"$/;  //"// had to do this for syntax highlighting
+		var sstr_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s'([^']+)'$/;  //'// had to do this for syntax highlighting
+		var num_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((?=.)([+-]?([0-9]*)(\.([0-9]+))?))$/;
+		var bool_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((true|false)+)$/;
 		
 		if (m = str_condition.exec(key)) {
 			key_array[m[1]] = m[3];
@@ -87,8 +87,27 @@ var QueryBuilder = function() {
 	}
 	
 	// Simply setting all properties to [] causes reference issues in the parent class.
-	var clear_array = function(a) {
-		while (a.length) { a.pop(); }
+	var clear_array = function(a,debug) {
+		if (debug === true) {
+			console.log("DEBUG before (" + Object.prototype.toString.call(a) + "):");
+			console.dir(a);
+		}
+		if (Object.prototype.toString.call(a) === Object.prototype.toString.call({})) {
+			for (var key in a) {
+				if (a.hasOwnProperty(key)) {
+					delete a[key];
+				}
+			}
+		}
+		else if (Object.prototype.toString.call(a) === Object.prototype.toString.call([])) {
+			while (a.length > 0) {
+				a.pop();
+			}
+		}
+		if (debug === true) {
+			console.log("DEBUG after (" + Object.prototype.toString.call(a) + "):");
+			console.dir(a);
+		}
 	};
 	
 	// ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
@@ -415,7 +434,7 @@ var QueryBuilder = function() {
 		from_array: [],
 		join_array: [],
 		select_array: [],
-		set_array: [],
+		set_array: {},
 		order_by_array: [],
 		group_by_array: [],
 		having_array: [],
@@ -426,8 +445,8 @@ var QueryBuilder = function() {
 		distinct_clause: [],	// has to be array to work as reference
 		aliased_tables: [],
 		
-		reset_query: function(new_last_query) {
-			clear_array(this.where_array);
+		reset_query: function(new_last_query,debug) {
+			clear_array(this.where_array,debug);
 			clear_array(this.where_in_array);
 			clear_array(this.from_array);
 			clear_array(this.join_array);
@@ -462,11 +481,10 @@ var QueryBuilder = function() {
 			return this._where(key, value, 'AND ', escape);
 		},
 		
-		or_where: function(key, value, isRaw) {
-			isRaw = (typeof isRaw === 'boolean' ? isRaw : false);
+		or_where: function(key, value, escape) {
+			escape = (typeof escape === 'boolean' ? escape : true);
 			value = value || null;
 			
-			var escape = (isRaw ? false : true);
 			if (typeof key === 'string' && typeof value === 'object' && Object.prototype.toString.call(value) === Object.prototype.toString.call([]) && value.length > 0) {
 				return this._where_in(key, value, false, 'OR ');
 			}
@@ -478,14 +496,46 @@ var QueryBuilder = function() {
 			type = type || 'AND ';
 			escape = (typeof escape === 'boolean' ? escape : true);
 			
+			// Must be an object or a string
 			if (Object.prototype.toString.call(key) !== Object.prototype.toString.call({})) {
+				// If it's not an object, it must be a string
 				if (typeof key !== 'string') {
 					throw new Error("where(): If first parameter is not an object, it must be a string. " + typeof key + " provided.");
 				} else {
+					// If it is a string, it can't be an empty one
 					if (key.length == 0) {
-						throw new Error("where(): Invalid field name provided.");
+						throw new Error("where(): No field name or query provided!");
 					}
 				}
+				
+				// If it's a actual where clause string (with no paranthesis), 
+				// not just a field name, split it into individual parts to escape it properly
+				if (key.match(/(<=|>=|<>|>|<|!=|=)/) && key.indexOf('(') === -1 && escape === true) {
+					var filters = key.split(/\s+(AND|OR)\s+/i);
+					if (filters.length > 1) {
+						var that = this;
+						var parse_statement = function(statement,joiner) {
+							var parsed = statement.match(/^([^<>=!]+)(<=|>=|<>|>|<|!=|=)(.*)$/);
+							if (parsed.length >= 4) {
+								var key = parsed[1].trim() + (parsed[2].trim() !== '=' ? ' ' + parsed[2].trim() : '');
+								var value = parsed[3].trim().replace(/^((?:'|"){1})(.*)/, "$2").replace(/'$/,'');
+								if (joiner === null || joiner.match(/AND/i)) {
+									that.where(key, value, true); 
+								} else {
+									that.or_where(key, value, true);
+								}
+							}
+						};
+						parse_statement(filters.shift(),null);
+						while (filters.length > 0) {
+							var joiner = filters.shift();
+							var statement = filters.shift();
+							parse_statement(statement, joiner);
+						}
+						return this;
+					}
+				}
+				
 				var key_array = {};
 				key_array[key] = value;
 				key = key_array;
@@ -1070,7 +1120,7 @@ var QueryBuilder = function() {
 		},
 		
 		offset: function(offset) {
-			clear_array(this.limit_to);
+			clear_array(this.offset_val);
 			this.offset_val.push(prepare_for_limit_and_offset(offset,'offset'));
 			return this;
 		},

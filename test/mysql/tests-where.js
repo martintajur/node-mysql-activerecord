@@ -1,7 +1,6 @@
 var should = require('chai').should();
 var expect = require('chai').expect;
-var QueryBuilder = require('../../drivers/mysql/query_builder.js');
-var qb = new QueryBuilder();
+var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('where()', function() {
 	it('should exist', function() {
@@ -130,6 +129,11 @@ describe('where()', function() {
 		qb.reset_query();
 		qb.where({star_system:'Solar',planet:['Earth','Mars']},false);
 		qb.where_array.should.eql(["star_system = 'Solar'", "AND planet IN ('Earth', 'Mars')"]);
+	});
+	it("should split out and escape custom WHERE strings when that is the only thing provided (except when string containing parenthesis)", function() {
+		qb.reset_query();
+		qb.where("planet_id = 3 AND galaxy_id > 21645 OR planet = 'Earth'");
+		qb.where_array.should.eql(['`planet_id` = 3', 'AND `galaxy_id` > 21645', "OR `planet` = 'Earth'"]);
 	});
 	it("should not try to escape where clauses utilizing functions or subqueries when provided as a string in the first and only parameter", function() {
 		qb.reset_query();

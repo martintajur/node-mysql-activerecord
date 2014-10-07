@@ -1,7 +1,6 @@
 var should = require('chai').should();
 var expect = require('chai').expect;
-var QueryBuilder = require('../../drivers/mysql/query_builder.js');
-var qb = new QueryBuilder();
+var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('offset()', function() {
 	it('should exist', function() {
@@ -14,7 +13,7 @@ describe('offset()', function() {
 		qb.should.have.property('offset_val');
 	});
 	it('should have an empty array to put fields into at the beginning', function() {
-		qb.offset_val.should.be.false;
+		qb.offset_val.should.be.empty;
 	});
 	it('should require an integer (or integer in string form) in first parameter', function() {
 		qb.reset_query();
@@ -36,25 +35,25 @@ describe('offset()', function() {
 	it('should override the default offset_val value when a offset is provided', function() {
 		qb.reset_query();
 		qb.offset(10);
-		qb.offset_val.should.eql(10);
+		qb.offset_val.should.eql([10]);
 	});
 	it('should trim string values that are provided', function() {
 		qb.reset_query();
 		qb.offset('10      ');
 		qb.offset('      10');
 		qb.offset('   10   ');
-		qb.offset_val.should.eql(10);
+		qb.offset_val.should.eql([10]);
 	});
 	it('should override values set by any previous calls to itself', function() {
 		qb.reset_query();
 		qb.offset(10);
-		qb.offset_val.should.eql(10);
+		qb.offset_val.should.eql([10]);
 		qb.offset(20);
-		qb.offset_val.should.eql(20);
+		qb.offset_val.should.eql([20]);
 	});
 	it('should be chainable whereby the last call to the method will contain the value used', function() {
 		qb.reset_query();
 		qb.offset(10).offset(20).offset(100);
-		qb.offset_val.should.eql(100);
+		qb.offset_val.should.eql([100]);
 	});
 });

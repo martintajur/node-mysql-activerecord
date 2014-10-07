@@ -18,6 +18,7 @@ The primary benefits of this module (currently) are:
  * Allows you to drop down to the native methods of your driver if you choose
  * Allows for different drivers for different versions (SQLite 2 vs SQLite 3)
  * The order in which you call the methods is irrelevant except for the execution methods (get, insert, update, delete) which must be called last.
+ * Can used as a learning tool/Rosetta stone
  
 Database Drivers 
 =================
@@ -174,54 +175,56 @@ var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 API Methods
 ===============================
 
+***NOTE:*** The compatibility portions of these tables are subject to change as features and drivers are written!
+
 SQL Commands
 -------------
 
-***NOTE:*** This table is subject to change
-
 | SQL Command		| API Method						| MySQL | MSSQL | Oracle | SQLite | Postgres | Mongo |
 | :------------		| :----------------					| :---: | :---: | :----: | :-----:| :------: | :---: |
-| SELECT			| [select()](#select)				| x		| x		| x		 | x	  |	x		 |		 |
-| DISTINCT 			| [distinct()](#distinct)			| x		| x		| x		 |		  |	x		 |		 |
-| MIN 				| [select_min()](#min)				| x		| x		| x		 |		  |	x		 |		 |
-| MAX 				| [select_max()](#max)				| x		| x		| x		 |		  |	x		 |		 |
-| AVG 				| [select_avg()](#avg)				| x		| x		| x		 |		  |	x		 |		 |
-| SUM 				| [select_sum()](#sum)				| x		| x		| x		 |		  |	x		 |		 |
-| FROM 				| [from()](#from)					| x		| x		| x		 | x	  |	x		 |		 |
-| JOIN				| [join()](#join)					| x		| x		| x		 |		  |	x		 |		 |
-| WHERE 			| [where()](#where)					| x		| x		| x		 | x	  |	x		 |		 |
-| IN 				| [where_in()](#where_in)			| x		| x		| x		 | x	  |	x		 |		 |
-| GROUP BY			| [group_by()](#group_by)			| x		| x		| x		 | x	  |	x		 |		 |
-| HAVING			| [having()](#having)				| x		| x		| x		 | x	  |	x		 |		 |
-| ORDER BY			| [order_by()](#order_by)			| x		| x		| x		 | x	  |	x		 |		 |
-| LIMIT				| [limit()](#limit)					| x		| x		| x		 | x	  |	x		 |		 |
-| OFFSET			| [offset()](#offset)				| x		| x		| x		 | x	  |	x		 |		 |
-| COUNT				| [count()](#count)					| x		| x		| x		 | x	  |	x		 |		 |
-| SET				| [set()](#set)						| x		| x		| x		 | x	  |	x		 |		 |
-| UPDATE 			| [update()](#update)				| x		| x		| x		 | x	  |	x		 |		 |
-| INSERT 			| [insert()](#insert)				| x		| x 	| x 	 | x	  | x		 | 	 	 |
-| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	| x		| x		| x		 |		  |	x		 |		 |
-| DELETE			| [delete()](#delete)				| x		| x		| x		 | x	  |	x		 |		 |
+| SELECT			| [select()](#select)				| x		|  		|  		 |  	  |	 		 |		 |
+| DISTINCT 			| [distinct()](#distinct)			| x		|  		|  		 |	 	  |	 		 |		 |
+| MIN 				| [select_min()](#min)				| x		|  		|  		 |	 	  |	 		 |		 |
+| MAX 				| [select_max()](#max)				| x		|  		|  		 |	 	  |	 		 |		 |
+| AVG 				| [select_avg()](#avg)				| x		|  		|  		 |	 	  |	 		 |		 |
+| SUM 				| [select_sum()](#sum)				| x		|  		|  		 |	 	  |	 		 |		 |
+| FROM 				| [from()](#from)					| x		|  		|  		 |  	  |	 		 |		 |
+| JOIN				| [join()](#join)					| x		|  		|  		 |	 	  |	 		 |		 |
+| WHERE 			| [where()](#where)					| x		|  		|  		 |  	  |	 		 |		 |
+| IN 				| [where_in()](#where_in)			| x		|  		|  		 |  	  |	 		 |		 |
+| GROUP BY			| [group_by()](#group_by)			| x		|  		|  		 |  	  |	 		 |		 |
+| HAVING			| [having()](#having)				| x		|  		|  		 |  	  |	 		 |		 |
+| ORDER BY			| [order_by()](#order_by)			| x		|  		|  		 |  	  |	 		 |		 |
+| LIMIT				| [limit()](#limit)					| x		|  		|  		 |  	  |	 		 |		 |
+| OFFSET			| [offset()](#offset)				| x		|  		|  		 |  	  |	 		 |		 |
+| COUNT				| [count()](#count)					| x		|  		|  		 |  	  |	 		 |		 |
+| SET				| [set()](#set)						| x		|  		|  		 |  	  |	 		 |		 |
+| UPDATE 			| [update()](#update)				| x		|  		|  		 |  	  |	 		 |		 |
+| INSERT 			| [insert()](#insert)				| x		|   	|   	 |  	  |  		 | 	 	 |
+| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	| x		|  		|  		 |	 	  |	 		 |		 |
+| DELETE			| [delete()](#delete)				| x		|  		|  		 |  	  |	 		 |		 |
 
 Library-Specific Methods
 ------------------------
 
-* get()
-* count_all()
-* get_where()
-* where_not_in()
-* or_where()
-* or_where_in()
-* or_where_not_in()
-* or_like()
-* or_not_like()
-* not_like()
-* or_having()
-* count_all_results()
-* insert_batch()
-* update_batch()
-* query()
-* last_query()
+| API Method								| MySQL | MSSQL | Oracle | SQLite | Postgres | Mongo |
+| :----------------							| :---: | :---: | :----: | :-----:| :------: | :---: |
+| [get()](#get)								| x		|  		| 		 |  	  |	 		 |   	 | 
+| [get_where()](#get_where)					| x		|  		|  		 |  	  |	 		 |  	 | 
+| [count_all()](#count_all)					| x		|  		|  		 |  	  |	 		 |  	 | 
+| [where_not_in()](#where_not_in)			| x		|  		|  		 |  	  |	 		 |  	 | 
+| [or_where()](#or_where)					| x		|  		|  		 |  	  |	 		 |  	 | 
+| [or_where_in()](#or_where_in)				| x		|  		|  		 |  	  |	 		 |  	 | 
+| [or_where_not_in()](#or_where_not_in)		| x		|  		|  		 |  	  |	 		 |  	 | 
+| [or_like()](#()](#)						| x		|  		|  		 |  	  |	 		 |  	 | 
+| [or_not_like()](#or_not_like)				| x		|  		|  		 |  	  |	 		 |  	 | 
+| [not_like()](#not_like)					| x		|  		|  		 |  	  |	 		 |  	 | 
+| [or_having()](#or_having)					| x		|  		|  		 |  	  |	 		 |  	 | 
+| [count_all_results()](#count_all_results)	| x		|  		|  		 |  	  |	 		 |  	 | 
+| [insert_batch()](#insert_batch)			| x		|  		|  		 |  	  |	 		 |	 	 | 
+| [update_batch()](#update_batch)			| x		|  		|  		 |  	  |	 		 |	 	 | 
+| [query()](#query)							| x		|  		|  		 |  	  |	 		 |  	 | 
+| [last_query()](#last_query)				| x		|  		|  		 |  	  |	 		 |  	 | 
 
 
 ### SELECT
@@ -234,7 +237,7 @@ This method is used to specify the fields to pull into the resultset when runnin
 | escape 	| Boolean		| true 		| TRUE: auto-escape fields; FALSE: don't escape |
 
 
-#### .select(fields)
+#### .select()
 
 The fields provided to this method will be automatically escaped by the database driver. The `fields` paramter can be passed in 1 of 2 ways (field names will be trimmed in either scenario):
 
@@ -264,11 +267,7 @@ You can alias your field names and they will be escaped properly as well:
 qb.select(['foo as f','bar as b','baz as z']);
 ```
 
-#### .select(fields,escape)
-
 You can optionally choose not to have the driver auto-escape the fieldnames (dangerous, but useful if you a function in your select statement, for instance):
-
-**Example**
 
 ```javascript
 // SELECT MAX(id) AS `max_id`
@@ -303,7 +302,7 @@ This SQL command is used to find the minimum value for a specific field within a
 | field 	| String	| Required	| The field to get the minimum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
-#### .select_min(field)
+#### .select_min()
 
 **Examples**
 
@@ -328,7 +327,7 @@ This SQL command is used to find the maximum value for a specific field within a
 | field 	| String	| Required	| The field to get the maximum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
-#### .select_max(field)
+#### .select_max()
 
 **Examples**
 
@@ -353,7 +352,7 @@ This SQL command is used to find the average value for a specific field within a
 | field 	| String	| Required	| The field to get the average value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
-#### .select_avg(field)
+#### .select_avg()
 
 **Examples**
 
@@ -379,7 +378,7 @@ This SQL command is used to find the minimum value for a specific field within a
 | field 	| String	| Required	| The field to get the minimum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
-#### .select_sum(field)
+#### .select_sum()
 
 **Examples**
 
@@ -403,11 +402,13 @@ This SQL command is used to determine which sources, available to the active con
 | :--------	| :-------- 	| :-----  	| :-------------------------------------------- | 
 | tables 	| String/Array	| N/A 		| Table(s), view(s), etc... to grab data from 	|
 
-#### .from(tables)
+#### .from()
 
 You can provide tables, views, or any other valid source of data in a comma-seperated list (string) or an array. When more than one data-source is provided when connected to a traditional RDMS, the tables will joined using a basic join. You can also `.from()` multiple times to get the same effect (the order in which they are called does not matter).
 
 Aliases can be provided and they will be escaped properly.
+
+***NOTE:*** You can also pass table/view names into the `.get()` and `.get_where()` methods and forego this method entirely.
 
 **Examples**
 
@@ -455,7 +456,7 @@ This SQL command is used query multiple tables related and connected by keys and
 | Parameter	| Type		| Default 	| Description 												|
 | :--------	| :-------- | :-----  	| :--------------------------------------------------------	| 
 | table 	| String	| Required	| The table or view to join to.								|
-| relation 	| String	| Required	| The "ON" statement that relates to table together			|
+| relation 	| String	| Required	| The "ON" statement that relates two tables together		|
 | direction	| String	| "left"	| Direction of the join (see join types list below)			|
 
 **Join Types**
@@ -467,8 +468,7 @@ This SQL command is used query multiple tables related and connected by keys and
 * left outer
 * right outer
 
-
-#### .join(table,relation)
+#### .join()
 
 The table/view and the relationship of it to the main table/view (see: `.from()`) must be specified. The specific type of join defaults to "left" if none is specified (althought it is recommened to always supply this value for readability). Multiple function calls can be made if you need several joins in one query. Aliases can (and should) be provided and they will be escaped properly.
 
@@ -509,6 +509,52 @@ qb.select(select).from('users u')
 	.join('locations l','l.id=u.location_id','left')
 	.get(callback);
 ```
+
+### WHERE
+
+This SQL command is used to limit the resultset based on filters.
+
+| Parameter		| Type			| Default 	| Description 													|
+| :--------		| :-------- 	| :-----  	| :------------------------------------------------------------	| 
+| field/filters | String/Object	| Required	| A field name, a WHERE clause, or an object of key/value pairs |
+| value 		| Mixed			| N/A		| When the first parameter is a field name, this is the value	|
+| escape		| Boolean		| TRUE		| TRUE: Escape field names and values; FALSE: No escaping		|
+
+
+#### .where()
+
+This method can be called in many different ways depending on your style and the format of the data that you have at the time of execution. By default, all values and field names passed to this function will be escaped automatically to produce safer queries. You can turn this off by passing **false** into the third parameter.
+
+**Examples**
+
+If you just want to pass a single filter at a time:
+
+```javascript
+// SELECT `galaxy` FROM `universe` WHERE `planet_name` = 'Earth'
+qb.select('galaxy').where('planet_name','Earth').get('universe',callback);
+```
+
+If you need more complex filtering using different operators (<, >, <=, =>, !-, <>, etc...), you can simply provide that operator along with the key in the first parameter:
+
+```javascript
+// SELECT `planet` FROM `planets` WHERE `order` <= 3
+qb.select('planet').where('order <=',3).get('planets',callback);
+```
+
+You can conveniently pass an object of key:value pairs (which can also contain custom operators):
+
+```javascript
+// SELECT `planet` FROM `planets` WHERE `order` <= 3 AND `class` = 'M'
+qb.select('planet').where({'order <=':'3',class:'M'}).get('planets',callback);
+```
+
+You can construct complex WHERE clauses manually (however, this may cause conflicts between database drivers):
+
+```javascript
+// SELECT `planet` FROM `planets` WHERE `order` <= 3 AND `class` = 'M'
+qb.select('planet').where("order <= 3 AND class = 'M'").get('planets',callback);
+```
+
 
 Contribute
 ==========

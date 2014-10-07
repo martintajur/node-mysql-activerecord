@@ -1,7 +1,6 @@
 var should = require('chai').should();
 var expect = require('chai').expect;
-var QueryBuilder = require('../../drivers/mysql/query_builder.js');
-var qb = new QueryBuilder();
+var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('where_in()', function() {
 	it('should exist', function() {

@@ -1,7 +1,6 @@
 var should = require('chai').should();
 var expect = require('chai').expect;
-var QueryBuilder = require('../../drivers/mysql/query_builder.js');
-var qb = new QueryBuilder();
+var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('set()', function() {
 	it('should exist', function() {
@@ -10,7 +9,7 @@ describe('set()', function() {
 	it('should be a function', function() {
 		qb.set.should.be.a('function');
 	});
-	it('should have an array to put fields into', function() {
+	it('should have an object to put fields into', function() {
 		qb.should.have.property('set_array');
 	});
 	it('should have an empty array to put fields into at the beginning', function() {

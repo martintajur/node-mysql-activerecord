@@ -1,6 +1,5 @@
 var should = require('chai').should();
-var QueryBuilder = require('../../drivers/mysql/query_builder.js');
-var qb = new QueryBuilder();
+var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('from()', function() {
 	it('should exist', function() {
