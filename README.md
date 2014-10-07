@@ -216,7 +216,7 @@ Library-Specific Methods
 | [or_where()](#or_where)					| x		|  		|  		 |  	  |	 		 |  	 | 
 | [or_where_in()](#or_where_in)				| x		|  		|  		 |  	  |	 		 |  	 | 
 | [or_where_not_in()](#or_where_not_in)		| x		|  		|  		 |  	  |	 		 |  	 | 
-| [or_like()](#()](#)						| x		|  		|  		 |  	  |	 		 |  	 | 
+| [or_like()](#or_like)						| x		|  		|  		 |  	  |	 		 |  	 | 
 | [or_not_like()](#or_not_like)				| x		|  		|  		 |  	  |	 		 |  	 | 
 | [not_like()](#not_like)					| x		|  		|  		 |  	  |	 		 |  	 | 
 | [or_having()](#or_having)					| x		|  		|  		 |  	  |	 		 |  	 | 
@@ -226,6 +226,7 @@ Library-Specific Methods
 | [query()](#query)							| x		|  		|  		 |  	  |	 		 |  	 | 
 | [last_query()](#last_query)				| x		|  		|  		 |  	  |	 		 |  	 | 
 
+-------------
 
 ### SELECT
 
@@ -276,6 +277,8 @@ qb.select('MAX(id) AS `max_id`',false);
 
 ***NOTE:*** This example is contrived and can be achieved more-easily using the `.select_max()` method described below.
 
+-------------
+
 ### DISTINCT
 
 This SQL command is used to prevent duplicate rows from being returned in the resultset at the database level.
@@ -293,6 +296,8 @@ This should only be used when querying data (execution method: get()/get_where()
 qb.distinct().select('id,name,description').get('users',callback);
 ```
 
+-------------
+
 ### MIN
 
 This SQL command is used to find the minimum value for a specific field within a resultset.
@@ -302,7 +307,7 @@ This SQL command is used to find the minimum value for a specific field within a
 | field 	| String	| Required	| The field to get the minimum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
-#### .select_min()
+#### .select_min(field[,alias])
 
 **Examples**
 
@@ -318,6 +323,8 @@ You can optionally include a second parameter to rename the resulting field
 qb.select_min('age','min_age').get('users',callback);
 ```
 
+-------------
+
 ### MAX
 
 This SQL command is used to find the maximum value for a specific field within a resultset.
@@ -327,7 +334,7 @@ This SQL command is used to find the maximum value for a specific field within a
 | field 	| String	| Required	| The field to get the maximum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
-#### .select_max()
+#### .select_max(field[,alias])
 
 **Examples**
 
@@ -343,6 +350,8 @@ You can optionally include a second parameter to rename the resulting field
 qb.select_max('age','max_age').get('users',callback);
 ```
 
+-------------
+
 ### AVG
 
 This SQL command is used to find the average value for a specific field within a resultset.
@@ -352,7 +361,7 @@ This SQL command is used to find the average value for a specific field within a
 | field 	| String	| Required	| The field to get the average value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
-#### .select_avg()
+#### .select_avg(field[,alias])
 
 **Examples**
 
@@ -368,6 +377,7 @@ You can optionally include a second parameter to rename the resulting field
 qb.select_avg('age','avg_age').get('users',callback);
 ```
 
+-------------
 
 ### SUM
 
@@ -378,7 +388,7 @@ This SQL command is used to find the minimum value for a specific field within a
 | field 	| String	| Required	| The field to get the minimum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
-#### .select_sum()
+#### .select_sum(field[,alias])
 
 **Examples**
 
@@ -394,6 +404,8 @@ You can optionally include a second parameter to rename the resulting field
 qb.select_sum('age','sum_age').get('users',callback);
 ```
 
+-------------
+
 ### FROM
 
 This SQL command is used to determine which sources, available to the active connection, to obtain data from.
@@ -402,7 +414,7 @@ This SQL command is used to determine which sources, available to the active con
 | :--------	| :-------- 	| :-----  	| :-------------------------------------------- | 
 | tables 	| String/Array	| N/A 		| Table(s), view(s), etc... to grab data from 	|
 
-#### .from()
+#### .from(tables)
 
 You can provide tables, views, or any other valid source of data in a comma-seperated list (string) or an array. When more than one data-source is provided when connected to a traditional RDMS, the tables will joined using a basic join. You can also `.from()` multiple times to get the same effect (the order in which they are called does not matter).
 
@@ -449,6 +461,8 @@ qb.from('groups g').select('u.id,u.name,u,description,g.name as group_name')
 	.get(callback);
 ```
 
+-------------
+
 ### JOIN
 
 This SQL command is used query multiple tables related and connected by keys and get a single resultset.
@@ -459,7 +473,7 @@ This SQL command is used query multiple tables related and connected by keys and
 | relation 	| String	| Required	| The "ON" statement that relates two tables together		|
 | direction	| String	| "left"	| Direction of the join (see join types list below)			|
 
-**Join Types**
+**Join Types/Directions**
 
 * left
 * right
@@ -468,7 +482,7 @@ This SQL command is used query multiple tables related and connected by keys and
 * left outer
 * right outer
 
-#### .join()
+#### .join(table,relation[,direction])
 
 The table/view and the relationship of it to the main table/view (see: `.from()`) must be specified. The specific type of join defaults to "left" if none is specified (althought it is recommened to always supply this value for readability). Multiple function calls can be made if you need several joins in one query. Aliases can (and should) be provided and they will be escaped properly.
 
@@ -510,6 +524,8 @@ qb.select(select).from('users u')
 	.get(callback);
 ```
 
+-------------
+
 ### WHERE
 
 This SQL command is used to limit the resultset based on filters.
@@ -521,9 +537,11 @@ This SQL command is used to limit the resultset based on filters.
 | escape		| Boolean		| TRUE		| TRUE: Escape field names and values; FALSE: No escaping		|
 
 
-#### .where()
+#### .where(field[,value[,escape]])
 
-This method can be called in many different ways depending on your style and the format of the data that you have at the time of execution. By default, all values and field names passed to this function will be escaped automatically to produce safer queries. You can turn this off by passing **false** into the third parameter.
+This method can be called in many different ways depending on your style and the format of the data that you have at the time of calling it. For standard SQL, all clauses will be joined with 'AND'&mdash;if you need to join clauses by 'OR', please us `.or_where()`. By default, all values and field names passed to this function will be escaped automatically to produce safer queries. You can turn this off by passing **false** into the third parameter.
+
+If a valid field name is passed in the first parameter, you can pass an array the second parameter and the call will be treated as a [.where_in()](#where_in).
 
 **Examples**
 
@@ -534,7 +552,7 @@ If you just want to pass a single filter at a time:
 qb.select('galaxy').where('planet_name','Earth').get('universe',callback);
 ```
 
-If you need more complex filtering using different operators (<, >, <=, =>, !-, <>, etc...), you can simply provide that operator along with the key in the first parameter:
+If you need more complex filtering using different operators (<, >, <=, =>, !-, <>, etc...), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
 
 ```javascript
 // SELECT `planet` FROM `planets` WHERE `order` <= 3
@@ -554,6 +572,84 @@ You can construct complex WHERE clauses manually (however, this may cause confli
 // SELECT `planet` FROM `planets` WHERE `order` <= 3 AND `class` = 'M'
 qb.select('planet').where("order <= 3 AND class = 'M'").get('planets',callback);
 ```
+
+You can pass a non-empty array as a value and that portion will be treated as a call to `.where_in()`:
+
+```javascript
+// SELECT `star_system` FROM `star_systems` 
+// WHERE `planet_count` >= 4, `star` IN('Sun','Betelgeuse')
+qb.select('star_system')
+	.where({'planet_count >=': 4, star: ['Sun','Betelgeuse'])
+	.get('star_systems',callback);
+```
+
+#### .or_where(field[,value[,escape]])
+
+This method functions identically to [.where()](#where) except that it joins clauses with 'OR' instead of 'AND'.
+
+```javascript
+// SELECT `star_system` FROM `star_systems` 
+// WHERE `star` = 'Sun' OR `star` = 'Betelgeuse'
+qb.select('star_system').where('star','Sun')
+	.or_where('star','Betelgeuse')
+	.get('star_systems',callback);
+```
+
+#### .where_in(field,values[,escape])
+
+This will create a "WHERE IN" statement in traditional SQL which is useful when you're trying to find rows with fields matching many different values... It will be joined with existing "WHERE" statements with 'AND'.
+
+```javascript
+// SELECT `star_system` FROM `star_systems` 
+// WHERE `star` IN('Sun','Betelgeuse','Sirius','Vega','Alpha Centauri')
+var stars = ['Sun','Betelgeuse','Sirius','Vega','Alpha Centauri'];
+qb.select('star_system').where_in('star',stars).get('star_systems',callback);
+```
+
+#### .or_where_in(field,values[,escape])
+
+Same as `.where_in()` except the clauses are joined by 'OR'.
+
+```javascript
+// SELECT `star_system` FROM `star_systems` 
+// WHERE `planet_count` = 4 OR `star` IN('Sun','Betelgeuse')
+var stars = ['Sun','Betelgeuse'];
+qb.select('star_system').where('planet_count',4)
+	.or_where_in('star',stars)
+	.get('star_systems',callback);
+```
+
+#### .where_not_in(field,values[,escape])
+
+Same as `.where_in()` except this generates a "WHERE NOT IN" statement. All clauses are joined with 'AND'.
+
+```javascript
+// SELECT `star_system` FROM `star_systems` 
+// WHERE `star` NOT IN('Sun','Betelgeuse','Sirius','Vega','Alpha Centauri')
+var stars = ['Sun','Betelgeuse','Sirius','Vega','Alpha Centauri'];
+qb.select('star_system').where_not_in('star',stars).get('star_systems',callback);
+```
+
+#### .or_where_not_in(field,values[,escape])
+
+Same as `.where_not_in()` except that clauses are joined with 'OR'.
+
+```javascript
+// SELECT `star_system` FROM `star_systems` 
+// WHERE `star` NOT IN('Sun','Betelgeuse')
+// OR `planet_count` IN [2,4,6,8]
+var stars = ['Sun','Betelgeuse'];
+var planet_sizes = [2,4,6,8];
+qb.select('star_system')
+	.where_not_in('star',stars)
+	.or_where_not_in('planet_size',planet_sizes)
+	.get('star_systems',callback);
+```
+
+-------------
+
+### LIKE
+
 
 
 Contribute
