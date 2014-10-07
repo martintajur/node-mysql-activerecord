@@ -7,18 +7,35 @@ The API of this module very closely mimics Codeigniter's Active Record (now call
 
 The primary benefits of this module (currently) are:
 
- * Ability to write queries agnostically to the database you intend to query
- * Supports all basic database commands (insert, update, delete, select, etc...)
- * Extend commands from the most popular native database drivers in NPM.
- * Supports method chaining
- * Automatically escapes field values
- * Is fully unit tested
- * Allows for greater flexibility and more control over a full ORM
- * Ligher-weight than an ORM
- * Allows you to drop down to the native methods of your driver if you choose
- * Allows for different drivers for different versions (SQLite 2 vs SQLite 3)
- * The order in which you call the methods is irrelevant except for the execution methods (get, insert, update, delete) which must be called last.
- * Can used as a learning tool/Rosetta stone
+* Ability to write queries agnostically to the database you intend to query
+* Supports all basic database commands (insert, update, delete, select, etc...)
+* Extend commands from the most popular native database drivers in NPM.
+* Supports method chaining
+* Automatically escapes field values
+* Is fully unit tested
+* Allows for greater flexibility and more control over a full ORM
+* Ligher-weight than an ORM
+* Allows you to drop down to the native methods of your driver if you choose
+* Allows for different drivers for different versions (SQLite 2 vs SQLite 3)
+* The order in which you call the methods is irrelevant except for the execution methods (get, insert, update, delete) which must be called last.
+* Can used as a learning tool/Rosetta stone
+
+Table of Contents
+=================
+
+* [Database Drivers](#database-drivers)
+* [How to Install](#how-to-install)
+* [License Info](#license-info)
+* [Quick Example](#quick-example)
+* [Connecting to Your Database](#connecting-to-your-database)
+	* [Quick Reference](#quick-reference)
+	* [Standard Connection Settings](#standard-connection-settings)
+	* [Choosing the Database Type](#choosing-the-database-type)
+	* [Choosing the Connection Type](#choosing-the-connection-type)
+* [API Methods](#api-methods)
+	* [SQL Commands](#sql-commands)
+	* [Library-Specific Methods](#library-specific-methods)
+* [Contibute](#contribute)
  
 Database Drivers 
 =================
@@ -61,15 +78,18 @@ var settings = {
 };
 var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'standard');
 
-qb.select('name','position').where({type: 'rocky', 'diameter <': 12000}).get('planets', function(err,rows) {
-	if (err) console.error("Uh oh! Couldn't get results: " + err.msg);
-	
-	// SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
-	console.log("Query Ran: " + qb.last_query());
-	
-	// [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
-	console.dir(rows);
-});
+qb.select('name','position')
+	.where({type: 'rocky', 'diameter <': 12000})
+	.get('planets', function(err,rows) {
+		if (err) console.error("Uh oh! Couldn't get results: " + err.msg);
+		
+		// SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
+		console.log("Query Ran: " + qb.last_query());
+		
+		// [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
+		console.dir(rows);
+	}
+);
 ```
 
 Connecting to Your Database
@@ -229,6 +249,7 @@ Library-Specific Methods
 -------------
 
 ### SELECT
+#### .select(fields[,escape])
 
 This method is used to specify the fields to pull into the resultset when running SELECT-like queries.
 
@@ -237,8 +258,6 @@ This method is used to specify the fields to pull into the resultset when runnin
 | fields 	| String/Array	| N/A 		| The fields in which to grab from the database |
 | escape 	| Boolean		| true 		| TRUE: auto-escape fields; FALSE: don't escape |
 
-
-#### .select()
 
 The fields provided to this method will be automatically escaped by the database driver. The `fields` paramter can be passed in 1 of 2 ways (field names will be trimmed in either scenario):
 
@@ -280,14 +299,11 @@ qb.select('MAX(id) AS `max_id`',false);
 -------------
 
 ### DISTINCT
-
-This SQL command is used to prevent duplicate rows from being returned in the resultset at the database level.
-
-***This method takes no parameters***
-
 #### .distinct()
 
-This should only be used when querying data (execution method: get()/get_where()) (not inserting, updating or removing). If it's provided to another execution method, it will simply be ignored.
+This SQL command is used to prevent duplicate rows from being returned in the resultset at the database level. It should only be used when querying data (execution methods: `.get()` & `.get_where()`) (not inserting, updating or removing). If it's provided to another execution method, it will simply be ignored.
+
+***This method takes no parameters***
 
 **Example**
 
@@ -299,6 +315,7 @@ qb.distinct().select('id,name,description').get('users',callback);
 -------------
 
 ### MIN
+#### .select_min(field[,alias])
 
 This SQL command is used to find the minimum value for a specific field within a resultset.
 
@@ -306,8 +323,6 @@ This SQL command is used to find the minimum value for a specific field within a
 | :--------	| :-------- | :-----  	| :-------------------------------------| 
 | field 	| String	| Required	| The field to get the minimum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
-
-#### .select_min(field[,alias])
 
 **Examples**
 
@@ -326,6 +341,7 @@ qb.select_min('age','min_age').get('users',callback);
 -------------
 
 ### MAX
+#### .select_max(field[,alias])
 
 This SQL command is used to find the maximum value for a specific field within a resultset.
 
@@ -333,8 +349,6 @@ This SQL command is used to find the maximum value for a specific field within a
 | :--------	| :-------- | :-----  	| :-------------------------------------| 
 | field 	| String	| Required	| The field to get the maximum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
-
-#### .select_max(field[,alias])
 
 **Examples**
 
@@ -353,6 +367,7 @@ qb.select_max('age','max_age').get('users',callback);
 -------------
 
 ### AVG
+#### .select_avg(field[,alias])
 
 This SQL command is used to find the average value for a specific field within a resultset.
 
@@ -360,8 +375,6 @@ This SQL command is used to find the average value for a specific field within a
 | :--------	| :-------- | :-----  	| :-------------------------------------| 
 | field 	| String	| Required	| The field to get the average value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
-
-#### .select_avg(field[,alias])
 
 **Examples**
 
@@ -380,6 +393,7 @@ qb.select_avg('age','avg_age').get('users',callback);
 -------------
 
 ### SUM
+#### .select_sum(field[,alias])
 
 This SQL command is used to find the minimum value for a specific field within a result set.
 
@@ -387,8 +401,6 @@ This SQL command is used to find the minimum value for a specific field within a
 | :--------	| :-------- | :-----  	| :-------------------------------------| 
 | field 	| String	| Required	| The field to get the minimum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
-
-#### .select_sum(field[,alias])
 
 **Examples**
 
@@ -407,14 +419,13 @@ qb.select_sum('age','sum_age').get('users',callback);
 -------------
 
 ### FROM
+#### .from(tables)
 
 This SQL command is used to determine which sources, available to the active connection, to obtain data from.
 
 | Parameter	| Type			| Default 	| Description 									|
 | :--------	| :-------- 	| :-----  	| :-------------------------------------------- | 
 | tables 	| String/Array	| N/A 		| Table(s), view(s), etc... to grab data from 	|
-
-#### .from(tables)
 
 You can provide tables, views, or any other valid source of data in a comma-seperated list (string) or an array. When more than one data-source is provided when connected to a traditional RDMS, the tables will joined using a basic join. You can also `.from()` multiple times to get the same effect (the order in which they are called does not matter).
 
@@ -464,6 +475,7 @@ qb.from('groups g').select('u.id,u.name,u,description,g.name as group_name')
 -------------
 
 ### JOIN
+#### .join(table,relation[,direction])
 
 This SQL command is used query multiple tables related and connected by keys and get a single resultset.
 
@@ -481,8 +493,6 @@ This SQL command is used query multiple tables related and connected by keys and
 * inner
 * left outer
 * right outer
-
-#### .join(table,relation[,direction])
 
 The table/view and the relationship of it to the main table/view (see: `.from()`) must be specified. The specific type of join defaults to "left" if none is specified (althought it is recommened to always supply this value for readability). Multiple function calls can be made if you need several joins in one query. Aliases can (and should) be provided and they will be escaped properly.
 
@@ -535,7 +545,6 @@ This SQL command is used to limit the resultset based on filters.
 | field/filters | String/Object	| Required	| A field name, a WHERE clause, or an object of key/value pairs |
 | value 		| Mixed			| N/A		| When the first parameter is a field name, this is the value	|
 | escape		| Boolean		| TRUE		| TRUE: Escape field names and values; FALSE: No escaping		|
-
 
 #### .where(field[,value[,escape]])
 
@@ -649,7 +658,7 @@ qb.select('star_system')
 -------------
 
 ### LIKE
-
+#### .like()
 
 
 Contribute
