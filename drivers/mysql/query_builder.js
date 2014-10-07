@@ -660,18 +660,18 @@ var QueryBuilder = function() {
 			not = not || '';
 			
 			if (typeof field === 'string' && field.length == 0) {
-				throw new Error("The field provided in your like call is empty.");
+				throw new Error("like(): The field you provided is empty.");
 			}
 			else if (typeof field === 'object' && (field.length == 0 || Object.keys(field).length === 0)) {
-				throw new Error("The object provided in your like call is empty.");
+				throw new Error("like(): The object you provided is empty.");
 			}
 			else if ((typeof field).match(/^(string|object)$/) === null) {
-				throw new Error("You have provided an invalid value as the first parameter in your like() call. Only valid strings and objects are allowed.");
+				throw new Error("like(): You have provided an invalid value as the first parameter. Only valid strings and objects are allowed.");
 			}
 			
 			if(Object.prototype.toString.call(field) !== Object.prototype.toString.call({})) {
 				if (match === null) {
-					throw new Error("like(): Since your first parameters is a string, your second param must a valid number, boolean, or string.");
+					throw new Error("like(): Since your first parameter is a string, your second param must a valid number, boolean, or string.");
 				}
 			
 				var field_array = {};
@@ -686,11 +686,11 @@ var QueryBuilder = function() {
 				
 				// Make sure value is only string, number, or boolean
 				if ((typeof v).match(/^(string|number|boolean)$/) === null) {
-					throw new Error("You have provided an invalid value as the second parameter in your like() call. Only valid strings, numbers, and booleans are allowed.");
+					throw new Error("like(): You have provided an invalid value as the second parameter. Only valid strings, numbers, and booleans are allowed.");
 				}
-				// if number, no Infinity or NaN
+				// If number, don't allow Infinity or NaN
 				else if (typeof v === 'number' && (v === Infinity || (v !== +v))) {
-					throw new Error("You have provided an invalid number value as the second parameter in your like() call. Only valid strings, numbers, and booleans are allowed.");
+					throw new Error("like(): You have provided an invalid number value as the second parameter. Only valid strings, numbers, and booleans are allowed.");
 				}
 				
 				if (side === 'none') {
@@ -724,6 +724,7 @@ var QueryBuilder = function() {
 				+ build_from_clause(this)
 				+ build_join_string(this)
 				+ build_where_clause(this)
+				+ build_having_clause(this)
 			
 			return sql;
 		},
@@ -993,7 +994,7 @@ var QueryBuilder = function() {
 			
 			if ((typeof value).match(/^(string|number|boolean)$/) !== null) { // if the value is a string, number, or boolean...
 				if (typeof key !== 'string' || key.match(/^\W+$/i)) { // if the key is not a string...
-					throw new Error("The value you provided when calling having() will be ignored since the first parameter is not a single field provided in string form.");
+					throw new Error("having(): The value you provided when calling having() will be ignored since the first parameter is not a single field provided in string form.");
 				}
 				key_array[key] = value;
 				key = key_array;
@@ -1013,7 +1014,7 @@ var QueryBuilder = function() {
 						//console.log("Key is NOT a string");
 						for (var i in key) {
 							if (typeof key[i] !== 'string') {
-								throw new Error("You've provided an unparseable format to the having() method..");
+								throw new Error("having(): You've provided an unparseable format to the having() method..");
 							}
 							else {
 								key_array = extract_having_parts(key[i],key_array);

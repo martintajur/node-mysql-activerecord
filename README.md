@@ -35,10 +35,10 @@ Table of Contents
 * [API Methods](#api-methods)
 	* [SQL Commands](#sql-commands)
 	* [Library-Specific Methods](#library-specific-methods)
-* [Contibute](#contribute)
+* [Contribute](#contribute)
  
-Database Drivers 
-=================
+Database Drivers
+================
 
 Currently Written:
 ------------------
@@ -58,7 +58,7 @@ How to install
 
 	npm install node-querybuilder
 
-Licence Info
+License Info
 ============
 
 Licensed under the GPL license and MIT:
@@ -193,7 +193,7 @@ var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 
 API Methods
-===============================
+===========
 
 ***NOTE:*** The compatibility portions of these tables are subject to change as features and drivers are written!
 
@@ -261,12 +261,23 @@ This method is used to specify the fields to pull into the resultset when runnin
 
 The fields provided to this method will be automatically escaped by the database driver. The `fields` paramter can be passed in 1 of 2 ways (field names will be trimmed in either scenario):
 
+***NOTE:*** If the select method is never called before an execution method is ran, 'SELECT *' will be assumed.
+
 * String with fields seperated by a comma:
 	* `.select('foo, bar, baz')`
 * Array of field names
 	* `.select(['foo','bar','baz'])`
 	
 **Examples**
+
+`.select()` is not called ('*' assumed)
+
+```javascript
+// SELECT * FROM galaxies
+qb.get('galaxies',callback);
+```
+
+An array of field names:
 
 ```javascript
 // SELECT `foo`, `bar`, `baz`
@@ -287,14 +298,14 @@ You can alias your field names and they will be escaped properly as well:
 qb.select(['foo as f','bar as b','baz as z']);
 ```
 
-You can optionally choose not to have the driver auto-escape the fieldnames (dangerous, but useful if you a function in your select statement, for instance):
+You can optionally choose not to have the driver auto-escape the fieldnames (dangerous, but useful if you a utilize function in your select statement, for instance):
 
 ```javascript
-// SELECT MAX(id) AS `max_id`
-qb.select('MAX(id) AS `max_id`',false);
+// SELECT CONCAT(first_name,' ',last_name) AS `full_name`
+qb.select('CONCAT(first_name,' ',last_name) AS `full_name`',false);
 ```
 
-***NOTE:*** This example is contrived and can be achieved more-easily using the `.select_max()` method described below.
+***NOTE:*** If you use this technique to add driver-specific functions, it may (and probably will) cause unexpected outcomes with other database drivers!
 
 -------------
 
@@ -572,10 +583,10 @@ You can conveniently pass an object of key:value pairs (which can also contain c
 
 ```javascript
 // SELECT `planet` FROM `planets` WHERE `order` <= 3 AND `class` = 'M'
-qb.select('planet').where({'order <=':'3',class:'M'}).get('planets',callback);
+qb.select('planet').where({'order <=':3, class:'M'}).get('planets',callback);
 ```
 
-You can construct complex WHERE clauses manually (however, this may cause conflicts between database drivers):
+You can construct complex WHERE clauses manually and they will be escaped properly as long as there are no paranthesis within it. *Please, for custom clauses containing subqueries, make sure you escape everything properly!* ***ALSO NOTE:*** with this method, there may be conflicts between database drivers!
 
 ```javascript
 // SELECT `planet` FROM `planets` WHERE `order` <= 3 AND `class` = 'M'
@@ -646,7 +657,7 @@ Same as `.where_not_in()` except that clauses are joined with 'OR'.
 ```javascript
 // SELECT `star_system` FROM `star_systems` 
 // WHERE `star` NOT IN('Sun','Betelgeuse')
-// OR `planet_count` IN [2,4,6,8]
+// OR `planet_count` NOT IN [2,4,6,8]
 var stars = ['Sun','Betelgeuse'];
 var planet_sizes = [2,4,6,8];
 qb.select('star_system')
@@ -658,8 +669,320 @@ qb.select('star_system')
 -------------
 
 ### LIKE
-#### .like()
 
+This SQL command is used to find close matches where as the "WHERE" command is for precise matches. This is useful for doing searches.
+
+| Parameter		| Type			| Default 	| Description 										|
+| :--------		| :------------ | :-----  	| :------------------------------------------------	| 
+| field/filters | String/Object	| Required	| Field name or object of field/match pairs			|
+| value 		| String/Number	| Required	| The value you want the field to closely match		|
+| side			| String		| 'both'	| before: '%value'; after: 'value%', both: '%value%'|
+
+#### .like(field,match[,side])
+
+All fields are escaped automatically, no exceptions. Multiple calls will be joined together with 'AND'. You can also pass an object of field/match pairs. Wildcard sides are interchangeable between before/left and after/right--choose the one that makes the most sense to you (there are examples of each below).
+
+**Examples**
+
+By default, the match string will be wrapped on both sides with the wildcard (%):
+
+```javascript
+// SELECT `first_name` FROM `users` WHERE `first_name` LIKE '%mber%'
+// Potential results: [{first_name: 'Kimberly'},{first_name: 'Amber'}]
+qb.select('first_name').like('first_name','mber').get('users',callback);
+```
+
+You can specify a side to place the wildcard (%) on if you'd like (before/left, after/right, both):
+
+```javascript
+// SELECT `first_name` FROM `users` WHERE `first_name` LIKE '%mber'
+// Potential results: [{first_name: 'Amber'}]
+qb.select('first_name').like('first_name','mber','before').get('users',callback);
+
+// SELECT `first_name` FROM `users` WHERE `first_name` LIKE 'Kim%'
+// Potential results: [{first_name: 'Kim'},{first_name: 'Kimberly'}]
+qb.select('first_name').like('first_name','Kim','right').get('users',callback);
+```
+
+You can also pass 'none' if you don't want to use the wildcard (%)
+
+```javascript
+// SELECT `first_name` FROM `users` WHERE `first_name` LIKE 'kim'
+// Potential results: [{first_name: 'Kim'}]
+qb.select('first_name').like('first_name','kim','none').get('users',callback);
+```
+
+If you'd like to have multiple like clauses, you can do that by calling like multiple times:
+
+```javascript
+// SELECT `first_name` FROM `users` 
+// WHERE `first_name` LIKE 'Kim%'
+// AND `middle_name` LIKE '%lyt%'
+// AND `last_name` LIKE '%arris'
+qb.select('first_name')
+	.like('first_name','Kim','right')
+	.like('middle_name','lyt')
+	.like('last_name','arris','left')
+	.get('users',callback);
+```
+
+Or you can do it with an object of field/match pairs. If you want to pass a wildcard side, provide `null` as the second paramter and the side as the third. **Note**: All `match` values in an object will share the same wildcard side.
+
+```javascript
+// SELECT `first_name` FROM `users` 
+// WHERE `first_name` LIKE '%ly'
+// AND `middle_name` LIKE '%the'
+// AND `last_name` LIKE '%is'
+qb.select('first_name')
+	.like({first_name: 'ly', middle_name: 'the', last_name: 'is'}, null, 'before')
+	.get('users',callback);
+```
+
+#### .or_like(field,match[,side])
+
+This is exactly the same as the `.like()` method except that the clauses are joined by 'OR' not 'AND'.
+
+**Example**
+
+```javascript
+// SELECT `first_name` FROM `users` 
+// WHERE `first_name` LIKE 'Kim%'
+// OR `middle_name` LIKE '%lyt%'
+// OR `last_name` LIKE '%arris'
+qb.select('first_name')
+	.or_like('first_name','Kim','right')
+	.or_like('middle_name','lyt')
+	.or_like('last_name','arris','left')
+	.get('users',callback);
+```
+
+
+#### .not_like(field,match[,side])
+
+This is exactly the same as the `.like()` method except that it creates "NOT LIKE" statements.
+
+**Example**
+
+```javascript
+// SELECT `first_name` FROM `users` 
+// WHERE `first_name` NOT LIKE 'A%'
+// AND `middle_name` NOT LIKE 'B%'
+// AND `last_name` NOT LIKE 'C%'
+qb.select('first_name')
+	.not_like({first_name: 'A', middle_name: 'B', last_name: 'C'}, null, 'after')
+	.get('users',callback);
+```
+
+#### .or_not_like(field,match[,side])
+
+This is exactly the same as the `.not_like()` method except that the clauses are joined by 'OR' not 'AND'.
+
+**Example**
+
+```javascript
+// SELECT `first_name` FROM `users` 
+// WHERE `first_name` NOT LIKE 'A%'
+// OR `middle_name` NOT LIKE 'B%'
+// OR `last_name` NOT LIKE 'C%'
+qb.select('first_name')
+	.or_not_like({first_name: 'A', middle_name: 'B', last_name: 'C'}, null, 'after')
+	.get('users',callback);
+```
+
+### GROUP BY
+#### .group_by(fields)
+
+This SQL command allows you to get the first (depending on ORDER) result of a group of results related by a shared value or values.
+
+| Parameter	| Type			| Default 	| Description 							|
+| :--------	| :------------ | :-----  	| :------------------------------------	| 
+| field(s) 	| String/Object	| Required	| Field name or array of field names	|
+
+**Examples**
+
+Group by a single field:
+
+```javascript
+// SELECT * FROM `users` GROUP BY `department_id`
+qb.group_by('department_id').get('users',callback);
+```
+
+Group by multiple fields:
+
+```javascript
+// SELECT * FROM `users` GROUP BY `department_id`, `position_id`
+qb.group_by(['department_id','position_id']).get('users',callback);
+```
+
+### HAVING
+#### .having(field,value)
+
+This SQL command is similar to the 'WHERE' command but is used when aggregate functions are used in the "SELECT" portion of the query.
+
+| Parameter		| Type			| Default 	| Description 												|
+| :--------		| :------------ | :-----  	| :-----------------------------------------------------	| 
+| field/filters | String/Object	| Required	| Field name or object of field/value pairs to filter on	|
+| value 		| Mixed			| NULL		| Value to filter by										|
+| escape 		| Boolean		| true		| TRUE: Escape fields and values; FALSE: Don't escape.		|
+
+This method works exactly the same way as the `.where()` method works with the exception of the fact that there is no 'HAVING' equivalent to 'WHERE IN'. See the [.where()](#where) documentation if you need additional information.
+
+**Examples**
+
+If you just want to add a single having clause:
+
+```javascript
+// SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
+// GROUP BY `id`
+// HAVING `num_planets` = 5
+qb.group_by('id').having('num_planets',5).count('star_systems',callback);
+```
+
+If you need more complex filtering using different operators (<, >, <=, =>, !-, <>, etc...), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
+
+```javascript
+// SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
+// GROUP BY `id`
+// HAVING `num_planets` > 5
+qb.group_by('id').having('num_planets >',5).count('star_systems',callback);
+```
+
+You can conveniently pass an object of key:value pairs (which can also contain custom operators):
+
+```javascript
+// SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
+// GROUP BY `id`
+// HAVING `num_planets` > 5
+qb.group_by('id').having({'num_planets >': 5}).count('star_systems',callback);
+```
+
+You can construct complex WHERE clauses manually and they will be escaped properly. *Please, for custom clauses containing subqueries, make sure you escape everything properly!* ***ALSO NOTE:*** with this method, there may be conflicts between database drivers!
+
+```javascript
+// SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
+// GROUP BY `id`
+// HAVING `num_planets` > (5+2)
+qb.group_by('id').having("`num_planets` > (5+2)",null,false).count('star_systems',callback);
+```
+
+#### .or_having(field[,value[,escape]])
+
+This method functions identically to [.having()](#having) except that it joins clauses with 'OR' instead of 'AND'.
+
+```javascript
+// SELECT SUM(planets) AS `num_planets`, SUM(moons) AS `num_moons` FROM `star_systems` 
+// GROUP BY `id`
+// HAVING `num_planets` >= 5 OR `num_moons` <= 10
+qb.group_by('id')
+	.having('num_planets >=',5)
+	.or_having('num_moons <=', 10)
+	.count('star_systems',callback);
+```
+
+### ORDER BY
+#### .order_by(field[,direction])
+
+This SQL command is used to order the resultset by a field or fields in descending, ascending, or random order(s).
+
+| Parameter	| Type			| Default 	| Description 																|
+| :--------	| :------------ | :-----  	| :------------------------------------------------------------------------ | 
+| fields	| String/Array	| Required	| Field name or an array of field names, possibly with directions as well	|
+| direction	| String		| 'asc'		| 'asc': Ascending; 'desc': Descending; 'rand'/'random'/'rand()': Random.	|
+
+This is a very flexible method, offerring a wide variety of ways you can call it. Variations include:
+
+* Pass the field name and ommit the direction
+* Pass the field name and the direction as the first and second parameters, respectively (most common)
+* Pass an array of fields to first paramter, direction to second parameter.
+* Pass an array of fields + directions in first parameter and ommit the second one.
+* Pass an array of fields (+ directions for some to override second parameter) to first paramter, direction to second parameter.
+* Pass a raw comma-seperated string of field + directions in first parameter and ommit the second one.
+
+**Examples**
+
+Pass the field name and ommit the direction
+
+```javascript
+// SELECT * FROM `galaxies` ORDER BY `galaxy_name` ASC
+qb.order_by('galaxy_name').get('galaxies',callback);
+```
+
+Pass the field name and the direction as the first and second parameters, respectively
+
+```javascript
+// SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC
+qb.order_by('galaxy_name','desc').get('galaxies',callback);
+```
+
+Pass an array of fields to first paramter, direction to second parameter
+
+```javascript
+// SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` DESC
+qb.order_by(['galaxy_name','galaxy_size'],'desc').get('galaxies',callback);
+```
+
+Pass an array of fields + directions in first parameter and ommit the second one.
+
+```javascript
+// SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` ASC
+qb.order_by(['galaxy_name desc','galaxy_size asc']).get('galaxies',callback);
+```
+
+Pass an array of fields (+ directions for some to override second parameter) to first paramter, direction to second parameter
+
+```javascript
+// SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` ASC
+qb.order_by(['galaxy_name desc','galaxy_size'],'asc').get('galaxies',callback);
+```
+
+Pass a raw comma-seperated string of field + directions in first parameter and ommit the second one.
+
+```javascript
+// SELECT * FROM `galaxies` ORDER BY `galaxy_name` ASC, `galaxy_size` DESC
+qb.order_by('galaxy_name asc, galaxy_size desc').get('galaxies',callback);
+```
+
+### LIMIT
+#### .limit(limit_to,offset)
+
+This SQL command is used to limit a result set to a maximum number of results, regardless of the actual number of results that might be returned by a non-limited query.
+
+| Parameter	| Type		| Default 	| Description 											|
+| :--------	| :-------- | :-----  	| :---------------------------------------------------- | 
+| limit_to	| Integer	| Required	| The maximum number of results you want from the query	|
+| offset	| Integer	| NULL		| Optional offset value (where to start before limiting)|
+
+**Example**
+
+```javascript
+// SELECT * FROM `users` LIMIT 5
+qb.limit(5).get('users',callback);
+```
+
+You can provide an option offset value instead of calling [.offset()](#offset) seperately:
+
+```javascript
+// SELECT * FROM `users` LIMIT 5, 5
+qb.limit(5,5).get('users',callback);
+```
+
+### OFFSET
+#### .offset(offset)
+
+This SQL command is tell the "LIMIT" where to start grabbing data. If cannot be used without a limit having been set first.
+
+| Parameter	| Type		| Default 	| Description 					 |
+| :--------	| :-------- | :-----  	| :----------------------------  | 
+| offset	| Integer	| NULL		| where to start before limiting |
+
+The practical uses of this method are probably miniscule since the `.limit()` method must be called in order to use it and the limit method provides a means by which to set the offset. In any case, the method is very simple: pass the result row index that you want to start from when limiting. This is most useful for pagination of search results and similar scenarios.
+
+**Example**
+
+```javascript
+// SELECT * FROM `users` LIMIT 5, 25
+qb.limit(5).offset(25).get('users',callback);
+```
 
 Contribute
 ==========
