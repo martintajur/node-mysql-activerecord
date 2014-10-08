@@ -9,10 +9,11 @@ The primary benefits of this module (currently) are:
 
 * Ability to write queries agnostically to the database you intend to query
 * Supports all basic database commands (insert, update, delete, select, etc...)
-* Extend commands from the most popular native database drivers in NPM.
+* Extend capabilities from the most popular native database drivers in NPM.
 * Supports method chaining
 * Automatically escapes field values
 * Is fully unit tested
+* **Very thoroughly documented**
 * Allows for greater flexibility and more control over a full ORM
 * Ligher-weight than an ORM
 * Allows you to drop down to the native methods of your driver if you choose
@@ -1046,7 +1047,10 @@ There are scenarios when using this method may be required; for instance, if you
 **Example**
 
 ```javascript
-var sql = qb.select(['f.foo','b.bar']).from('foo f').join('bar b','b.foo_id=f.id','left').get_compiled_select();
+var sql = qb.select(['f.foo','b.bar'])
+	.from('foo f')
+	.join('bar b','b.foo_id=f.id','left')
+	.get_compiled_select();
 qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 ```
 
@@ -1111,7 +1115,9 @@ qb.limit(10)
 		
 		for (var i in response) {
 			var row = response[i];
-			console.log("The " + row.name + " is a " + row.diameter + " lightyear-wide " + row.type + " galaxy with " + row.num_stars + " stars.");
+			console.log("The " + row.name + " is a " + row.diameter 
+				+ " lightyear-wide " + row.type + " galaxy with " 
+				+ row.num_stars + " stars.");
 		}
 	});
 ```
@@ -1210,9 +1216,9 @@ These are methods that aren't part of the query-building chain, but, rather, met
 | [last_query()](#last_query)					| &#x2713;	| 		|			|			|			|		|
 | [escape()](#escape)							| &#x2713;	| 		|			|			|			|		|
 | [get_compiled_select()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
-| [get_compiled_insert()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
-| [get_compiled_update()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
-| [get_compiled_delete()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
+| [get_compiled_insert()](#get_compiled_insert)	| &#x2713;	| 		|			|			|			|		|
+| [get_compiled_update()](#get_compiled_update)	| &#x2713;	| 		|			|			|			|		|
+| [get_compiled_delete()](#get_compiled_delete)	| &#x2713;	| 		|			|			|			|		|
 
 
 ### .last_query()
@@ -1221,6 +1227,23 @@ These are methods that aren't part of the query-building chain, but, rather, met
 
 ### .escape(value)
 
+-------------
+
+### .get_compiled_select()
+
+-------------
+
+### .get_compiled_insert()
+
+-------------
+
+### .get_compiled_update()
+
+-------------
+
+### .get_compiled_delete()
+
+-------------
 
 Contribute
 ==========
