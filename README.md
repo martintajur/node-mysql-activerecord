@@ -200,35 +200,35 @@ API Methods
 SQL Commands
 -------------
 
-| SQL Command		| API Method									| MySQL 	| MSSQL		| Oracle	| SQLite	| Postgres	| Mongo |
-| :------------		| :----------------								| :-------: | :-------: | :-------: | :-------: | :-------: | :---: |
-| SELECT			| [select()](#select)							| &#x2713;	|			|			|			|			|		|
-| DISTINCT 			| [distinct()](#distinct)						| &#x2713;	|			|			|			|			|		|
-| MIN 				| [select_min()](#min)							| &#x2713;	|			|			|			|			|		|
-| MAX 				| [select_max()](#max)							| &#x2713;	|			|			|			|			|		|
-| AVG 				| [select_avg()](#avg)							| &#x2713;	|			|			|			|			|		|
-| SUM 				| [select_sum()](#sum)							| &#x2713;	|			|			|			|			|		|
-| FROM 				| [from()](#from)								| &#x2713;	|			|			|			|			|		|
-| JOIN				| [join()](#join)								| &#x2713;	|			|			|			|			|		|
-| WHERE 			| [where()](#where)								| &#x2713;	|			|			|			|			|		|
-| IN 				| [where_in()](#or_where_infieldvaluesescape)	| &#x2713;	|			|			|			|			|		|
-| GROUP BY			| [group_by()](#group-by)						| &#x2713;	|			|			|			|			|		|
-| HAVING			| [having()](#having)							| &#x2713;	|			|			|			|			|		|
-| ORDER BY			| [order_by()](#order_by)						| &#x2713;	|			|			|			|			|		|
-| LIMIT				| [limit()](#limit)								| &#x2713;	|			|			|			|			|		|
-| OFFSET			| [offset()](#offset)							| &#x2713;	|			|			|			|			|		|
-| COUNT				| [count()](#count)								| &#x2713;	|			|			|			|			|		|
-| SET				| [set()](#set)									| &#x2713;	|			|			|			|			|		|
-| UPDATE 			| [update()](#update)							| &#x2713;	|			|			|			|			|		|
-| INSERT 			| [insert()](#insert)							| &#x2713;	|			|			|			|			|		|
-| INSERT IGNORE		| [insert_ignore()](#insert_ignore)				| &#x2713;	|			|			|			|			|		|
-| DELETE			| [delete()](#delete)							| &#x2713;	|			|			|			|			|		|
+| SQL Command		| API Method						| MySQL 	| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
+| :----------------	| :--------------------------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
+| SELECT			| [select()](#select)				| &#x2713;	|		|			|			|			|		|
+| DISTINCT 			| [distinct()](#distinct)			| &#x2713;	|		|			|			|			|		|
+| MIN 				| [select_min()](#min)				| &#x2713;	|		|			|			|			|		|
+| MAX 				| [select_max()](#max)				| &#x2713;	|		|			|			|			|		|
+| AVG 				| [select_avg()](#avg)				| &#x2713;	|		|			|			|			|		|
+| SUM 				| [select_sum()](#sum)				| &#x2713;	|		|			|			|			|		|
+| FROM 				| [from()](#from)					| &#x2713;	|		|			|			|			|		|
+| JOIN				| [join()](#join)					| &#x2713;	|		|			|			|			|		|
+| WHERE 			| [where()](#where)					| &#x2713;	|		|			|			|			|		|
+| IN 				| [where_in()](#where_in)			| &#x2713;	|		|			|			|			|		|
+| GROUP BY			| [group_by()](#group_by)			| &#x2713;	|		|			|			|			|		|
+| HAVING			| [having()](#having)				| &#x2713;	|		|			|			|			|		|
+| ORDER BY			| [order_by()](#order_by)			| &#x2713;	|		|			|			|			|		|
+| LIMIT				| [limit()](#limit)					| &#x2713;	|		|			|			|			|		|
+| OFFSET			| [offset()](#offset)				| &#x2713;	|		|			|			|			|		|
+| COUNT				| [count()](#count)					| &#x2713;	|		|			|			|			|		|
+| SET				| [set()](#set)						| &#x2713;	|		|			|			|			|		|
+| UPDATE 			| [update()](#update)				| &#x2713;	|		|			|			|			|		|
+| INSERT 			| [insert()](#insert)				| &#x2713;	|		|			|			|			|		|
+| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	| &#x2713;	|		|			|			|			|		|
+| DELETE			| [delete()](#delete)				| &#x2713;	|		|			|			|			|		|
 
 Library-Specific Methods
 ------------------------
 
-| API Method								| MySQL 	| MSSQL | Oracle	| SQLite	| Postgres	| Mongo |
-| :-----------------------------------------| :-------: | :---: | :-------: | :-------: | :-------: | :---: |
+| API Method								| MySQL 	| MSSQL | Oracle	| SQLite	| Postgres	| Mongo	|
+| :----------------------------------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
 | [get()](#get)								| &#x2713;	|		|			|			|			|		|
 | [get_where()](#get_where)					| &#x2713;	|		|			|			|			|		|
 | [count_all()](#count_all)					| &#x2713;	|		|			|			|			|		|
