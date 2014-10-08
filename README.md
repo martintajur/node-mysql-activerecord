@@ -98,14 +98,14 @@ Connecting to Your Database
 Quick Reference
 ---------------
 
-| Driver    | Default | Active 	| standard 	| pool | cluster | Additional Connection Options						    |
-| :--------	| :------ | :----- 	| :------- 	| :--- | :------ | :------------------------------------------------------- | 
-| mysql	 	| X       | Yes    	| Yes		| Yes  | Yes	 | https://github.com/felixge/node-mysql#connection-options |
-| mssql	 	|         | No  	| Yes		| ???  | ???	 | 														    |
-| sqlite 	|         | No  	| Yes		| ???  | ???	 | 														    |
-| oracle 	|         | No  	| Yes		| ???  | ???	 | 														    |
-| postgres	|         | No  	| Yes		| ???  | ???	 | 														    |
-| mongodb	|         | No	 	| Yes		| ???  | ???	 | 														    |
+| Driver	| Default	| Active	| standard	| pool	| cluster | Additional Connection Options								|
+| :--------	| :------ 	| :-----	| :------- 	| :---	| :------ | :---------------------------------------------------------- |
+| mysql		| &#x2713;	| Yes		| Yes		| Yes	| Yes		| https://github.com/felixge/node-mysql#connection-options	|
+| mssql		|			| No		| Yes		| ???	| ???		|															|
+| sqlite	|			| No		| Yes		| ???	| ???		|															|
+| oracle	|			| No		| Yes		| ???	| ???		|															|
+| postgres	|			| No		| Yes		| ???	| ???		|															|
+| mongodb	|			| No		| Yes		| ???	| ???		|															|
 
 
 Standard Connection Settings
@@ -114,12 +114,12 @@ Standard Connection Settings
 The options listed below are available for all database drivers. Additional properties may be passed if the driver of the database you are connecting to supports them. See the "Additional Connection Options" column above for a link to the a specific driver's connection options documentation.
 
 | Option	| Default 	| Description 									|
-| :--------	| :-----  	| :-------------------------------------------- | 
-| host	 	| localhost | The server you're connecting to				|
-| user	 	| NULL 	  	| The database user 							|
-| password 	| NULL 	  	| The database `user`'s password				|
-| database 	| NULL 	  	| The database to connect to					|
-| pool_size	| 10 	  	| Max connections for `pool` connection type	|
+| :--------	| :-----  	| :-------------------------------------------- |
+| host		| localhost | The server you're connecting to				|
+| user		| NULL		| The database user								|
+| password	| NULL		| The database `user`'s password				|
+| database	| NULL		| The database to connect to					|
+| pool_size	| 10 		| Max connections for `pool` connection type	|
 
 The best way to store these options is in a JSON file outsite of your web root where only root and the server user can access them.
 
@@ -200,51 +200,51 @@ API Methods
 SQL Commands
 -------------
 
-| SQL Command		| API Method						| MySQL 	| MSSQL | Oracle | SQLite | Postgres | Mongo |
-| :------------		| :----------------					| :---: 	| :---: | :----: | :-----:| :------: | :---: |
-| SELECT			| [select()](#select)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| DISTINCT 			| [distinct()](#distinct)			| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
-| MIN 				| [select_min()](#min)				| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
-| MAX 				| [select_max()](#max)				| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
-| AVG 				| [select_avg()](#avg)				| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
-| SUM 				| [select_sum()](#sum)				| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
-| FROM 				| [from()](#from)					| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| JOIN				| [join()](#join)					| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
-| WHERE 			| [where()](#where)					| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| IN 				| [where_in()](#where_in)			| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| GROUP BY			| [group_by()](#group_by)			| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| HAVING			| [having()](#having)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| ORDER BY			| [order_by()](#order_by)			| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| LIMIT				| [limit()](#limit)					| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| OFFSET			| [offset()](#offset)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| COUNT				| [count()](#count)					| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| SET				| [set()](#set)						| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| UPDATE 			| [update()](#update)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
-| INSERT 			| [insert()](#insert)				| &#x2713;	|   	|   	 |  	  |  		 | 	 	 |
-| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
-| DELETE			| [delete()](#delete)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| SQL Command		| API Method									| MySQL 	| MSSQL		| Oracle	| SQLite	| Postgres	| Mongo |
+| :------------		| :----------------								| :-------: | :-------: | :-------: | :-------: | :-------: | :---: |
+| SELECT			| [select()](#select)							| &#x2713;	|			|			|			|			|		|
+| DISTINCT 			| [distinct()](#distinct)						| &#x2713;	|			|			|			|			|		|
+| MIN 				| [select_min()](#min)							| &#x2713;	|			|			|			|			|		|
+| MAX 				| [select_max()](#max)							| &#x2713;	|			|			|			|			|		|
+| AVG 				| [select_avg()](#avg)							| &#x2713;	|			|			|			|			|		|
+| SUM 				| [select_sum()](#sum)							| &#x2713;	|			|			|			|			|		|
+| FROM 				| [from()](#from)								| &#x2713;	|			|			|			|			|		|
+| JOIN				| [join()](#join)								| &#x2713;	|			|			|			|			|		|
+| WHERE 			| [where()](#where)								| &#x2713;	|			|			|			|			|		|
+| IN 				| [where_in()](#or_where_infieldvaluesescape)	| &#x2713;	|			|			|			|			|		|
+| GROUP BY			| [group_by()](#group-by)						| &#x2713;	|			|			|			|			|		|
+| HAVING			| [having()](#having)							| &#x2713;	|			|			|			|			|		|
+| ORDER BY			| [order_by()](#order_by)						| &#x2713;	|			|			|			|			|		|
+| LIMIT				| [limit()](#limit)								| &#x2713;	|			|			|			|			|		|
+| OFFSET			| [offset()](#offset)							| &#x2713;	|			|			|			|			|		|
+| COUNT				| [count()](#count)								| &#x2713;	|			|			|			|			|		|
+| SET				| [set()](#set)									| &#x2713;	|			|			|			|			|		|
+| UPDATE 			| [update()](#update)							| &#x2713;	|			|			|			|			|		|
+| INSERT 			| [insert()](#insert)							| &#x2713;	|			|			|			|			|		|
+| INSERT IGNORE		| [insert_ignore()](#insert_ignore)				| &#x2713;	|			|			|			|			|		|
+| DELETE			| [delete()](#delete)							| &#x2713;	|			|			|			|			|		|
 
 Library-Specific Methods
 ------------------------
 
-| API Method								| MySQL 	| MSSQL | Oracle | SQLite | Postgres | Mongo |
-| :----------------							| :---: 	| :---: | :----: | :-----:| :------: | :---: |
-| [get()](#get)								| &#x2713;	|  		| 		 |  	  |	 		 |   	 | 
-| [get_where()](#get_where)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [count_all()](#count_all)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [where_not_in()](#where_not_in)			| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [or_where()](#or_where)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [or_where_in()](#or_where_in)				| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [or_where_not_in()](#or_where_not_in)		| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [or_like()](#or_like)						| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [or_not_like()](#or_not_like)				| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [not_like()](#not_like)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [or_having()](#or_having)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [count_all_results()](#count_all_results)	| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [insert_batch()](#insert_batch)			| &#x2713;	|  		|  		 |  	  |	 		 |	 	 | 
-| [update_batch()](#update_batch)			| &#x2713;	|  		|  		 |  	  |	 		 |	 	 | 
-| [query()](#query)							| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
-| [last_query()](#last_query)				| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| API Method								| MySQL 	| MSSQL | Oracle	| SQLite	| Postgres	| Mongo |
+| :-----------------------------------------| :-------: | :---: | :-------: | :-------: | :-------: | :---: |
+| [get()](#get)								| &#x2713;	|		|			|			|			|		|
+| [get_where()](#get_where)					| &#x2713;	|		|			|			|			|		|
+| [count_all()](#count_all)					| &#x2713;	|		|			|			|			|		|
+| [where_not_in()](#where_not_in)			| &#x2713;	|		|			|			|			|		|
+| [or_where()](#or_where)					| &#x2713;	|		|			|			|			|		|
+| [or_where_in()](#or_where_in)				| &#x2713;	|		|			|			|			|		|
+| [or_where_not_in()](#or_where_not_in)		| &#x2713;	|		|			|			|			|		|
+| [or_like()](#or_like)						| &#x2713;	|		|			|			|			|		|
+| [or_not_like()](#or_not_like)				| &#x2713;	|		|			|			|			|		|
+| [not_like()](#not_like)					| &#x2713;	|		|			|			|			|		|
+| [or_having()](#or_having)					| &#x2713;	|		|			|			|			|		|
+| [count_all_results()](#count_all_results)	| &#x2713;	|		|			|			|			|		|
+| [insert_batch()](#insert_batch)			| &#x2713;	|		|			|			|			|		|
+| [update_batch()](#update_batch)			| &#x2713;	|		|			|			|			|		|
+| [query()](#query)							| &#x2713;	|		|			|			|			|		|
+| [last_query()](#last_query)				| &#x2713;	|		|			|			|			|		|
 
 -------------
 
@@ -253,10 +253,10 @@ Library-Specific Methods
 
 This method is used to specify the fields to pull into the resultset when running SELECT-like queries.
 
-| Parameter	| Type			| Default 	| Description 									|
-| :--------	| :-------- 	| :-----  	| :-------------------------------------------- | 
-| fields 	| String/Array	| N/A 		| The fields in which to grab from the database |
-| escape 	| Boolean		| true 		| TRUE: auto-escape fields; FALSE: don't escape |
+| Parameter	| Type			| Default	| Description 									|
+| :--------	| :-------- 	| :-----	| :-------------------------------------------- | 
+| fields 	| String/Array	| N/A		| The fields in which to grab from the database |
+| escape 	| Boolean		| true		| TRUE: auto-escape fields; FALSE: don't escape |
 
 
 The fields provided to this method will be automatically escaped by the database driver. The `fields` paramter can be passed in 1 of 2 ways (field names will be trimmed in either scenario):
@@ -267,7 +267,7 @@ The fields provided to this method will be automatically escaped by the database
 	* `.select('foo, bar, baz')`
 * Array of field names
 	* `.select(['foo','bar','baz'])`
-	
+
 **Examples**
 
 `.select()` is not called ('*' assumed)
@@ -330,8 +330,8 @@ qb.distinct().select('id,name,description').get('users',callback);
 
 This SQL command is used to find the minimum value for a specific field within a resultset.
 
-| Parameter	| Type		| Default 	| Description 							|
-| :--------	| :-------- | :-----  	| :-------------------------------------| 
+| Parameter	| Type		| Default	| Description							|
+| :--------	| :-------- | :-----	| :-------------------------------------|
 | field 	| String	| Required	| The field to get the minimum value of |
 | alias 	| String	| NULL 		| Optional alias to rename field		|
 
@@ -356,10 +356,10 @@ qb.select_min('age','min_age').get('users',callback);
 
 This SQL command is used to find the maximum value for a specific field within a resultset.
 
-| Parameter	| Type		| Default 	| Description 							|
-| :--------	| :-------- | :-----  	| :-------------------------------------| 
-| field 	| String	| Required	| The field to get the maximum value of |
-| alias 	| String	| NULL 		| Optional alias to rename field		|
+| Parameter	| Type		| Default	| Description 							|
+| :--------	| :-------- | :-----	| :-------------------------------------|
+| field		| String	| Required	| The field to get the maximum value of |
+| alias		| String	| NULL		| Optional alias to rename field		|
 
 **Examples**
 
@@ -382,10 +382,10 @@ qb.select_max('age','max_age').get('users',callback);
 
 This SQL command is used to find the average value for a specific field within a resultset.
 
-| Parameter	| Type		| Default 	| Description 							|
-| :--------	| :-------- | :-----  	| :-------------------------------------| 
-| field 	| String	| Required	| The field to get the average value of |
-| alias 	| String	| NULL 		| Optional alias to rename field		|
+| Parameter	| Type		| Default	| Description							|
+| :--------	| :-------- | :-----	| :-------------------------------------| 
+| field		| String	| Required	| The field to get the average value of |
+| alias		| String	| NULL		| Optional alias to rename field		|
 
 **Examples**
 
@@ -408,10 +408,10 @@ qb.select_avg('age','avg_age').get('users',callback);
 
 This SQL command is used to find the minimum value for a specific field within a result set.
 
-| Parameter	| Type		| Default 	| Description 							|
-| :--------	| :-------- | :-----  	| :-------------------------------------| 
-| field 	| String	| Required	| The field to get the minimum value of |
-| alias 	| String	| NULL 		| Optional alias to rename field		|
+| Parameter	| Type		| Default	| Description 							|
+| :--------	| :-------- | :-----	| :------------------------------------	|
+| field		| String	| Required	| The field to get the minimum value of	|
+| alias		| String	| NULL		| Optional alias to rename field		|
 
 **Examples**
 
@@ -434,9 +434,9 @@ qb.select_sum('age','sum_age').get('users',callback);
 
 This SQL command is used to determine which sources, available to the active connection, to obtain data from.
 
-| Parameter	| Type			| Default 	| Description 									|
-| :--------	| :-------- 	| :-----  	| :-------------------------------------------- | 
-| tables 	| String/Array	| N/A 		| Table(s), view(s), etc... to grab data from 	|
+| Parameter	| Type			| Default	| Description 									|
+| :--------	| :------------ | :--------	| :--------------------------------------------	|
+| tables	| String/Array	| N/A		| Table(s), view(s), etc... to grab data from	|
 
 You can provide tables, views, or any other valid source of data in a comma-seperated list (string) or an array. When more than one data-source is provided when connected to a traditional RDMS, the tables will joined using a basic join. You can also `.from()` multiple times to get the same effect (the order in which they are called does not matter).
 
@@ -490,10 +490,10 @@ qb.from('groups g').select('u.id,u.name,u,description,g.name as group_name')
 
 This SQL command is used query multiple tables related and connected by keys and get a single resultset.
 
-| Parameter	| Type		| Default 	| Description 												|
-| :--------	| :-------- | :-----  	| :--------------------------------------------------------	| 
-| table 	| String	| Required	| The table or view to join to.								|
-| relation 	| String	| Required	| The "ON" statement that relates two tables together		|
+| Parameter	| Type		| Default	| Description 												|
+| :--------	| :--------	| :--------	| :--------------------------------------------------------	|
+| table		| String	| Required	| The table or view to join to.								|
+| relation	| String	| Required	| The "ON" statement that relates two tables together		|
 | direction	| String	| "left"	| Direction of the join (see join types list below)			|
 
 **Join Types/Directions**
@@ -551,10 +551,10 @@ qb.select(select).from('users u')
 
 This SQL command is used to limit the resultset based on filters.
 
-| Parameter		| Type			| Default 	| Description 													|
-| :--------		| :-------- 	| :-----  	| :------------------------------------------------------------	| 
+| Parameter		| Type			| Default	| Description 													|
+| :------------	| :------------	| :--------	| :------------------------------------------------------------	|
 | field/filters | String/Object	| Required	| A field name, a WHERE clause, or an object of key/value pairs |
-| value 		| Mixed			| N/A		| When the first parameter is a field name, this is the value	|
+| value			| Mixed			| N/A		| When the first parameter is a field name, this is the value	|
 | escape		| Boolean		| TRUE		| TRUE: Escape field names and values; FALSE: No escaping		|
 
 #### .where(field[,value[,escape]])
@@ -603,6 +603,7 @@ qb.select('star_system')
 	.get('star_systems',callback);
 ```
 
+<a name="or_where"></a>
 #### .or_where(field[,value[,escape]])
 
 This method functions identically to [.where()](#where) except that it joins clauses with 'OR' instead of 'AND'.
@@ -615,6 +616,7 @@ qb.select('star_system').where('star','Sun')
 	.get('star_systems',callback);
 ```
 
+<a name="where_in"></a>
 #### .where_in(field,values[,escape])
 
 This will create a "WHERE IN" statement in traditional SQL which is useful when you're trying to find rows with fields matching many different values... It will be joined with existing "WHERE" statements with 'AND'.
@@ -626,6 +628,7 @@ var stars = ['Sun','Betelgeuse','Sirius','Vega','Alpha Centauri'];
 qb.select('star_system').where_in('star',stars).get('star_systems',callback);
 ```
 
+<a name="or_where_in"></a>
 #### .or_where_in(field,values[,escape])
 
 Same as `.where_in()` except the clauses are joined by 'OR'.
@@ -639,6 +642,7 @@ qb.select('star_system').where('planet_count',4)
 	.get('star_systems',callback);
 ```
 
+<a name="where_not_in"></a>
 #### .where_not_in(field,values[,escape])
 
 Same as `.where_in()` except this generates a "WHERE NOT IN" statement. All clauses are joined with 'AND'.
@@ -650,6 +654,7 @@ var stars = ['Sun','Betelgeuse','Sirius','Vega','Alpha Centauri'];
 qb.select('star_system').where_not_in('star',stars).get('star_systems',callback);
 ```
 
+<a name="or_where_not_in"></a>
 #### .or_where_not_in(field,values[,escape])
 
 Same as `.where_not_in()` except that clauses are joined with 'OR'.
@@ -673,9 +678,9 @@ qb.select('star_system')
 This SQL command is used to find close matches where as the "WHERE" command is for precise matches. This is useful for doing searches.
 
 | Parameter		| Type			| Default 	| Description 										|
-| :--------		| :------------ | :-----  	| :------------------------------------------------	| 
+| :------------	| :------------	| :--------	| :------------------------------------------------	|
 | field/filters | String/Object	| Required	| Field name or object of field/match pairs			|
-| value 		| String/Number	| Required	| The value you want the field to closely match		|
+| value			| String/Number	| Required	| The value you want the field to closely match		|
 | side			| String		| 'both'	| before: '%value'; after: 'value%', both: '%value%'|
 
 #### .like(field,match[,side])
@@ -738,6 +743,7 @@ qb.select('first_name')
 	.get('users',callback);
 ```
 
+<a name="or_like"></a>
 #### .or_like(field,match[,side])
 
 This is exactly the same as the `.like()` method except that the clauses are joined by 'OR' not 'AND'.
@@ -756,7 +762,7 @@ qb.select('first_name')
 	.get('users',callback);
 ```
 
-
+<a name="not_like"></a>
 #### .not_like(field,match[,side])
 
 This is exactly the same as the `.like()` method except that it creates "NOT LIKE" statements.
@@ -773,6 +779,7 @@ qb.select('first_name')
 	.get('users',callback);
 ```
 
+<a name="or_not_like"></a>
 #### .or_not_like(field,match[,side])
 
 This is exactly the same as the `.not_like()` method except that the clauses are joined by 'OR' not 'AND'.
@@ -794,9 +801,9 @@ qb.select('first_name')
 
 This SQL command allows you to get the first (depending on ORDER) result of a group of results related by a shared value or values.
 
-| Parameter	| Type			| Default 	| Description 							|
-| :--------	| :------------ | :-----  	| :------------------------------------	| 
-| field(s) 	| String/Object	| Required	| Field name or array of field names	|
+| Parameter	| Type			| Default	| Description 							|
+| :--------	| :------------	| :-------	| :------------------------------------	|
+| field(s)	| String/Object	| Required	| Field name or array of field names	|
 
 **Examples**
 
@@ -819,11 +826,11 @@ qb.group_by(['department_id','position_id']).get('users',callback);
 
 This SQL command is similar to the 'WHERE' command but is used when aggregate functions are used in the "SELECT" portion of the query.
 
-| Parameter		| Type			| Default 	| Description 												|
-| :--------		| :------------ | :-----  	| :-----------------------------------------------------	| 
-| field/filters | String/Object	| Required	| Field name or object of field/value pairs to filter on	|
-| value 		| Mixed			| NULL		| Value to filter by										|
-| escape 		| Boolean		| true		| TRUE: Escape fields and values; FALSE: Don't escape.		|
+| Parameter		| Type			| Default	| Description 												|
+| :--------		| :------------	| :--------	| :-----------------------------------------------------	|
+| field/filters	| String/Object	| Required	| Field name or object of field/value pairs to filter on	|
+| value			| Mixed			| NULL		| Value to filter by										|
+| escape		| Boolean		| true		| TRUE: Escape fields and values; FALSE: Don't escape.		|
 
 This method works exactly the same way as the `.where()` method works with the exception of the fact that there is no 'HAVING' equivalent to 'WHERE IN'. See the [.where()](#where) documentation if you need additional information.
 
@@ -865,6 +872,7 @@ You can construct complex WHERE clauses manually and they will be escaped proper
 qb.group_by('id').having("`num_planets` > (5+2)",null,false).count('star_systems',callback);
 ```
 
+<a name="or_having"></a>
 #### .or_having(field[,value[,escape]])
 
 This method functions identically to [.having()](#having) except that it joins clauses with 'OR' instead of 'AND'.
@@ -885,7 +893,7 @@ qb.group_by('id')
 This SQL command is used to order the resultset by a field or fields in descending, ascending, or random order(s).
 
 | Parameter	| Type			| Default 	| Description 																|
-| :--------	| :------------ | :-----  	| :------------------------------------------------------------------------ | 
+| :--------	| :------------	| :--------	| :------------------------------------------------------------------------ |
 | fields	| String/Array	| Required	| Field name or an array of field names, possibly with directions as well	|
 | direction	| String		| 'asc'		| 'asc': Ascending; 'desc': Descending; 'rand'/'random'/'rand()': Random.	|
 
@@ -948,7 +956,7 @@ qb.order_by('galaxy_name asc, galaxy_size desc').get('galaxies',callback);
 This SQL command is used to limit a result set to a maximum number of results, regardless of the actual number of results that might be returned by a non-limited query.
 
 | Parameter	| Type		| Default 	| Description 											|
-| :--------	| :-------- | :-----  	| :---------------------------------------------------- | 
+| :--------	| :--------	| :--------	| :----------------------------------------------------	|
 | limit_to	| Integer	| Required	| The maximum number of results you want from the query	|
 | offset	| Integer	| NULL		| Optional offset value (where to start before limiting)|
 
@@ -971,9 +979,9 @@ qb.limit(5,5).get('users',callback);
 
 This SQL command is tell the "LIMIT" where to start grabbing data. If cannot be used without a limit having been set first.
 
-| Parameter	| Type		| Default 	| Description 					 |
-| :--------	| :-------- | :-----  	| :----------------------------  | 
-| offset	| Integer	| NULL		| where to start before limiting |
+| Parameter	| Type		| Default	| Description 						|
+| :--------	| :--------	| :-----	| :-----------------------------	|
+| offset	| Integer	| NULL		| where to start before limiting	|
 
 The practical uses of this method are probably miniscule since the `.limit()` method must be called in order to use it and the limit method provides a means by which to set the offset. In any case, the method is very simple: pass the result row index that you want to start from when limiting. This is most useful for pagination of search results and similar scenarios.
 
