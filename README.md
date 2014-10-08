@@ -200,51 +200,51 @@ API Methods
 SQL Commands
 -------------
 
-| SQL Command		| API Method						| MySQL | MSSQL | Oracle | SQLite | Postgres | Mongo |
-| :------------		| :----------------					| :---: | :---: | :----: | :-----:| :------: | :---: |
-| SELECT			| [select()](#select)				| x		|  		|  		 |  	  |	 		 |		 |
-| DISTINCT 			| [distinct()](#distinct)			| x		|  		|  		 |	 	  |	 		 |		 |
-| MIN 				| [select_min()](#min)				| x		|  		|  		 |	 	  |	 		 |		 |
-| MAX 				| [select_max()](#max)				| x		|  		|  		 |	 	  |	 		 |		 |
-| AVG 				| [select_avg()](#avg)				| x		|  		|  		 |	 	  |	 		 |		 |
-| SUM 				| [select_sum()](#sum)				| x		|  		|  		 |	 	  |	 		 |		 |
-| FROM 				| [from()](#from)					| x		|  		|  		 |  	  |	 		 |		 |
-| JOIN				| [join()](#join)					| x		|  		|  		 |	 	  |	 		 |		 |
-| WHERE 			| [where()](#where)					| x		|  		|  		 |  	  |	 		 |		 |
-| IN 				| [where_in()](#where_in)			| x		|  		|  		 |  	  |	 		 |		 |
-| GROUP BY			| [group_by()](#group_by)			| x		|  		|  		 |  	  |	 		 |		 |
-| HAVING			| [having()](#having)				| x		|  		|  		 |  	  |	 		 |		 |
-| ORDER BY			| [order_by()](#order_by)			| x		|  		|  		 |  	  |	 		 |		 |
-| LIMIT				| [limit()](#limit)					| x		|  		|  		 |  	  |	 		 |		 |
-| OFFSET			| [offset()](#offset)				| x		|  		|  		 |  	  |	 		 |		 |
-| COUNT				| [count()](#count)					| x		|  		|  		 |  	  |	 		 |		 |
-| SET				| [set()](#set)						| x		|  		|  		 |  	  |	 		 |		 |
-| UPDATE 			| [update()](#update)				| x		|  		|  		 |  	  |	 		 |		 |
-| INSERT 			| [insert()](#insert)				| x		|   	|   	 |  	  |  		 | 	 	 |
-| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	| x		|  		|  		 |	 	  |	 		 |		 |
-| DELETE			| [delete()](#delete)				| x		|  		|  		 |  	  |	 		 |		 |
+| SQL Command		| API Method						| MySQL 	| MSSQL | Oracle | SQLite | Postgres | Mongo |
+| :------------		| :----------------					| :---: 	| :---: | :----: | :-----:| :------: | :---: |
+| SELECT			| [select()](#select)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| DISTINCT 			| [distinct()](#distinct)			| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
+| MIN 				| [select_min()](#min)				| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
+| MAX 				| [select_max()](#max)				| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
+| AVG 				| [select_avg()](#avg)				| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
+| SUM 				| [select_sum()](#sum)				| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
+| FROM 				| [from()](#from)					| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| JOIN				| [join()](#join)					| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
+| WHERE 			| [where()](#where)					| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| IN 				| [where_in()](#where_in)			| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| GROUP BY			| [group_by()](#group_by)			| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| HAVING			| [having()](#having)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| ORDER BY			| [order_by()](#order_by)			| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| LIMIT				| [limit()](#limit)					| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| OFFSET			| [offset()](#offset)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| COUNT				| [count()](#count)					| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| SET				| [set()](#set)						| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| UPDATE 			| [update()](#update)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
+| INSERT 			| [insert()](#insert)				| &#x2713;	|   	|   	 |  	  |  		 | 	 	 |
+| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	| &#x2713;	|  		|  		 |	 	  |	 		 |		 |
+| DELETE			| [delete()](#delete)				| &#x2713;	|  		|  		 |  	  |	 		 |		 |
 
 Library-Specific Methods
 ------------------------
 
-| API Method								| MySQL | MSSQL | Oracle | SQLite | Postgres | Mongo |
-| :----------------							| :---: | :---: | :----: | :-----:| :------: | :---: |
-| [get()](#get)								| x		|  		| 		 |  	  |	 		 |   	 | 
-| [get_where()](#get_where)					| x		|  		|  		 |  	  |	 		 |  	 | 
-| [count_all()](#count_all)					| x		|  		|  		 |  	  |	 		 |  	 | 
-| [where_not_in()](#where_not_in)			| x		|  		|  		 |  	  |	 		 |  	 | 
-| [or_where()](#or_where)					| x		|  		|  		 |  	  |	 		 |  	 | 
-| [or_where_in()](#or_where_in)				| x		|  		|  		 |  	  |	 		 |  	 | 
-| [or_where_not_in()](#or_where_not_in)		| x		|  		|  		 |  	  |	 		 |  	 | 
-| [or_like()](#or_like)						| x		|  		|  		 |  	  |	 		 |  	 | 
-| [or_not_like()](#or_not_like)				| x		|  		|  		 |  	  |	 		 |  	 | 
-| [not_like()](#not_like)					| x		|  		|  		 |  	  |	 		 |  	 | 
-| [or_having()](#or_having)					| x		|  		|  		 |  	  |	 		 |  	 | 
-| [count_all_results()](#count_all_results)	| x		|  		|  		 |  	  |	 		 |  	 | 
-| [insert_batch()](#insert_batch)			| x		|  		|  		 |  	  |	 		 |	 	 | 
-| [update_batch()](#update_batch)			| x		|  		|  		 |  	  |	 		 |	 	 | 
-| [query()](#query)							| x		|  		|  		 |  	  |	 		 |  	 | 
-| [last_query()](#last_query)				| x		|  		|  		 |  	  |	 		 |  	 | 
+| API Method								| MySQL 	| MSSQL | Oracle | SQLite | Postgres | Mongo |
+| :----------------							| :---: 	| :---: | :----: | :-----:| :------: | :---: |
+| [get()](#get)								| &#x2713;	|  		| 		 |  	  |	 		 |   	 | 
+| [get_where()](#get_where)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [count_all()](#count_all)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [where_not_in()](#where_not_in)			| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [or_where()](#or_where)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [or_where_in()](#or_where_in)				| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [or_where_not_in()](#or_where_not_in)		| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [or_like()](#or_like)						| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [or_not_like()](#or_not_like)				| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [not_like()](#not_like)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [or_having()](#or_having)					| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [count_all_results()](#count_all_results)	| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [insert_batch()](#insert_batch)			| &#x2713;	|  		|  		 |  	  |	 		 |	 	 | 
+| [update_batch()](#update_batch)			| &#x2713;	|  		|  		 |  	  |	 		 |	 	 | 
+| [query()](#query)							| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
+| [last_query()](#last_query)				| &#x2713;	|  		|  		 |  	  |	 		 |  	 | 
 
 -------------
 
@@ -572,7 +572,7 @@ If you just want to pass a single filter at a time:
 qb.select('galaxy').where('planet_name','Earth').get('universe',callback);
 ```
 
-If you need more complex filtering using different operators (<, >, <=, =>, !-, <>, etc...), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
+If you need more complex filtering using different operators (`<, >, <=, =>, !=, <>, etc...`), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
 
 ```javascript
 // SELECT `planet` FROM `planets` WHERE `order` <= 3
@@ -838,7 +838,7 @@ If you just want to add a single having clause:
 qb.group_by('id').having('num_planets',5).count('star_systems',callback);
 ```
 
-If you need more complex filtering using different operators (<, >, <=, =>, !-, <>, etc...), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
+If you need more complex filtering using different operators (`<, >, <=, =>, !=, <>, etc...`), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
 
 ```javascript
 // SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
