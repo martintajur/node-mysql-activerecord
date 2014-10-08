@@ -33,8 +33,9 @@ Table of Contents
 	* [Choosing the Database Type](#choosing-the-database-type)
 	* [Choosing the Connection Type](#choosing-the-connection-type)
 * [API Methods](#api-methods)
-	* [SQL Commands](#sql-commands)
-	* [Library-Specific Methods](#library-specific-methods)
+	* [Chainable Methods](#chainable-methods)
+	* [Execution Methods](#execution-methods)
+	* [Other Library-Specific Methods](#other-library-specific-methods)
 * [Contribute](#contribute)
  
 Database Drivers
@@ -80,14 +81,14 @@ var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'standard'
 
 qb.select('name','position')
 	.where({type: 'rocky', 'diameter <': 12000})
-	.get('planets', function(err,rows) {
+	.get('planets', function(err,response) {
 		if (err) console.error("Uh oh! Couldn't get results: " + err.msg);
 		
 		// SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
 		console.log("Query Ran: " + qb.last_query());
 		
 		// [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
-		console.dir(rows);
+		console.dir(response);
 	}
 );
 ```
@@ -98,8 +99,8 @@ Connecting to Your Database
 Quick Reference
 ---------------
 
-| Driver	| Default	| Active	| standard	| pool	| cluster | Additional Connection Options								|
-| :--------	| :------ 	| :-----	| :------- 	| :---	| :------ | :---------------------------------------------------------- |
+| Driver	| Default	| Active	| standard	| pool	| cluster	| Additional Connection Options								|
+| :--------	| :------ 	| :-----	| :-------	| :----	| :----		| :--------------------------------------------------------	|
 | mysql		| &#x2713;	| Yes		| Yes		| Yes	| Yes		| https://github.com/felixge/node-mysql#connection-options	|
 | mssql		|			| No		| Yes		| ???	| ???		|															|
 | sqlite	|			| No		| Yes		| ???	| ???		|															|
@@ -197,54 +198,36 @@ API Methods
 
 ***NOTE:*** The compatibility portions of these tables are subject to change as features and drivers are written!
 
-SQL Commands
--------------
+Chainable Methods
+-----------------
 
-| SQL Command		| API Method						| MySQL 	| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
-| :----------------	| :--------------------------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
-| SELECT			| [select()](#select)				| &#x2713;	|		|			|			|			|		|
-| DISTINCT 			| [distinct()](#distinct)			| &#x2713;	|		|			|			|			|		|
-| MIN 				| [select_min()](#min)				| &#x2713;	|		|			|			|			|		|
-| MAX 				| [select_max()](#max)				| &#x2713;	|		|			|			|			|		|
-| AVG 				| [select_avg()](#avg)				| &#x2713;	|		|			|			|			|		|
-| SUM 				| [select_sum()](#sum)				| &#x2713;	|		|			|			|			|		|
-| FROM 				| [from()](#from)					| &#x2713;	|		|			|			|			|		|
-| JOIN				| [join()](#join)					| &#x2713;	|		|			|			|			|		|
-| WHERE 			| [where()](#where)					| &#x2713;	|		|			|			|			|		|
-| IN 				| [where_in()](#where_in)			| &#x2713;	|		|			|			|			|		|
-| GROUP BY			| [group_by()](#group_by)			| &#x2713;	|		|			|			|			|		|
-| HAVING			| [having()](#having)				| &#x2713;	|		|			|			|			|		|
-| ORDER BY			| [order_by()](#order_by)			| &#x2713;	|		|			|			|			|		|
-| LIMIT				| [limit()](#limit)					| &#x2713;	|		|			|			|			|		|
-| OFFSET			| [offset()](#offset)				| &#x2713;	|		|			|			|			|		|
-| COUNT				| [count()](#count)					| &#x2713;	|		|			|			|			|		|
-| SET				| [set()](#set)						| &#x2713;	|		|			|			|			|		|
-| UPDATE 			| [update()](#update)				| &#x2713;	|		|			|			|			|		|
-| INSERT 			| [insert()](#insert)				| &#x2713;	|		|			|			|			|		|
-| INSERT IGNORE		| [insert_ignore()](#insert_ignore)	| &#x2713;	|		|			|			|			|		|
-| DELETE			| [delete()](#delete)				| &#x2713;	|		|			|			|			|		|
-
-Library-Specific Methods
-------------------------
-
-| API Method								| MySQL 	| MSSQL | Oracle	| SQLite	| Postgres	| Mongo	|
-| :----------------------------------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
-| [get()](#get)								| &#x2713;	|		|			|			|			|		|
-| [get_where()](#get_where)					| &#x2713;	|		|			|			|			|		|
-| [count_all()](#count_all)					| &#x2713;	|		|			|			|			|		|
-| [where_not_in()](#where_not_in)			| &#x2713;	|		|			|			|			|		|
-| [or_where()](#or_where)					| &#x2713;	|		|			|			|			|		|
-| [or_where_in()](#or_where_in)				| &#x2713;	|		|			|			|			|		|
-| [or_where_not_in()](#or_where_not_in)		| &#x2713;	|		|			|			|			|		|
-| [or_like()](#or_like)						| &#x2713;	|		|			|			|			|		|
-| [or_not_like()](#or_not_like)				| &#x2713;	|		|			|			|			|		|
-| [not_like()](#not_like)					| &#x2713;	|		|			|			|			|		|
-| [or_having()](#or_having)					| &#x2713;	|		|			|			|			|		|
-| [count_all_results()](#count_all_results)	| &#x2713;	|		|			|			|			|		|
-| [insert_batch()](#insert_batch)			| &#x2713;	|		|			|			|			|		|
-| [update_batch()](#update_batch)			| &#x2713;	|		|			|			|			|		|
-| [query()](#query)							| &#x2713;	|		|			|			|			|		|
-| [last_query()](#last_query)				| &#x2713;	|		|			|			|			|		|
+| API Method							| SQL Command	| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
+| :------------------------------------	| :------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
+| [select()](#select)					| SELECT		| &#x2713;	|		|			|			|			|		|
+| [distinct()](#distinct)				| DISTINCT 		| &#x2713;	|		|			|			|			|		|
+| [select_min()](#min)					| MIN 			| &#x2713;	|		|			|			|			|		|
+| [select_max()](#max)					| MAX 			| &#x2713;	|		|			|			|			|		|
+| [select_avg()](#avg)					| AVG 			| &#x2713;	|		|			|			|			|		|
+| [select_sum()](#sum)					| SUM 			| &#x2713;	|		|			|			|			|		|
+| [from()](#from)						| FROM 			| &#x2713;	|		|			|			|			|		|
+| [join()](#join)						| JOIN			| &#x2713;	|		|			|			|			|		|
+| [where()](#where)						| WHERE 		| &#x2713;	|		|			|			|			|		|
+| [where_not_in()](#where_not_in)		| WHERE			| &#x2713;	|		|			|			|			|		|
+| [or_where()](#or_where)				| WHERE			| &#x2713;	|		|			|			|			|		|
+| [or_where_in()](#or_where_in)			| WHERE			| &#x2713;	|		|			|			|			|		|
+| [or_where_not_in()](#or_where_not_in)	| WHERE			| &#x2713;	|		|			|			|			|		|
+| [like()](#like)						| LIKE			| &#x2713;	|		|			|			|			|		|
+| [or_like()](#or_like)					| LIKE			| &#x2713;	|		|			|			|			|		|
+| [or_not_like()](#or_not_like)			| LIKE			| &#x2713;	|		|			|			|			|		|
+| [not_like()](#not_like)				| LIKE			| &#x2713;	|		|			|			|			|		|
+| [where_in()](#where_in)				| IN 			| &#x2713;	|		|			|			|			|		|
+| [group_by()](#group-by)				| GROUP BY		| &#x2713;	|		|			|			|			|		|
+| [having()](#having)					| HAVING		| &#x2713;	|		|			|			|			|		|
+| [or_having()](#or_having)				| HAVING		| &#x2713;	|		|			|			|			|		|
+| [order_by()](#order-by)				| ORDER BY		| &#x2713;	|		|			|			|			|		|
+| [limit()](#limit)						| LIMIT			| &#x2713;	|		|			|			|			|		|
+| [offset()](#offset)					| OFFSET		| &#x2713;	|		|			|			|			|		|
+| [set()](#set)							| SET			| &#x2713;	|		|			|			|			|		|
 
 -------------
 
@@ -796,6 +779,8 @@ qb.select('first_name')
 	.get('users',callback);
 ```
 
+-------------
+
 ### GROUP BY
 #### .group_by(fields)
 
@@ -820,6 +805,8 @@ Group by multiple fields:
 // SELECT * FROM `users` GROUP BY `department_id`, `position_id`
 qb.group_by(['department_id','position_id']).get('users',callback);
 ```
+
+-------------
 
 ### HAVING
 #### .having(field,value)
@@ -887,6 +874,8 @@ qb.group_by('id')
 	.count('star_systems',callback);
 ```
 
+-------------
+
 ### ORDER BY
 #### .order_by(field[,direction])
 
@@ -950,6 +939,8 @@ Pass a raw comma-seperated string of field + directions in first parameter and o
 qb.order_by('galaxy_name asc, galaxy_size desc').get('galaxies',callback);
 ```
 
+-------------
+
 ### LIMIT
 #### .limit(limit_to,offset)
 
@@ -974,6 +965,8 @@ You can provide an option offset value instead of calling [.offset()](#offset) s
 qb.limit(5,5).get('users',callback);
 ```
 
+-------------
+
 ### OFFSET
 #### .offset(offset)
 
@@ -991,6 +984,243 @@ The practical uses of this method are probably miniscule since the `.limit()` me
 // SELECT * FROM `users` LIMIT 5, 25
 qb.limit(5).offset(25).get('users',callback);
 ```
+
+-------------
+
+Execution Methods
+-----------------
+
+| API Method						| SQL Command	| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
+| :--------------------------------	| :------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
+| [query()](#query)					| N/A			| &#x2713;	|		|			|			|			|		|
+| [get()](#get)						| N/A			| &#x2713;	|		|			|			|			|		|
+| [get_where()](#get_where)			| N/A			| &#x2713;	|		|			|			|			|		|
+| [count()](#count)					| COUNT			| &#x2713;	|		|			|			|			|		|
+| [update()](#update)				| UPDATE 		| &#x2713;	|		|			|			|			|		|
+| [update_batch()](#update_batch)	| N/A			| &#x2713;	|		|			|			|			|		|
+| [insert()](#insert)				| INSERT 		| &#x2713;	|		|			|			|			|		|
+| [insert_batch()](#insert_batch)	| N/A			| &#x2713;	|		|			|			|			|		|
+| [insert_ignore()](#insert-ignore)	| INSERT IGNORE	| &#x2713;	|		|			|			|			|		|
+| [delete()](#delete)				| DELETE		| &#x2713;	|		|			|			|			|		|
+
+### What are "Execution Methods"??
+
+Execution methods are the end-of-chain methods in the QueryBuilder library. Once these methods are called, all the chainable methods you've called up until this point will be compiled into a query string and sent to the driver's `query()` method. At this point, the QueryBuilder will be reset and ready to build a new query. The database driver will respond positively with resultset/boolean depending on the type of query being executed or negatively with an error message. Both (if provided) will be supplied to the callback function.
+
+### Handling Error Messages and Results
+
+The final parameter of every execution method will be a callback function. The parameters for the callback are in the `node.js` standard `(err, response)` format. If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected (all others) in any other scenario.
+
+
+#### Callback Example
+
+```javascript
+var callback =  function(err, response) {
+	if (err) {
+		console.error(err);
+	} else {
+		for (var i in response) {
+			var row = response[i];
+			/*
+				Do something with each row...
+			*/
+		}
+	}
+};
+qb.get('foo',callback);
+```
+
+-------------
+
+### .query(query_string,callback)
+
+| Parameter		| Type		| Default	| Description										|
+| :--------		| :--------	| :-----	| :------------------------------------------------ |
+| query_string	| String	| Required	| Query to send directly to your database driver	|
+| callback		| Function	| Required	| What to do when the driver has responded			|
+
+This method bypasses the entire QueryBuilder portion of this module is simply uses your database driver's native querying method. You should be cautious when using this as none of this module's security and escaping functionality will be utilized.
+
+There are scenarios when using this method may be required; for instance, if you need to run a very specific type of command on your database that is not typical of a standard, CRUD-type query (ex. user permissions or creating a view).
+
+**Example**
+
+```javascript
+var sql = qb.select(['f.foo','b.bar']).from('foo f').join('bar b','b.foo_id=f.id','left').get_compiled_select();
+qb.query("CREATE VIEW `foobar` AS " + sql, callback);
+```
+
+-------------
+
+### .get(table,callback)
+
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.	|
+| callback	| Function	| Required	| What to do when the driver has responded						|
+
+This method is used when running queries that might respond with rows of data (namely, "SELECT" statements...). You can pass a table name as the first parameter to avoid having to call [.from()](#from) seperately. If the table name is omitted, and the first paramter is a callback function, there will be no need to pass a callback function into the second parameter.
+
+**Type of Response**
+
+Array of rows
+
+**Examples**
+
+If you want to provide a table name into the first parameter:
+
+```javascript
+// SELECT * FROM `galaxies`
+qb.get('galaxies', callback);
+```
+
+If you already have the table added to the query:
+
+```javascript
+// SELECT * FROM `galaxies`
+qb.from('galaxies').get(callback);
+```
+
+Just a more-complicated example for the sake of it:
+
+```javascript
+/**
+ * SELECT 
+ * 	`g`.`name`, 
+ *	`g`.`diameter`,
+ *	`g`.`type_id`, 
+ *	`gt`.`name` AS `type`, 
+ *	COUNT(`s`.`id`) as `num_stars`
+ * FROM `galaxies` `g`
+ * LEFT JOIN `galaxy_types` `gt` ON `gt`.`id`=`g`.`type_id`
+ * LEFT JOIN `stars` `s` ON `s`.`galaxy_id`=`g`.`id`
+ * GROUP BY `g`.`id`
+ * ORDER BY `g`.`name` ASC 
+ * LIMIT 10
+ **/
+qb.limit(10)
+	.select(['g.name','g.diameter','gt.name as type'])
+	.select('COUNT(`s`.`id`) as `num_stars`',null,false)
+	.from('galaxies g')
+	.join('galaxy_types gt','gt.id=g.type_id','left')
+	.join('stars s','s.galaxy_id=g.id','left')
+	.group_by('g.id')
+	.order_by('g.name','asc')
+	.get(function(err, response {
+		if (err) return console.error(err);
+		
+		for (var i in response) {
+			var row = response[i];
+			console.log("The " + row.name + " is a " + row.diameter + " lightyear-wide " + row.type + " galaxy with " + row.num_stars + " stars.");
+		}
+	});
+```
+
+-------------
+
+### .get_where(table,where,callback)
+
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| table		| String	| Required	| (optional) Used to avoid having to call `.from()` seperately.	|
+| where		| Object	| Required	| (optional) Used to avoid having to call `.where()` seperately	|
+| callback	| Function	| Required	| What to do when the driver has responded.						|
+
+This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` seperately). The other difference is that *all* parameters are required and they must be in the proper order.
+
+**Type of Response**
+
+Array of rows
+
+**Examples**
+
+Basic example:
+
+```javascript
+// SELECT * FROM `galaxies` WHERE `num_stars` > 100000000
+qb.get('galaxies', {'num_stars >': 100000000}, callback);
+```
+
+You can still provide other where statements if you want&mdash;they'll all work hapilly together:
+
+```javascript
+// SELECT * FROM `galaxies` WHERE `num_stars` > 100000000 AND `galaxy_type_id` = 3
+qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, callback);
+```
+
+-------------
+
+### .count(table,callback)
+
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| table		| String	| Required	| (optional) Used to avoid having to call `.from()` seperately.	|
+| callback	| Function	| Required	| What to do when the driver has responded.						|
+
+This method is used to determine the total number of results that a query would return without actually returning the entire resultset back to this module. Obviously, you could simply execute the same query with `.get()` and then check the `length` property of the response array, but, that would take significantly more time and memory for very large resultsets.
+
+**Type of Response**
+
+Integer
+
+**Examples**
+
+```javascript
+// SELECT COUNT(*) AS `count` FROM `galaxies` WHERE `type` = 3
+var type = 3;
+qb.where('type',type).count('galaxies', function(err, count) {
+	if (err) return console.error(err);
+	console.log("There are " + count + " Type " + type + " galaxies in the Universe.");
+});
+```
+
+-------------
+
+### .update(table,data,where,callback)
+
+-------------
+
+### .update_batch(table,dataset,where,callback)
+
+-------------
+
+### .insert(table,data,callback)
+
+-------------
+
+### .insert_batch(table,dataset,callback)
+
+-------------
+
+### .insert_ignore(table,data,callback)
+
+-------------
+
+### .delete(table,where,callback)
+
+-------------
+
+Other Library-Specifc Methods
+-----------------------------
+
+These are methods that aren't part of the query-building chain, but, rather, methods you might call before, after, or during (but not as part of) building a query.
+
+| API Method									| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
+| :--------------------------------------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
+| [last_query()](#last_query)					| &#x2713;	| 		|			|			|			|		|
+| [escape()](#escape)							| &#x2713;	| 		|			|			|			|		|
+| [get_compiled_select()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
+| [get_compiled_insert()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
+| [get_compiled_update()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
+| [get_compiled_delete()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
+
+
+### .last_query()
+
+-------------
+
+### .escape(value)
+
 
 Contribute
 ==========
