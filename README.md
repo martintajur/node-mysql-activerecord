@@ -3,7 +3,7 @@ Universal QueryBuilder for Node.js
 
 Node-QueryBuilder is an ambitious attempt to create a kind of "universal translator" which provides programmers a consistent API to connect to and query *any* database (traditional and NoSQL) supported by the module. The module is highly extensible and, in theory, can suppport any database provided that the driver has been written for it.
 
-The API of this module very closely mimics Codeigniter's Active Record (now called "Query Builder") library and much of the code has been directly translated from the PHP libraries in Codeigniter to JavaScript. A lot of credit needs to go to he folks over at EllisLab (https://ellislab.com/codeigniter) and all the contributors to the Codeigniter project (of which I am one): https://github.com/EllisLab/CodeIgniter/
+The API of this module very closely mimics Codeigniter's Active Record (now called "Query Builder") library and much of the code has been directly translated from the PHP libraries in Codeigniter to JavaScript. A lot of credit needs to go to the folks over at EllisLab (https://ellislab.com/codeigniter) and all the contributors to the Codeigniter project (of which I am one): https://github.com/EllisLab/CodeIgniter/
 
 The primary benefits of this module (currently) are:
 
@@ -11,12 +11,12 @@ The primary benefits of this module (currently) are:
 * Supports all basic database commands (insert, update, delete, select, etc...)
 * Extend capabilities from the most popular native database drivers in NPM.
 * Supports method chaining
-* Automatically escapes field values
+* Automatically escapes field values and identifiers by default
 * Is fully unit tested
 * **Very thoroughly documented**
 * Allows for greater flexibility and more control over a full ORM
 * Ligher-weight than an ORM
-* Allows you to drop down to the native methods of your driver if you choose
+* Allows you to drop down to the native methods of your driver if you choose to
 * Allows for different drivers for different versions (SQLite 2 vs SQLite 3)
 * The order in which you call the methods is irrelevant except for the execution methods (get, insert, update, delete) which must be called last.
 * Can used as a learning tool/Rosetta stone
@@ -44,7 +44,7 @@ Database Drivers
 
 Currently Written:
 ------------------
-* MySQL
+* MySQL / MariaDB
  
 Coming Soon:
 ------------
@@ -83,7 +83,7 @@ var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'standard'
 qb.select('name','position')
 	.where({type: 'rocky', 'diameter <': 12000})
 	.get('planets', function(err,response) {
-		if (err) console.error("Uh oh! Couldn't get results: " + err.msg);
+		if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
 		
 		// SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
 		console.log("Query Ran: " + qb.last_query());
@@ -192,6 +192,8 @@ You will specify the type of connection as the third parameter to the contructor
 ```javascript
 var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 ```
+
+
 
 
 API Methods
@@ -1184,6 +1186,51 @@ qb.where('type',type).count('galaxies', function(err, count) {
 
 ### .update(table,data,where,callback)
 
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| table		| String	| Required	| The table/collection you'd like to update						|
+| data		| Object	| Required	| The data to update (ex. {field: value})						|
+| where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately	|
+| callback	| Function	| Required	| What to do when the driver has responded.						|
+
+This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
+
+**Type of Response**
+
+Object containing infomration about the results of the query.
+
+**Examples**
+
+Here's a contrived example of how it might be used in an app made with the Express framework:
+
+```javascript
+var express = require('express');
+var app = express();
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
+
+app.post('/update_account', function(req, res) {
+	var user_id = req.session.user_id;
+	var data = {
+		first_name: sanitize_name(req.body.first_name),
+		last_name: sanitize_name(req.body.last_name),
+		age: sanitize_age(req.body.last_name),
+		bio: sanitize_bio(req.body.bio),
+	};
+	
+	pool.get_connection(function(err, qb) {
+		qb.update('users', data, {id:user_id}, function(err, res) {
+			if (err) return console.error(err);
+			
+			var page_data = {
+				prefill: data,
+			}
+			return res.render('/account_updated', page_data);
+		});
+	});
+});
+```
+
 -------------
 
 ### .update_batch(table,dataset,where,callback)
@@ -1213,6 +1260,7 @@ These are methods that aren't part of the query-building chain, but, rather, met
 
 | API Method									| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
 | :--------------------------------------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
+| [get_connection()](#get_connection)			| &#x2713;	| 		|			|			|			|		|
 | [last_query()](#last_query)					| &#x2713;	| 		|			|			|			|		|
 | [escape()](#escape)							| &#x2713;	| 		|			|			|			|		|
 | [get_compiled_select()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
@@ -1220,6 +1268,12 @@ These are methods that aren't part of the query-building chain, but, rather, met
 | [get_compiled_update()](#get_compiled_update)	| &#x2713;	| 		|			|			|			|		|
 | [get_compiled_delete()](#get_compiled_delete)	| &#x2713;	| 		|			|			|			|		|
 
+
+### .get_connection(callback)
+
+Used to get a new connection from the connection pool or cluster pool.
+
+-------------
 
 ### .last_query()
 

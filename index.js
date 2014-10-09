@@ -209,6 +209,7 @@ var QueryBuilder = function(settings,driver,type) {
 	}
 	get_adapter(this);
 	
+	this.get_connection = this.adapter.get_connection;
 	this.disconnect = this.adapter.disconnect;
 	this.destroy = this.adapter.destroy;
 	this.escape = this.adapter.escape;
