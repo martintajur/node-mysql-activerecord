@@ -3,7 +3,7 @@ MySQL ActiveRecord Adapter for Node.js
 
 Query builder on top of node-mysql module (https://github.com/felixge/node-mysql).
 
-To me, the main benefit of  is the ability to direct JavaScript objects straight to MySQL query components without having to worry about constructing the query itself. Although this query builder is a tiny step towards an ORM, I see a lot of value in the query builder as it allows more control over database queries than traditional ORM where queries are hidden behind the business logic and may become executed in an unoptimized way.
+To me, the main benefit of  is the ability to direct JavaScript objects straight to MySQL query components without having to worry about constructing the query itself. Although this query builder is a tiny step towards an ORM, I see a lot of value in the query builder as it allows more control over database queries than traditional ORM where queries are hidden behind the business logic and may become executed in an unoptimized way. (It is named after a popular PHP framework CodeIgniter's "Active Record" class, and thus the whole library does not have much in common with the active record pattern as such.)
 
 This query builder is
  
