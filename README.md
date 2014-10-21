@@ -11,7 +11,8 @@ This query builder is
  * Supports all basic MySQL commands
  * Supports method chaining
  * Automatically escapes field values
- * Does not need any other modules to operate (it already includes the underlying node-mysql module)
+ * Has no dependencies (it already includes the node-mysql module)
+ * Supports raw queries
 
 How to install
 ==============
