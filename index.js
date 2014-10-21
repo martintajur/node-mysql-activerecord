@@ -363,7 +363,7 @@ var Adapter = function(settings) {
 					if (dataSet[i].hasOwnProperty(columns[key])) {
 						row.push(that.escape(dataSet[i][columns[key]]));
 					} else {
-						row.push(null);
+						row.push('NULL');
 					}
 				}
 
