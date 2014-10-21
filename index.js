@@ -1,6 +1,6 @@
 /**
  * MySQL ActiveRecord Adapter for Node.js
- * (C) Martin Tajur 2011-2013
+ * (C) Martin Tajur 2011-2014
  * martin@tajur.ee
  * 
  * Active Record Database Pattern implementation for use with node-mysql as MySQL connection driver.
@@ -41,7 +41,7 @@ var Adapter = function(settings) {
 		}
 
 		if (!settings.host) {
-			throw new Error('Unable to start ActiveRecord - no server given.');
+			throw new Error('Unable to start mysql-activerecord - no server given.');
 		}
 		if (!settings.port) {
 			settings.port = 3306;
@@ -53,7 +53,7 @@ var Adapter = function(settings) {
 			settings.password = '';
 		}
 		if (!settings.database) {
-			throw new Error('Unable to start ActiveRecord - no database given.');
+			throw new Error('Unable to start mysql-activerecord - no database given.');
 		}
 
 		return settings;
@@ -150,17 +150,17 @@ var Adapter = function(settings) {
 		}
 		return queryString;
 	};
-	
+
 	var buildJoinString = function() {
 		var joinString = '';
-		
+
 		for (var i = 0; i < joinClause.length; i++) {
 			joinString += (joinClause[i].direction !== '' ? ' ' + joinClause[i].direction : '') + ' JOIN ' + escapeFieldName(joinClause[i].table) + ' ON ' + joinClause[i].relation;
 		}
-		
+
 		return joinString;
 	};
-	
+
 	var mergeObjects = function() {
 		for (var i = 1; i < arguments.length; i++) {
 			for (var key in arguments[i]) {
@@ -171,7 +171,7 @@ var Adapter = function(settings) {
 		}
 		return arguments[0];
 	};
-	
+
 	var getObjectSize = function(object) {
 		var size = 0;
 		for (var key in object) {
@@ -181,7 +181,7 @@ var Adapter = function(settings) {
 		}
 		return size;
 	};
-	
+
 	var trim = function (s) {
 		var l = 0, r = s.length - 1;
 		while (l < s.length && s[l] == ' ') {
@@ -192,7 +192,7 @@ var Adapter = function(settings) {
 		}
 		return s.substring(l, r + 1);
 	};
-	
+
 	this.connectionSettings = function() { return connectionSettings; };
 	this.connection = function() { return connection; };
 
@@ -215,13 +215,13 @@ var Adapter = function(settings) {
 		}
 		return that;
 	};
-	
+
 	this.count = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'SELECT COUNT(*) as count FROM ' + escapeFieldName(tableName)
 			+ buildJoinString()
 			+ buildDataString(whereClause, ' AND ', 'WHERE');
-			
+
 			connection.query(combinedQueryString, function(err, res) { 
 				if (err)
 					responseCallback(err, null);
@@ -230,7 +230,7 @@ var Adapter = function(settings) {
 			});
 			resetQuery(combinedQueryString);
 		}
-		
+
 		return that;
 	};
 
@@ -242,7 +242,7 @@ var Adapter = function(settings) {
 		});
 		return that;
 	};
-	
+
 	this.select = function(selectSet) {
 		if (Object.prototype.toString.call(selectSet) === '[object Array]') {
 			for (var i = 0; i < selectSet.length; i++) {
@@ -312,15 +312,15 @@ var Adapter = function(settings) {
 			else if (typeof querySuffix !== 'string') {
 				var querySuffix = '';
 			}
+
 			if (typeof tableName === 'string') {
-				
 				var combinedQueryString = verb + ' into ' + escapeFieldName(tableName)
 				+ buildDataString(dataSet, ', ', 'SET');
-				
+
 				if (querySuffix != '') {
 					combinedQueryString = combinedQueryString + ' ' + querySuffix;
 				}
-				
+
 				connection.query(combinedQueryString, responseCallback);
 				resetQuery(combinedQueryString);
 			}
@@ -330,7 +330,7 @@ var Adapter = function(settings) {
 		}
 		return that;
 	};
-	
+
 	this.insert_ignore = function(tableName, dataSet, responseCallback, querySuffix) {
 		return this.insert(tableName, dataSet, responseCallback, 'INSERT IGNORE', querySuffix);
 	};
@@ -339,7 +339,7 @@ var Adapter = function(settings) {
 		if (Object.prototype.toString.call(dataSet) !== '[object Array]') {
 			throw new Error('Array of objects must be provided for batch insert!');
 		}
-		
+
 		if (dataSet.length === 0) return false;
 
 		var map = [];
@@ -389,7 +389,7 @@ var Adapter = function(settings) {
 			+ (orderByClause !== '' ? ' ORDER BY ' + orderByClause : '')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '')
 			+ (offsetClause !== -1 ? ' OFFSET ' + offsetClause : '');
-			
+
 			connection.query(combinedQueryString, responseCallback);
 			resetQuery(combinedQueryString);
 		}
@@ -403,41 +403,41 @@ var Adapter = function(settings) {
 			+ buildDataString(newData, ', ', 'SET')
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
-						
+
 			connection.query(combinedQueryString, responseCallback);
 			resetQuery(combinedQueryString);
 		}
 		
 		return that;
 	};
-	
+
 	this.escape = function(str) {
 		return connection.escape(str);
 	};
-	
+
 	this.delete = function(tableName, responseCallback) {
 		if (typeof tableName === 'string') {
 			var combinedQueryString = 'DELETE FROM ' + escapeFieldName(tableName)
 			+ buildDataString(whereClause, ' AND ', 'WHERE')
 			+ (limitClause !== -1 ? ' LIMIT ' + limitClause : '');
-						
+
 			connection.query(combinedQueryString, responseCallback);
 			resetQuery(combinedQueryString);
 		}
-		
+
 		return that;
 	};
-	
+
 	this._last_query = function() {
 		return lastQuery;
 	};
-	
+
 	this.query = function(sqlQueryString, responseCallback) {
 		connection.query(sqlQueryString, responseCallback);
 		resetQuery(sqlQueryString);
 		return that;
 	};
-	
+
 	this.disconnect = function() {
 		return connection.end();
 	};
@@ -466,11 +466,13 @@ var Adapter = function(settings) {
 				throw err;
 			}
 
+			if (settings.reconnectTimeout === false) return;
+
 			var reconnectingTimeout = setTimeout(function() {
 				connection = mysql.createConnection(connectionInstance.config);
 				handleDisconnect(connection);
 				connection.connect();
-			}, 2000);
+			}, settings.reconnectTimeout || 2000);
 		});
 	}
 
@@ -540,7 +542,7 @@ var Pool = function (settings) {
 
 	this.disconnect = function (responseCallback) {
 		this.pool().end(responseCallback);
-        };
+	};
 
 	return this;
 };

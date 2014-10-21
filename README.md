@@ -23,24 +23,24 @@ How to install
 Get started
 -----------
 
-    var Db = require('mysql-activerecord');
-    var db = new Db.Adapter({
-    	server: 'localhost',
-    	username: 'root',
-    	password: '12345',
-    	database: 'test'
-    });
+	var Db = require('mysql-activerecord');
+	var db = new Db.Adapter({
+		server: 'localhost',
+		username: 'root',
+		password: '12345',
+		database: 'test',
+		reconnectTimeout: 2000
+	});
 
-Licence info
-============
+ * `server`: the IP address or hostname to connect to
+ * `username`: MySQL username to connect with
+ * `password`: MySQL password to connect with
+ * `database`: database to switch to initially (optional). If omitted, no database will be selected.
+ * `port`: which port to connect to (optional). If omitted, 3306 will be used.
+ * `reconnectTimeout`: milliseconds after which to try to reconnect to the MySQL server if a disconnect happens (optional). If omitted, the default value of 2000 will be used. If set to `false`, no reconnecting will take place.
 
-Licensed under the GPL license and MIT:
-
-* http://www.opensource.org/licenses/GPL-license.php
-* http://www.opensource.org/licenses/mit-license.php
-
-Basic support of MySQL commands
-===============================
+Support of MySQL commands
+=========================
 
  * SELECT
  * UPDATE
@@ -251,7 +251,7 @@ Single or multiple connections can be pooled with the Pool object.
 				db.releaseConnection();
 				// do not do anything with db that has been released.
 			});
-    });
+	});
 
 Some more usage examples
 ========================
@@ -266,7 +266,7 @@ Establishing a connection
 		password: '12345',
 		database: 'test'
 	});
-    
+	
 Basic SELECT query
 ------------------
 
@@ -387,7 +387,18 @@ Advanced WHERE conditions
 			}
 		});
 
+
 Contribute
 ==========
 
 Got a missing feature you'd like to use? Found a bug? Go ahead and fork this repo, build the feature and issue a pull request.
+
+
+Licence info
+============
+
+Licensed under the GPL license and MIT:
+
+* http://www.opensource.org/licenses/GPL-license.php
+* http://www.opensource.org/licenses/mit-license.php
+
