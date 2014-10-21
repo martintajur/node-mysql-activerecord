@@ -1,10 +1,12 @@
 MySQL ActiveRecord Adapter for Node.js
 ======================================
 
-Active Record Database Pattern implementation on top of node-mysql module (https://github.com/felixge/node-mysql).
+Query builder on top of node-mysql module (https://github.com/felixge/node-mysql).
 
-To me, the main benefit of Active Record is the ability to direct JavaScript objects straight to MySQL query components without having to worry about constructing the query itself. Although Active Record is maybe a tiny step closer to ORM, I see a lot of value in the Active Record as it allows more control over database queries than traditional ORM.
+To me, the main benefit of  is the ability to direct JavaScript objects straight to MySQL query components without having to worry about constructing the query itself. Although this query builder is a tiny step towards an ORM, I see a lot of value in the query builder as it allows more control over database queries than traditional ORM where queries are hidden behind the business logic and may become executed in an unoptimized way.
 
+This query builder is
+ 
  * Light-weight
  * Supports all basic MySQL commands
  * Supports method chaining
@@ -20,7 +22,7 @@ How to install
 Get started
 -----------
 
-	var Db = require('mysql-activerecord');
+    var Db = require('mysql-activerecord');
     var db = new Db.Adapter({
     	server: 'localhost',
     	username: 'root',
