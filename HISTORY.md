@@ -4,7 +4,7 @@ This file is a manually maintained list of changes for each release. Feel free
 to add your changes here when sending pull requests. Also send corrections if
 you spot any mistakes.
 
-## v0.9.0 (2014-09-24)
+## v0.9.0 (2014-11-14)
 
 * Added this history file
 * Added the ability to do `SELECT DISTINCT` queries
@@ -31,4 +31,5 @@ you spot any mistakes.
 * Name officially changed to node-mysql-querybuilder.
 * Author officially changed to Kyle Farris due to the substantial changes to this fork and Martin Tajur demoted to primary contributor (thanks for the great starting place Martin!!)
 * Name of internal methods and properties have been normalized to use the "lower_case" syntax.
-* Dependency for node-mysql upgraded to 2.5.*.
+* Dependency for node-mysql upgraded to 2.5.
+* travis-ci functionality added to repository
