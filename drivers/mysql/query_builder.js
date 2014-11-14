@@ -1287,8 +1287,7 @@ var QueryBuilder = function() {
 		},
 
 		get: function(table) {
-			if (typeof table !== 'function') {
-				track_aliases(this,table);
+			if (typeof table !== 'undefined') {
 				this.from(table);
 			}
 			else {

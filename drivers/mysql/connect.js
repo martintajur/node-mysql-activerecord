@@ -19,7 +19,7 @@ var Adapter = function(settings,type) {
 	
 	this.debugging = false;
 	this.connection = null;
-	this.pool = null;
+	this.connection_pool = null;
 	this.connection_type = 'single';
 	
 	// Enable debugging if necessary
@@ -95,7 +95,12 @@ var Adapter = function(settings,type) {
 			case 'cluster':
 				break;
 			case 'pool':
-				that.pool.getConnection(function (err, connection) {
+				if (null === that.connection_pool) {
+					var error_msg = "Connection pool not available!";
+					if (console && console.hasOwnProperty('error')) console.error(error_msg);
+					throw new Error(error_msg);
+				}
+				that.connection_pool.getConnection(function (err, connection) {
 					if (err) {
 						throw err;
 					}
@@ -116,9 +121,9 @@ var Adapter = function(settings,type) {
 	// @return	VOID
 	// ****************************************************************************
 	this.pool = function() {
-		that.pool = mysql.createPool(this.settings);
+		that.connection_pool = mysql.createPool(this.settings);
 
-		that.pool.query('SELECT 1 + 1 AS solution', function(err) {
+		that.connection_pool.query('SELECT 1 + 1 AS solution', function(err) {
 			if (err) throw err;
 			if (that.debugging === true) {
 				console.log('mysql connection pool created');
@@ -127,23 +132,9 @@ var Adapter = function(settings,type) {
 		
 		return {
 			disconnect: function() {
-				that.pool().end(responseCallback);
+				that.connection_pool.end(responseCallback);
 			}
 		}
-	};
-	
-	// ****************************************************************************
-	// Actually executes a query. This is probably the single-most essential method
-	// in this class!
-	// -----
-	// @param	String		sql		The SQL to execute
-	// @param	Function			What to do after the query is executed
-	// @return	VOID
-	// ****************************************************************************
-	this.query = function(sql,callback) {
-		that.get_connection(function(connection) {
-			connection.query(sql,callback);
-		});
 	};
 	
 	// ****************************************************************************
@@ -153,7 +144,7 @@ var Adapter = function(settings,type) {
 	// @param	Object	settings	Connection settings
 	// @return	VOID
 	// ****************************************************************************
-	this.standard = function() {
+	this.single = function() {
 		that.connection = mysql.createConnection(this.settings);
 		that.connection.connect(function(err) {
 			if (err) {

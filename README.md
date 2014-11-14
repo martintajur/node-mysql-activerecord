@@ -71,6 +71,8 @@ Licensed under the GPL license and MIT:
 Quick Example
 =============
 
+This quick example shows how to connect to and asynchronously query a MySQL database using a single connection.
+
 ```javascript
 var settings = {
 	host: 'localhost',
@@ -78,9 +80,9 @@ var settings = {
 	user: 'myuser',
 	password: 'MyP@ssw0rd'
 };
-var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'standard');
+var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
 
-qb.select('name','position')
+qb.select('name', 'position')
 	.where({type: 'rocky', 'diameter <': 12000})
 	.get('planets', function(err,response) {
 		if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
@@ -100,8 +102,8 @@ Connecting to Your Database
 Quick Reference
 ---------------
 
-| Driver	| Default	| Active	| standard	| pool	| cluster	| Additional Connection Options								|
-| :--------	| :------ 	| :-----	| :-------	| :----	| :----		| :--------------------------------------------------------	|
+| Driver	| Default	| Ready		| single	| pool	| cluster	| Additional Connection Options								|
+| :--------	| :------ 	| :-----	| :--------	| :----	| :----		| :--------------------------------------------------------	|
 | mysql		| &#x2713;	| Yes		| Yes		| Yes	| Yes		| https://github.com/felixge/node-mysql#connection-options	|
 | mssql		|			| No		| Yes		| ???	| ???		|															|
 | sqlite	|			| No		| Yes		| ???	| ???		|															|
@@ -115,13 +117,13 @@ Standard Connection Settings
 
 The options listed below are available for all database drivers. Additional properties may be passed if the driver of the database you are connecting to supports them. See the "Additional Connection Options" column above for a link to the a specific driver's connection options documentation.
 
-| Option	| Default 	| Description 									|
-| :--------	| :-----  	| :-------------------------------------------- |
-| host		| localhost | The server you're connecting to				|
-| user		| NULL		| The database user								|
-| password	| NULL		| The database `user`'s password				|
-| database	| NULL		| The database to connect to					|
-| pool_size	| 10 		| Max connections for `pool` connection type	|
+| Option	| Default 	| Optional 	| Description 									|
+| :--------	| :--------	| :--------	| :-------------------------------------------- |
+| host		| localhost | No		| The server you're connecting to				|
+| user		| NULL		| No		| The database user								|
+| password	| NULL		| Yes		| The database `user`'s password				|
+| database	| NULL		| Yes		| The database to connect to					|
+| pool_size	| 10 		| Yes		| Max connections for `pool` connection type	|
 
 The best way to store these options is in a JSON file outsite of your web root where only root and the server user can access them.
 
@@ -143,6 +145,7 @@ We'll call this `db.json`.
 
 ```javascript
 var settings = require('db.json');
+// Second and third parameters of the QueryBuilder method default to 'mysql' and 'standard', respectively
 var qb = require('node-querybuilder').QueryBuilder(settings);
 ```
 
@@ -176,7 +179,7 @@ Choosing the Connection Type
 
 This library currently supports 3 connection methods:
 
-* standard (default)
+* single (default)
 	* This will use the driver's basic single connection capabilities. All connections to your app will use this single database connection. This is usually less than ideal for most web applications but might be quite suitable for command line scripts and the like. 
 	* **All drivers must have this connection type**.
 * pool
@@ -203,6 +206,8 @@ API Methods
 
 Chainable Methods
 -----------------
+
+Chainable methods can be called as many times as you'd like in any order you like. The final query will not be built and executed until one of the [execution methods](#execution-methods), like `get()`,  are callled. As the name implies, the methods can be chained together indefinitely but this is not required. You definitely call them individually with the same effect at execution time.
 
 | API Method							| SQL Command	| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
 | :------------------------------------	| :------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
@@ -252,36 +257,37 @@ The fields provided to this method will be automatically escaped by the database
 * String with fields seperated by a comma:
 	* `.select('foo, bar, baz')`
 * Array of field names
-	* `.select(['foo','bar','baz'])`
+	* `.select(['foo', 'bar', 'baz'])`
 
 **Examples**
 
-`.select()` is not called ('*' assumed)
-
 ```javascript
 // SELECT * FROM galaxies
-qb.get('galaxies',callback);
+qb.select('*').get('foo',callback);
+
+// Easier and same result:
+qb.get('foo',callback);
 ```
 
 An array of field names:
 
 ```javascript
 // SELECT `foo`, `bar`, `baz`
-qb.select(['foo','bar','baz']);
+qb.select(['foo', 'bar', 'baz']);
 ```
 
 You can chain the method together using different patterns if you want:
 
 ```javascript
 // SELECT `foo`, `bar`, `baz`, `this`, `that`, `the_other`
-qb.select(['foo','bar','baz']).select('this,that,the_other');
+qb.select(['foo', 'bar', 'baz']).select('this,that,the_other');
 ```
 
 You can alias your field names and they will be escaped properly as well:
 
 ```javascript
 // SELECT `foo` as `f`, `bar` as `b`, `baz` as `z`
-qb.select(['foo as f','bar as b','baz as z']);
+qb.select(['foo as f', 'bar as b', 'baz as z']);
 ```
 
 You can optionally choose not to have the driver auto-escape the fieldnames (dangerous, but useful if you a utilize function in your select statement, for instance):
@@ -332,7 +338,7 @@ You can optionally include a second parameter to rename the resulting field
 
 ```javascript
 // SELECT MIN(`age`) AS `min_age` FROM `users`
-qb.select_min('age','min_age').get('users',callback);
+qb.select_min('age', 'min_age').get('users',callback);
 ```
 
 -------------
@@ -358,7 +364,7 @@ You can optionally include a second parameter to rename the resulting field
 
 ```javascript
 // SELECT MAX(`age`) AS `max_age` FROM `users`
-qb.select_max('age','max_age').get('users',callback);
+qb.select_max('age', 'max_age').get('users',callback);
 ```
 
 -------------
@@ -384,7 +390,7 @@ You can optionally include a second parameter to rename the resulting field
 
 ```javascript
 // SELECT AVG(`age`) AS `avg_age` FROM `users`
-qb.select_avg('age','avg_age').get('users',callback);
+qb.select_avg('age', 'avg_age').get('users',callback);
 ```
 
 -------------
@@ -410,7 +416,7 @@ You can optionally include a second parameter to rename the resulting field
 
 ```javascript
 // SELECT SUM(`age`) AS `sum_age` FROM `users`
-qb.select_sum('age','sum_age').get('users',callback);
+qb.select_sum('age', 'sum_age').get('users',callback);
 ```
 
 -------------
@@ -502,7 +508,7 @@ If no direction is specified, "left" will be used:
 // FROM `users` `u`
 // LEFT JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
 qb.select('u.id,u.name,t.name as type_name').from('users u')
-	.join('types t','t.id=u.type_id')
+	.join('types t', 't.id=u.type_id')
 	.get(callback);
 ```
 
@@ -513,7 +519,7 @@ You may specify a direction:
 // FROM `users` `u`
 // RIGHT OUTER JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
 qb.select('u.id,u.name,t.name as type_name').from('users u')
-	.join('types t','t.id=u.type_id','right outer')
+	.join('types t', 't.id=u.type_id', 'right outer')
 	.get(callback);
 ```
 
@@ -524,10 +530,10 @@ Multiple function calls can be made if you need several joins in one query:
 // FROM `users` `u`
 // LEFT JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
 // LEFT JOIN `locations` `l` ON `l`.`id`=`u`.`location_id`
-var select = ['u.id','u.name','t.name as type','l.name as location'];
+var select = ['u.id', 'u.name', 't.name as type', 'l.name as location'];
 qb.select(select).from('users u')
-	.join('types t','t.id=u.type_id','right outer')
-	.join('locations l','l.id=u.location_id','left')
+	.join('types t', 't.id=u.type_id', 'right outer')
+	.join('locations l', 'l.id=u.location_id', 'left')
 	.get(callback);
 ```
 
@@ -555,7 +561,7 @@ If you just want to pass a single filter at a time:
 
 ```javascript
 // SELECT `galaxy` FROM `universe` WHERE `planet_name` = 'Earth'
-qb.select('galaxy').where('planet_name','Earth').get('universe',callback);
+qb.select('galaxy').where('planet_name', 'Earth').get('universe',callback);
 ```
 
 If you need more complex filtering using different operators (`<, >, <=, =>, !=, <>, etc...`), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
@@ -583,9 +589,9 @@ You can pass a non-empty array as a value and that portion will be treated as a 
 
 ```javascript
 // SELECT `star_system` FROM `star_systems` 
-// WHERE `planet_count` >= 4, `star` IN('Sun','Betelgeuse')
+// WHERE `planet_count` >= 4, `star` IN('Sun', 'Betelgeuse')
 qb.select('star_system')
-	.where({'planet_count >=': 4, star: ['Sun','Betelgeuse'])
+	.where({'planet_count >=': 4, star: ['Sun', 'Betelgeuse'])
 	.get('star_systems',callback);
 ```
 
@@ -597,8 +603,8 @@ This method functions identically to [.where()](#where) except that it joins cla
 ```javascript
 // SELECT `star_system` FROM `star_systems` 
 // WHERE `star` = 'Sun' OR `star` = 'Betelgeuse'
-qb.select('star_system').where('star','Sun')
-	.or_where('star','Betelgeuse')
+qb.select('star_system').where('star', 'Sun')
+	.or_where('star', 'Betelgeuse')
 	.get('star_systems',callback);
 ```
 
@@ -609,8 +615,8 @@ This will create a "WHERE IN" statement in traditional SQL which is useful when 
 
 ```javascript
 // SELECT `star_system` FROM `star_systems` 
-// WHERE `star` IN('Sun','Betelgeuse','Sirius','Vega','Alpha Centauri')
-var stars = ['Sun','Betelgeuse','Sirius','Vega','Alpha Centauri'];
+// WHERE `star` IN('Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri')
+var stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
 qb.select('star_system').where_in('star',stars).get('star_systems',callback);
 ```
 
@@ -621,8 +627,8 @@ Same as `.where_in()` except the clauses are joined by 'OR'.
 
 ```javascript
 // SELECT `star_system` FROM `star_systems` 
-// WHERE `planet_count` = 4 OR `star` IN('Sun','Betelgeuse')
-var stars = ['Sun','Betelgeuse'];
+// WHERE `planet_count` = 4 OR `star` IN('Sun', 'Betelgeuse')
+var stars = ['Sun', 'Betelgeuse'];
 qb.select('star_system').where('planet_count',4)
 	.or_where_in('star',stars)
 	.get('star_systems',callback);
@@ -635,8 +641,8 @@ Same as `.where_in()` except this generates a "WHERE NOT IN" statement. All clau
 
 ```javascript
 // SELECT `star_system` FROM `star_systems` 
-// WHERE `star` NOT IN('Sun','Betelgeuse','Sirius','Vega','Alpha Centauri')
-var stars = ['Sun','Betelgeuse','Sirius','Vega','Alpha Centauri'];
+// WHERE `star` NOT IN('Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri')
+var stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
 qb.select('star_system').where_not_in('star',stars).get('star_systems',callback);
 ```
 
@@ -647,9 +653,9 @@ Same as `.where_not_in()` except that clauses are joined with 'OR'.
 
 ```javascript
 // SELECT `star_system` FROM `star_systems` 
-// WHERE `star` NOT IN('Sun','Betelgeuse')
+// WHERE `star` NOT IN('Sun', 'Betelgeuse')
 // OR `planet_count` NOT IN [2,4,6,8]
-var stars = ['Sun','Betelgeuse'];
+var stars = ['Sun', 'Betelgeuse'];
 var planet_sizes = [2,4,6,8];
 qb.select('star_system')
 	.where_not_in('star',stars)
@@ -680,7 +686,7 @@ By default, the match string will be wrapped on both sides with the wildcard (%)
 ```javascript
 // SELECT `first_name` FROM `users` WHERE `first_name` LIKE '%mber%'
 // Potential results: [{first_name: 'Kimberly'},{first_name: 'Amber'}]
-qb.select('first_name').like('first_name','mber').get('users',callback);
+qb.select('first_name').like('first_name', 'mber').get('users',callback);
 ```
 
 You can specify a side to place the wildcard (%) on if you'd like (before/left, after/right, both):
@@ -688,11 +694,11 @@ You can specify a side to place the wildcard (%) on if you'd like (before/left, 
 ```javascript
 // SELECT `first_name` FROM `users` WHERE `first_name` LIKE '%mber'
 // Potential results: [{first_name: 'Amber'}]
-qb.select('first_name').like('first_name','mber','before').get('users',callback);
+qb.select('first_name').like('first_name', 'mber', 'before').get('users',callback);
 
 // SELECT `first_name` FROM `users` WHERE `first_name` LIKE 'Kim%'
 // Potential results: [{first_name: 'Kim'},{first_name: 'Kimberly'}]
-qb.select('first_name').like('first_name','Kim','right').get('users',callback);
+qb.select('first_name').like('first_name', 'Kim', 'right').get('users',callback);
 ```
 
 You can also pass 'none' if you don't want to use the wildcard (%)
@@ -700,7 +706,7 @@ You can also pass 'none' if you don't want to use the wildcard (%)
 ```javascript
 // SELECT `first_name` FROM `users` WHERE `first_name` LIKE 'kim'
 // Potential results: [{first_name: 'Kim'}]
-qb.select('first_name').like('first_name','kim','none').get('users',callback);
+qb.select('first_name').like('first_name', 'kim', 'none').get('users',callback);
 ```
 
 If you'd like to have multiple like clauses, you can do that by calling like multiple times:
@@ -711,9 +717,9 @@ If you'd like to have multiple like clauses, you can do that by calling like mul
 // AND `middle_name` LIKE '%lyt%'
 // AND `last_name` LIKE '%arris'
 qb.select('first_name')
-	.like('first_name','Kim','right')
-	.like('middle_name','lyt')
-	.like('last_name','arris','left')
+	.like('first_name', 'Kim', 'right')
+	.like('middle_name', 'lyt')
+	.like('last_name', 'arris', 'left')
 	.get('users',callback);
 ```
 
@@ -742,9 +748,9 @@ This is exactly the same as the `.like()` method except that the clauses are joi
 // OR `middle_name` LIKE '%lyt%'
 // OR `last_name` LIKE '%arris'
 qb.select('first_name')
-	.or_like('first_name','Kim','right')
-	.or_like('middle_name','lyt')
-	.or_like('last_name','arris','left')
+	.or_like('first_name', 'Kim', 'right')
+	.or_like('middle_name', 'lyt')
+	.or_like('last_name', 'arris', 'left')
 	.get('users',callback);
 ```
 
@@ -806,7 +812,7 @@ Group by multiple fields:
 
 ```javascript
 // SELECT * FROM `users` GROUP BY `department_id`, `position_id`
-qb.group_by(['department_id','position_id']).get('users',callback);
+qb.group_by(['department_id', 'position_id']).get('users',callback);
 ```
 
 -------------
@@ -911,28 +917,28 @@ Pass the field name and the direction as the first and second parameters, respec
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC
-qb.order_by('galaxy_name','desc').get('galaxies',callback);
+qb.order_by('galaxy_name', 'desc').get('galaxies',callback);
 ```
 
 Pass an array of fields to first paramter, direction to second parameter
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` DESC
-qb.order_by(['galaxy_name','galaxy_size'],'desc').get('galaxies',callback);
+qb.order_by(['galaxy_name', 'galaxy_size'],'desc').get('galaxies',callback);
 ```
 
 Pass an array of fields + directions in first parameter and ommit the second one.
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` ASC
-qb.order_by(['galaxy_name desc','galaxy_size asc']).get('galaxies',callback);
+qb.order_by(['galaxy_name desc', 'galaxy_size asc']).get('galaxies',callback);
 ```
 
 Pass an array of fields (+ directions for some to override second parameter) to first paramter, direction to second parameter
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` ASC
-qb.order_by(['galaxy_name desc','galaxy_size'],'asc').get('galaxies',callback);
+qb.order_by(['galaxy_name desc', 'galaxy_size'],'asc').get('galaxies',callback);
 ```
 
 Pass a raw comma-seperated string of field + directions in first parameter and ommit the second one.
@@ -1012,13 +1018,14 @@ Execution methods are the end-of-chain methods in the QueryBuilder library. Once
 
 ### Handling Error Messages and Results
 
-The final parameter of every execution method will be a callback function. The parameters for the callback are in the `node.js` standard `(err, response)` format. If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected (all others) in any other scenario.
+The final parameter of every execution method will be a callback function. The parameters for the callback are in the `node.js` standard `(err, response)` format. When you working with `pool` and `cluster` type connections, a third paramter will be passed containing the `connection` object&mdash;you would use this to release the connection when you're done with it. If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected (all others) in any other scenario.
 
 
 #### Callback Example
 
 ```javascript
-var callback =  function(err, response) {
+var callback =  function(err, response, connection) {
+	connection.release(); // if you're working with a pool or cluster...
 	if (err) {
 		console.error(err);
 	} else {
@@ -1042,16 +1049,16 @@ qb.get('foo',callback);
 | query_string	| String	| Required	| Query to send directly to your database driver	|
 | callback		| Function	| Required	| What to do when the driver has responded			|
 
-This method bypasses the entire QueryBuilder portion of this module is simply uses your database driver's native querying method. You should be cautious when using this as none of this module's security and escaping functionality will be utilized.
+*****This method bypasses the entire QueryBuilder portion of this module***** is simply uses your database driver's native querying method. You should be cautious when using this as none of this module's security and escaping functionality will be utilized.
 
 There are scenarios when using this method may be required; for instance, if you need to run a very specific type of command on your database that is not typical of a standard, CRUD-type query (ex. user permissions or creating a view).
 
 **Example**
 
 ```javascript
-var sql = qb.select(['f.foo','b.bar'])
+var sql = qb.select(['f.foo', 'b.bar'])
 	.from('foo f')
-	.join('bar b','b.foo_id=f.id','left')
+	.join('bar b', 'b.foo_id=f.id', 'left')
 	.get_compiled_select();
 qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 ```
@@ -1105,14 +1112,14 @@ Just a more-complicated example for the sake of it:
  * LIMIT 10
  **/
 qb.limit(10)
-	.select(['g.name','g.diameter','gt.name as type'])
+	.select(['g.name', 'g.diameter', 'gt.name as type'])
 	.select('COUNT(`s`.`id`) as `num_stars`',null,false)
 	.from('galaxies g')
-	.join('galaxy_types gt','gt.id=g.type_id','left')
-	.join('stars s','s.galaxy_id=g.id','left')
+	.join('galaxy_types gt', 'gt.id=g.type_id', 'left')
+	.join('stars s', 's.galaxy_id=g.id', 'left')
 	.group_by('g.id')
-	.order_by('g.name','asc')
-	.get(function(err, response {
+	.order_by('g.name', 'asc')
+	.get(function(err, response) {
 		if (err) return console.error(err);
 		
 		for (var i in response) {
@@ -1207,7 +1214,7 @@ Here's a contrived example of how it might be used in an app made with the Expre
 var express = require('express');
 var app = express();
 var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
+var qb = require('node-querybuilder').QueryBuilder(settings,'mysql', 'pool');
 
 app.post('/update_account', function(req, res) {
 	var user_id = req.session.user_id;
@@ -1218,15 +1225,14 @@ app.post('/update_account', function(req, res) {
 		bio: sanitize_bio(req.body.bio),
 	};
 	
-	pool.get_connection(function(err, qb) {
-		qb.update('users', data, {id:user_id}, function(err, res) {
-			if (err) return console.error(err);
-			
-			var page_data = {
-				prefill: data,
-			}
-			return res.render('/account_updated', page_data);
-		});
+	qb.update('users', data, {id:user_id}, function(err, res, connection) {
+		connection.release();
+		if (err) return console.error(err);
+		
+		var page_data = {
+			prefill: data,
+		}
+		return res.render('/account_updated', page_data);
 	});
 });
 ```

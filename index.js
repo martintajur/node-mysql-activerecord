@@ -42,7 +42,7 @@ var QueryBuilder = function(settings,driver,type) {
 	
 	this.settings = settings || {};
 	this.driver = driver || 'mysql';
-	this.connection_type = type || 'standard';
+	this.connection_type = type || 'single';
 	this.drivers = require('./drivers/drivers.json');
 	this.driver_version = 'default';
 	this.driver_info = null;
@@ -174,7 +174,7 @@ var QueryBuilder = function(settings,driver,type) {
 	// ****************************************************************************
 	var get_connection_type = function(qb) {
 		if (Object.keys(qb.drivers[qb.driver].connection_types).indexOf(qb.connection_type) === -1) {
-			throw new Error("You have specified a invalid database connection method.");
+			throw new Error("You have specified a invalid database connection method: " + qb.connection_type);
 		}
 		if (qb.drivers[qb.driver].connection_types[qb.connection_type] !== true) {
 			throw new Error("You cannot connect to a " + qb.driver + " database using the " + qb.connection_type + " connection type using this library.");
@@ -209,12 +209,10 @@ var QueryBuilder = function(settings,driver,type) {
 	}
 	get_adapter(this);
 	
-	this.get_connection = this.adapter.get_connection;
 	this.disconnect = this.adapter.disconnect;
 	this.destroy = this.adapter.destroy;
 	this.escape = this.adapter.escape;
 	this.get_connection_id = this.adapter.get_connection_id;
-	this.query = this.adapter.query;
 	
 	// ****************************************************************************
 	// Get the the driver's QueryExec object so that queries can actually be
@@ -234,6 +232,7 @@ var QueryBuilder = function(settings,driver,type) {
 	get_query_exec(this);
 	
 	// QueryExecute method mappings:
+	this.query 			= this.qe.query;
 	this.count 			= this.qe.count;
 	this.get 			= this.qe.get;
 	this.get_where 		= this.qe.get_where;
@@ -244,7 +243,7 @@ var QueryBuilder = function(settings,driver,type) {
 	this.update_batch 	= this.qe.update_batch;
 	this.delete 		= this.qe.delete;
 	this.empty_table	= this.qe.empty_table;
-	this.truncate		= this.qe.truncate; 
+	this.truncate		= this.qe.truncate;
 	
 	var that = this;	
 	return this;

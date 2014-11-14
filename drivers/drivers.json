@@ -1,6 +1,6 @@
 {
 	"mysql": {
-		"connection_types": { "standard": true, "pool": true, "cluster": true },
+		"connection_types": { "single": true, "pool": true, "cluster": true },
 		"versions": {
 			"default": {
 				"path": "./drivers/mysql/",
@@ -13,7 +13,7 @@
 		}
 	},
 	"mssql": {
-		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"connection_types": { "single": true, "pool": false, "cluster": false },
 		"versions": {
 			"default": {
 				"path": "./drivers/mssql/",
@@ -22,7 +22,7 @@
 		}
 	},
 	"oracle": {
-		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"connection_types": { "single": true, "pool": false, "cluster": false },
 		"versions": {
 			"default": {
 				"path": "./drivers/mssql/",
@@ -31,7 +31,7 @@
 		}
 	},
 	"postgres": {
-		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"connection_types": { "single": true, "pool": false, "cluster": false },
 		"versions": {
 			"default": {
 				"path": "./drivers/postgres/",
@@ -40,7 +40,7 @@
 		}
 	},
 	"sqlite": {
-		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"connection_types": { "single": true, "pool": false, "cluster": false },
 		"versions": {
 			"default": {
 				"path": "./drivers/sqlite/",
@@ -49,7 +49,7 @@
 		}
 	},
 	"sqlite3": {
-		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"connection_types": { "single": true, "pool": false, "cluster": false },
 		"versions": {
 			"default": {
 				"path": "./drivers/sqlite3/",
@@ -58,7 +58,7 @@
 		}
 	},
 	"mongo": {
-		"connection_types": { "standard": true, "pool": false, "cluster": false },
+		"connection_types": { "single": true, "pool": false, "cluster": false },
 		"versions": {
 			"default": {
 				"path": "./drivers/mongo/",

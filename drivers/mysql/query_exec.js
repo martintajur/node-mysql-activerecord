@@ -5,18 +5,27 @@
 // @param	Object	adapter		The connection adapter object
 // ****************************************************************************
 var QueryExec = function(qb, adapter) {	
+	var exec = function(sql, callback) {
+		adapter.get_connection(function(connection) {
+			connection.query(sql, function(err, rows) {
+				if (adapter.connection_type === 'standard') {
+					callback(err, rows);
+				} else {
+					callback(err, rows, connection);
+				}
+			});
+		});
+	};
+	
 	return {
+		query: function(sql, callback) {
+			exec(sql,callback);
+		},
+	
 		count: function(table, callback) {
 			var sql = qb.count(table);
-			
-			adapter.get_connection(function(connection) {
-				connection.query(sql, function(err, res) { 
-					if (err)
-						callback(err, null);
-					else
-						callback(null, res[0]['count']);
-				});
-			});
+			qb.reset_query(sql);
+			exec(sql,callback);
 		},
 		
 		get: function(table,callback) {
@@ -30,41 +39,31 @@ var QueryExec = function(qb, adapter) {
 		
 			var sql = qb.get(table);
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql, callback);
-			});
+			exec(sql,callback);
 		},
 		
 		get_where: function(table,where,callback) {
 			var sql = qb.get_where(table,where);
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql, callback);
-			});
+			exec(sql,callback);
 		},
 		
 		insert: function(table,set,callback,ignore,suffix) {
 			var sql = qb.insert(table,set,ignore,suffix);
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql,callback);
-			});
+			exec(sql,callback);
 		},
 		
 		insert_ignore: function(table,set,callback) {
 			var sql = qb.insert_ignore(table,set);
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql, callback);
-			});
+			exec(sql,callback);
 		},
 		
 		insert_batch: function(table,set,callback) {
 			var sql = qb.insert_batch(table,set);
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql, callback);
-			});
+			exec(sql,callback);
 		},
 		
 		update: function(table,set,where,callback) {
@@ -81,14 +80,19 @@ var QueryExec = function(qb, adapter) {
 			
 			var sql = qb.update(table,set,where);
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql, callback);
-			});
+			exec(sql,callback);
 		},
 		
 		// TODO: Write this complicated-ass function
 		update_batch: function(table,set,where,callback) {
-			callback(new Error("This function is not currently available!"),null);
+			adapter.get_connection(function(connection) {
+				if (adapter.connection_type === 'standard') {
+					callback(new Error("This function is not currently available!"),null);
+				} else {
+					callback(new Error("This function is not currently available!"),null, connection);
+				}
+				
+			});
 		},
 		
 		delete: function(table, where, callback) {
@@ -110,25 +114,19 @@ var QueryExec = function(qb, adapter) {
 			var sql = qb.delete(table, where);
 			
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql, callback);
-			});
+			exec(sql,callback);
 		},
 		
 		empty_table: function(table, callback) {
 			var sql = qb.empty_table(table,callback);
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql,callback);
-			});
+			exec(sql,callback);
 		},
 		
 		truncate: function(table, callback) {
 			var sql = qb.truncate(table,callback);
 			qb.reset_query(sql);
-			adapter.get_connection(function(connection) {
-				connection.query(sql,callback);
-			});
+			exec(sql,callback);
 		},
 	}
 }
