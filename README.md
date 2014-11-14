@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/kylefarris/node-querybuilder.svg?branch=master)](https://travis-ci.org/kylefarris/node-querybuilder)
+
 Universal QueryBuilder for Node.js
 ======================================
 
