@@ -715,20 +715,6 @@ var QueryBuilder = function() {
 			return this;
 		},
 		
-		count: function(table) {
-			if (typeof table === 'string') {
-				track_aliases(this,table);
-				this.from(table);
-			}
-			var sql = 'SELECT COUNT(*) AS ' + protect_identifiers(this,'count')
-				+ build_from_clause(this)
-				+ build_join_string(this)
-				+ build_where_clause(this)
-				+ build_having_clause(this)
-			
-			return sql;
-		},
-		
 		from: function(from) {
 			if(Object.prototype.toString.call(from) !== Object.prototype.toString.call([])) {
 				from = [from];
@@ -1319,6 +1305,19 @@ var QueryBuilder = function() {
 			}
 			
 			return compile_select(this);
+		},
+		
+		count: function(table) {
+			if (typeof table === 'string') {
+				this.from(table);
+			}
+			
+			var sql = 'SELECT COUNT(*) AS ' + protect_identifiers(this,'numrows')
+				+ build_from_clause(this)
+				+ build_join_string(this)
+				+ build_where_clause(this);
+			
+			return sql;
 		},
 		
 		update: function(table, set, where) {

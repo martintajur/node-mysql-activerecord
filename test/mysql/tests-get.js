@@ -41,7 +41,7 @@ describe('get()', function() {
 		var sql = qb.select(['id','name']).get('galaxies');
 		sql.should.eql("SELECT `id`, `name` FROM (`galaxies`)");
 	});
-	it('should build a properly-escaped SELECT statement that retrieves all records in a table that match passed conditions', function() {
+	it('should build a properly-escaped SELECT statement that retrieves all records in a table that match passed WHERE conditions', function() {
 		qb.reset_query();
 		var sql = qb.where('class','M').get('galaxies');
 		sql.should.eql("SELECT * FROM (`galaxies`) WHERE `class` = 'M'");
@@ -158,6 +158,8 @@ describe('get_where()', function() {
 		expect(function() { qb.get_where('galaxies',3); 		}, 'valid table, integer for where').to.throw(Error);
 		expect(function() { qb.get_where('galaxies',33.3); 		}, 'valid table, float for where').to.throw(Error);
 		expect(function() { qb.get_where('galaxies','foo'); 	}, 'valid table, string for where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',true); 		}, 'valid table, TRUE for where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',false); 	}, 'valid table, FALSE for where').to.throw(Error);
 		expect(function() { qb.get_where('galaxies',Infinite); 	}, 'valid table, Infinite where').to.throw(Error);
 		expect(function() { qb.get_where('galaxies',null); 		}, 'valid table, NULL where').to.throw(Error);
 		expect(function() { qb.get_where('galaxies',{id: 3}); 	}, 'valid table, valid where').to.not.throw(Error);

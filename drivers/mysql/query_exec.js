@@ -19,13 +19,25 @@ var QueryExec = function(qb, adapter) {
 	
 	return {
 		query: function(sql, callback) {
-			exec(sql,callback);
+			exec(sql, callback);
 		},
 	
 		count: function(table, callback) {
+			if (typeof table === 'function' && typeof callback !== 'function') {
+				table = null;
+				callback = table;
+			}
+			
 			var sql = qb.count(table);
 			qb.reset_query(sql);
-			exec(sql,callback);
+			exec(sql, function(err, row) {
+				if (!err) {
+					callback(err, row.numrows);
+				}
+				else {
+					callback(err, row);
+				}
+			});
 		},
 		
 		get: function(table,callback) {

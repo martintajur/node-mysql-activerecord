@@ -1147,7 +1147,7 @@ This method is basically the same as the `.get()` method except that if offers a
 
 **Type of Response Sent to Callback**
 
-Array of rows
+Array of objects representing the result rows.
 
 **Examples**
 
@@ -1155,7 +1155,7 @@ Basic example:
 
 ```javascript
 // SELECT * FROM `galaxies` WHERE `num_stars` > 100000000
-qb.get('galaxies', {'num_stars >': 100000000}, callback);
+qb.get_where('galaxies', {'num_stars >': 100000000}, callback);
 ```
 
 You can still provide other where statements if you want&mdash;they'll all work hapilly together:
@@ -1171,10 +1171,12 @@ qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, ca
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| Required	| (optional) Used to avoid having to call `.from()` seperately.	|
+| table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.	|
 | callback	| Function	| Required	| What to do when the driver has responded.						|
 
 This method is used to determine the total number of results that a query would return without actually returning the entire resultset back to this module. Obviously, you could simply execute the same query with `.get()` and then check the `length` property of the response array, but, that would take significantly more time and memory for very large resultsets.
+
+The field in the resultset will always labeled be 'numrows'.
 
 **Type of Response Sent to Callback**
 
@@ -1183,11 +1185,11 @@ Integer
 **Examples**
 
 ```javascript
-// SELECT COUNT(*) AS `count` FROM `galaxies` WHERE `type` = 3
+// SELECT COUNT(*) AS `numrows` FROM `galaxies` WHERE `type` = 3
 var type = 3;
 qb.where('type',type).count('galaxies', function(err, count) {
 	if (err) return console.error(err);
-	console.log("There are " + count + " Type " + type + " galaxies in the Universe.");
+	console.log("There are " + numrows + " Type " + type + " galaxies in the Universe.");
 });
 ```
 
