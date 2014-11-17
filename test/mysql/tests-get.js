@@ -132,7 +132,7 @@ describe('get()', function() {
 	});
 });
 
-describe('get()', function() {
+describe('get_where()', function() {
 	it('should exist', function() {
 		should.exist(qb.get_where);
 	});
