@@ -131,3 +131,49 @@ describe('get()', function() {
 		sql.should.eql("SELECT `size`, COUNT(id) AS `num_of_size` FROM (`galaxies`) GROUP BY `size` HAVING `num_of_size` >= 456034960"); 
 	});
 });
+
+describe('get()', function() {
+	it('should exist', function() {
+		should.exist(qb.get_where);
+	});
+	it('should be a function', function() {
+		qb.get_where.should.be.a('function');
+	});
+	it('should require the first parameter to be a table in string format or tables array format', function() {
+		qb.reset_query();
+		expect(function() { qb.get_where(); 					}, 'nothing provided').to.throw(Error);
+		expect(function() { qb.get_where(''); 					}, 'empty string for table').to.throw(Error);
+		expect(function() { qb.get_where([]); 					}, 'empty array for tables').to.throw(Error);
+		expect(function() { qb.get_where(['']); 				}, 'array of empty strings for tables').to.throw(Error);
+		expect(function() { qb.get_where(1); 					}, 'integer for table').to.throw(Error);
+		expect(function() { qb.get_where(5.5); 					}, 'float for table').to.throw(Error);
+		expect(function() { qb.get_where(true); 				}, 'TRUE for table').to.throw(Error);
+		expect(function() { qb.get_where(false); 				}, 'FALSE for table').to.throw(Error);
+		expect(function() { qb.get_where(null); 				}, 'NULL for table').to.throw(Error);
+		expect(function() { qb.get_where({}); 					}, 'Standard object for table').to.throw(Error);
+		expect(function() { qb.get_where(Infinite); 			}, 'Infinite for table').to.throw(Error);
+		expect(function() { qb.get_where('galaxies'); 			}, 'valid table, no where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',{});		}, 'valid table, empty where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',[]); 		}, 'valid table, array for where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',3); 		}, 'valid table, integer for where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',33.3); 		}, 'valid table, float for where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies','foo'); 	}, 'valid table, string for where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',Infinite); 	}, 'valid table, Infinite where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',null); 		}, 'valid table, NULL where').to.throw(Error);
+		expect(function() { qb.get_where('galaxies',{id: 3}); 	}, 'valid table, valid where').to.not.throw(Error);
+	});
+	it('should return a string', function() {
+		qb.reset_query();
+		var sql = qb.get('galaxies', {type: 'spiral'});
+		expect(sql).to.be.a('string');
+		expect(sql).to.exist;
+		expect(sql).to.not.eql('');
+	});
+	it('should add table(s) to from_array and where items to where_array', function() {
+		qb.reset_query();
+		var sql = qb.get_where('galaxies', {type: 'spiral'});
+		qb.from_array.should.eql(['`galaxies`']);
+		qb.where_array.should.eql(["`type` = 'spiral'"]);
+		sql.should.eql("SELECT * FROM (`galaxies`) WHERE `type` = 'spiral'"); 
+	});
+});

@@ -248,7 +248,7 @@ This method is used to specify the fields to pull into the resultset when runnin
 
 | Parameter	| Type			| Default	| Description 									|
 | :--------	| :-------- 	| :-----	| :-------------------------------------------- | 
-| fields 	| String/Array	| N/A		| The fields in which to grab from the database |
+| fields 	| String/Array	| Required	| The fields in which to grab from the database |
 | escape 	| Boolean		| true		| TRUE: auto-escape fields; FALSE: don't escape |
 
 
@@ -430,7 +430,7 @@ This SQL command is used to determine which sources, available to the active con
 
 | Parameter	| Type			| Default	| Description 									|
 | :--------	| :------------ | :--------	| :--------------------------------------------	|
-| tables	| String/Array	| N/A		| Table(s), view(s), etc... to grab data from	|
+| tables	| String/Array	| Required	| Table(s), view(s), etc... to grab data from	|
 
 You can provide tables, views, or any other valid source of data in a comma-seperated list (string) or an array. When more than one data-source is provided when connected to a traditional RDMS, the tables will joined using a basic join. You can also `.from()` multiple times to get the same effect (the order in which they are called does not matter).
 
@@ -1076,7 +1076,7 @@ qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 
 This method is used when running queries that might respond with rows of data (namely, "SELECT" statements...). You can pass a table name as the first parameter to avoid having to call [.from()](#from) seperately. If the table name is omitted, and the first paramter is a callback function, there will be no need to pass a callback function into the second parameter.
 
-**Type of Response**
+**Type of Response Sent to Callback**
 
 Array of rows
 
@@ -1137,15 +1137,15 @@ qb.limit(10)
 
 ### .get_where(table,where,callback)
 
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| Required	| (optional) Used to avoid having to call `.from()` seperately.	|
-| where		| Object	| Required	| (optional) Used to avoid having to call `.where()` seperately	|
-| callback	| Function	| Required	| What to do when the driver has responded.						|
+| Parameter	| Type				| Default	| Description													|
+| :--------	| :----------------	| :-------- | :------------------------------------------------------------ |
+| table		| String or Array	| Required	| Used to avoid having to call `.from()` seperately.	|
+| where		| Object			| Required	| Used to avoid having to call `.where()` seperately	|
+| callback	| Function			| Required	| What to do when the driver has responded.						|
 
-This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` seperately). The other difference is that *all* parameters are required and they must be in the proper order.
+This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` seperately).  The other difference is that *all* parameters are required and they must be in the proper order.
 
-**Type of Response**
+**Type of Response Sent to Callback**
 
 Array of rows
 
@@ -1176,7 +1176,7 @@ qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, ca
 
 This method is used to determine the total number of results that a query would return without actually returning the entire resultset back to this module. Obviously, you could simply execute the same query with `.get()` and then check the `length` property of the response array, but, that would take significantly more time and memory for very large resultsets.
 
-**Type of Response**
+**Type of Response Sent to Callback**
 
 Integer
 
@@ -1204,7 +1204,7 @@ qb.where('type',type).count('galaxies', function(err, count) {
 
 This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
 
-**Type of Response**
+**Type of Response Sent to Callback**
 
 Object containing infomration about the results of the query.
 

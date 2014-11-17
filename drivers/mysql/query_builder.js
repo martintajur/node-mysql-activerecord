@@ -736,6 +736,8 @@ var QueryBuilder = function() {
 			for (var i in from) {
 				var val = from[i];
 				
+				if (val.trim() === '') continue;
+				
 				if (val.indexOf(',') !== -1) {
 					var objects = val.split(',');
 					for (var j in objects) {
@@ -1299,17 +1301,20 @@ var QueryBuilder = function() {
 		},
 		
 		get_where: function(table, where) {
+			table = table || null;
 			where = where || null;
 			
-			if (typeof table !== 'string') {
-				throw new Error('You must specify a table as the first parameter when using the get_where method!');
-				return this;
-			} else {
-				track_aliases(this,table);
+			if (table === null || (typeof table === 'string' && table.trim().length === 0)) {
+				throw new Error('You must specify a table or tables in the first parameter of get_where()');
+			}
+			else {
 				this.from(table);
 			}
 			
-			if (where !== null) {
+			if (where === null || Object.keys(where).length === 0) {
+				throw new Error('You must supply an object of field:value pairs in the second parameter of get_where()');
+			}
+			else {
 				this.where(where);
 			}
 			

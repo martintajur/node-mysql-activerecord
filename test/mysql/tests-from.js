@@ -17,7 +17,7 @@ describe('from()', function() {
 	it('should add an item to an array and escape it properly', function() {
 		qb.from('universe');
 		qb.from_array.should.eql(['`universe`']);
-	});
+	})
 	it('should accept a comma-delimited string of items and trim and escape each properly', function() {
 		qb.reset_query();
 		qb.from('universe,galaxy  ,  star_system, planet');
@@ -105,5 +105,18 @@ describe('from()', function() {
 		qb.reset_query();
 		qb.from('universe.galaxy.star_system as planet');
 		qb.from_array.should.eql(['`universe`.`galaxy`.`star_system` as `planet`']);
-	})
+	});
+	it('should accept but ignore empty strings and empty strings within arrays', function() {
+		qb.reset_query();
+		qb.from('');
+		qb.from_array.should.be.empty;
+		
+		qb.reset_query();
+		qb.from(['','']);
+		qb.from_array.should.be.empty;
+		
+		qb.reset_query();
+		qb.from(['','foobar']);
+		qb.from_array.should.eql(['`foobar`']);
+	});
 });

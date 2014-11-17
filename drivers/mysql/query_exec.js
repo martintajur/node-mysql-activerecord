@@ -43,6 +43,12 @@ var QueryExec = function(qb, adapter) {
 		},
 		
 		get_where: function(table,where,callback) {
+			if (typeof table !== 'string' && Object.prototype.toString.call(table) !== Object.prototype.toString.call([])) {
+				throw new Error("First parameter of get_where() must be a string or an array of strings.");
+			}
+			if (Object.prototype.toString.call(where) !== Object.prototype.toString.call({})) {
+				throw new Error("Second parameter of get_where() must be an object with key:value pairs.");
+			}
 			var sql = qb.get_where(table,where);
 			qb.reset_query(sql);
 			exec(sql,callback);
