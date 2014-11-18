@@ -1024,12 +1024,12 @@ The third parameter of every execution method will be a callback function. For `
 
 ### Response Format Examples
 
-| API Method(s)						| Response Format																			|
-| :--------------------------------	| :---------------------------------------------------------------------------------------- |
-| get(), get_where()				| [{field:value,field2:value2},{field:value, field2:value2}]								| 
-| count()							| Integer (ex. 578)																			| 
-| insert(), update(), delete()		| Example: {insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}	|
-| insert_batch(), update_batch() 	| Example: {insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}	|
+| API Method(s)						| Response Format																				|
+| :--------------------------------	| :-------------------------------------------------------------------------------------------- |
+| get(), get_where()				| `[{field:value,field2:value2},{field:value, field2:value2}]`									| 
+| count()							| Integer (ex. `578`)																				| 
+| insert(), update(), delete()		| Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`	|
+| insert_batch(), update_batch() 	| Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`	|
 
 
 #### Callback Example
@@ -1078,12 +1078,13 @@ qb.insert('employees', data, function(err, res, conn) {
 
 -------------
 
-### .query(query_string,callback)
+### .query(query_string,callback[,connection])
 
-| Parameter		| Type		| Default	| Description										|
-| :--------		| :--------	| :-----	| :------------------------------------------------ |
-| query_string	| String	| Required	| Query to send directly to your database driver	|
-| callback		| Function	| Required	| What to do when the driver has responded			|
+| Parameter		| Type		| Default	| Description													|
+| :--------		| :--------	| :-----	| :------------------------------------------------------------	|
+| query_string	| String	| Required	| Query to send directly to your database driver				|
+| callback		| Function	| Required	| What to do when the driver has responded						|
+| connection	| Object	| undefined	| (optional) Pass if you want to re-use a connection from a pool|
 
 *****This method bypasses the entire QueryBuilder portion of this module***** is simply uses your database driver's native querying method. You should be cautious when using this as none of this module's security and escaping functionality will be utilized.
 
@@ -1101,12 +1102,13 @@ qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 
 -------------
 
-### .get(table,callback)
+### .get([table,]callback[,connection])
 
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.	|
-| callback	| Function	| Required	| What to do when the driver has responded						|
+| Parameter	| Type		| Default	| Description														|
+| :--------	| :--------	| :-----	| :---------------------------------------------------------------- |
+| table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.		|
+| callback	| Function	| Required	| What to do when the driver has responded							|
+| connection| Object	| undefined	| (optional) Pass if you want to re-use a connection from a pool	|
 
 This method is used when running queries that might respond with rows of data (namely, "SELECT" statements...). You can pass a table name as the first parameter to avoid having to call [.from()](#from) seperately. If the table name is omitted, and the first paramter is a callback function, there will be no need to pass a callback function into the second parameter.
 
@@ -1170,13 +1172,14 @@ qb.limit(10)
 
 -------------
 
-### .get_where(table,where,callback)
+### .get_where(table,where,callback[,connection])
 
 | Parameter	| Type				| Default	| Description													|
 | :--------	| :----------------	| :-------- | :------------------------------------------------------------ |
-| table		| String or Array	| Required	| Used to avoid having to call `.from()` seperately.	|
-| where		| Object			| Required	| Used to avoid having to call `.where()` seperately	|
+| table		| String or Array	| Required	| Used to avoid having to call `.from()` seperately.			|
+| where		| Object			| Required	| Used to avoid having to call `.where()` seperately			|
 | callback	| Function			| Required	| What to do when the driver has responded.						|
+| connection| Object			| undefined	| (optional) Pass if you want to re-use a connection from a pool|
 
 This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` seperately).  The other difference is that *all* parameters are required and they must be in the proper order.
 
@@ -1202,12 +1205,13 @@ qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, ca
 
 -------------
 
-### .count(table,callback)
+### .count([table,]callback[,connection])
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
 | table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.	|
 | callback	| Function	| Required	| What to do when the driver has responded.						|
+| connection| Object	| undefined	| (optional) Pass if you want to re-use a connection from a pool|
 
 This method is used to determine the total number of results that a query would return without actually returning the entire resultset back to this module. Obviously, you could simply execute the same query with `.get()` and then check the `length` property of the response array, but, that would take significantly more time and memory for very large resultsets.
 
@@ -1230,7 +1234,7 @@ qb.where('type',type).count('galaxies', function(err, count) {
 
 -------------
 
-### .update(table,data,where,callback)
+### .update(table,data[,where],callback[,connection])
 
 | Parameter	| Type		| Default	| Description																							|
 | :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
@@ -1238,6 +1242,7 @@ qb.where('type',type).count('galaxies', function(err, count) {
 | data		| Object	| Required	| The data to update (ex. {field: value})																|
 | where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
 | callback	| Function	| Required	| What to do when the driver has responded.																|
+| connection| Object	| undefined	| (optional) Pass if you want to re-use a connection from a pool										|
 
 This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
 
