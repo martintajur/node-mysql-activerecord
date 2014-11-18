@@ -20,7 +20,7 @@ var Adapter = function(settings,type) {
 	this.debugging = false;
 	this.connection = null;
 	this.connection_pool = null;
-	this.connection_type = 'single';
+	this.connection_type = type || 'single';
 	
 	// Enable debugging if necessary
 	if (settings.hasOwnProperty('qb_debug') && settings.debug === true) {
@@ -91,6 +91,7 @@ var Adapter = function(settings,type) {
 	// @return	VOID
 	// ****************************************************************************
 	this.get_connection = function(callback) {
+		
 		switch(that.connection_type) {
 			case 'cluster':
 				break;
@@ -123,11 +124,14 @@ var Adapter = function(settings,type) {
 	this.pool = function() {
 		that.connection_pool = mysql.createPool(this.settings);
 
-		that.connection_pool.query('SELECT 1 + 1 AS solution', function(err) {
-			if (err) throw err;
-			if (that.debugging === true) {
-				console.log('mysql connection pool created');
-			}
+		that.connection_pool.getConnection(function(err, connection) {
+			connection.query('SELECT 1 + 1 AS solution', function(err) {
+				connection.release();
+				if (err) throw err;
+				if (that.debugging === true) {
+					console.log('mysql connection pool created');
+				}
+			});
 		});
 		
 		return {

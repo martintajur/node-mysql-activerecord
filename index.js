@@ -191,7 +191,7 @@ var QueryBuilder = function(settings,driver,type) {
 	// ****************************************************************************
 	var get_adapter = function(qb) {
 		try {
-			qb.adapter = require(qb.driver_info.path + 'connect.js').Adapter(qb.settings);
+			qb.adapter = require(qb.driver_info.path + 'connect.js').Adapter(qb.settings, qb.connection_type);
 		} catch(e) {
 			throw new Error("Could not connect to database: " + e);
 		}

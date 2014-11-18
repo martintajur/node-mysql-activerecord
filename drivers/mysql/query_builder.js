@@ -412,7 +412,11 @@ var QueryBuilder = function() {
 		if (qb.from_array.length === 1) { 
 			var table = qb.from_array.toString();
 		} else {
-			throw new Error("You haven't provided any tables to build UPDATE query with!");
+			if (qb.from_array.length === 0) { 
+				throw new Error("You haven't provided any tables to build UPDATE query with!");
+				return '';
+			}
+			throw new Error("You have provided too many tables to build UPDATE query with!");
 			return '';
 		}
 		

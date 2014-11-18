@@ -1020,7 +1020,16 @@ Execution methods are the end-of-chain methods in the QueryBuilder library. Once
 
 ### Handling Error Messages and Results
 
-The final parameter of every execution method will be a callback function. The parameters for the callback are in the `node.js` standard `(err, response)` format. When you working with `pool` and `cluster` type connections, a third paramter will be passed containing the `connection` object&mdash;you would use this to release the connection when you're done with it. If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected (all others) in any other scenario.
+The third parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. When you are working with `pool` and `cluster` type connection setups, a third paramter will be passed containing the `conn` (connection) object used to make the query. You would use this connection object to pass on to a successive query (to avoid having to get release and re-get another connection) or release the connection back to the pool(s). If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
+
+### Response Format Examples
+
+| API Method(s)						| Response Format																			|
+| :--------------------------------	| :---------------------------------------------------------------------------------------- |
+| get(), get_where()				| [{field:value,field2:value2},{field:value, field2:value2}]								| 
+| count()							| Integer (ex. 578)																			| 
+| insert(), update(), delete()		| Example: {insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}	|
+| insert_batch(), update_batch() 	| Example: {insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}	|
 
 
 #### Callback Example
@@ -1030,7 +1039,8 @@ var callback =  function(err, response, connection) {
 	connection.release(); // if you're working with a pool or cluster...
 	if (err) {
 		console.error(err);
-	} else {
+	}
+	else {
 		for (var i in response) {
 			var row = response[i];
 			/*
@@ -1040,6 +1050,30 @@ var callback =  function(err, response, connection) {
 	}
 };
 qb.get('foo',callback);
+```
+
+#### Using the Same Connection Pool Connection for Successive Calls
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
+var data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
+qb.insert('employees', data, function(err, res, conn) {
+	if (err) {
+		console.error(err);
+	}
+	else {
+		if (res.affected_rows > 0) {
+			var insert_id = res.insert_id;
+			qb.get_where('employees', {id: insert_id}, function(err, res, conn) {
+				conn.release();
+				console.dir(res);
+			}, conn);
+		}
+		else {
+			console.error("New user was not added to database!");
+		}
+	}
+});
 ```
 
 -------------
@@ -1096,7 +1130,7 @@ If you already have the table added to the query:
 qb.from('galaxies').get(callback);
 ```
 
-Just a more-complicated example for the sake of it:
+Just a more-complicated example for the sake of it (note: using connection pool):
 
 ```javascript
 /**
@@ -1121,7 +1155,8 @@ qb.limit(10)
 	.join('stars s', 's.galaxy_id=g.id', 'left')
 	.group_by('g.id')
 	.order_by('g.name', 'asc')
-	.get(function(err, response) {
+	.get(function(err, response, conn) {
+		conn.release();
 		if (err) return console.error(err);
 		
 		for (var i in response) {
@@ -1197,12 +1232,12 @@ qb.where('type',type).count('galaxies', function(err, count) {
 
 ### .update(table,data,where,callback)
 
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| Required	| The table/collection you'd like to update						|
-| data		| Object	| Required	| The data to update (ex. {field: value})						|
-| where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately	|
-| callback	| Function	| Required	| What to do when the driver has responded.						|
+| Parameter	| Type		| Default	| Description																							|
+| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to update																|
+| data		| Object	| Required	| The data to update (ex. {field: value})																|
+| where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
+| callback	| Function	| Required	| What to do when the driver has responded.																|
 
 This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
 
@@ -1218,10 +1253,13 @@ Here's a contrived example of how it might be used in an app made with the Expre
 var express = require('express');
 var app = express();
 var settings = require('db.json');
-var qb = require('node-querybuilder').QueryBuilder(settings,'mysql', 'pool');
+var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/update_account', function(req, res) {
 	var user_id = req.session.user_id;
+	var sanitize_name = function(name) {
+		return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim();
+	};
 	var data = {
 		first_name: sanitize_name(req.body.first_name),
 		last_name: sanitize_name(req.body.last_name),
@@ -1229,7 +1267,7 @@ app.post('/update_account', function(req, res) {
 		bio: sanitize_bio(req.body.bio),
 	};
 	
-	qb.update('users', data, {id:user_id}, function(err, res, connection) {
+	qb.update('users', data, {id:user_id}, function(err, res, conn) {
 		connection.release();
 		if (err) return console.error(err);
 		
