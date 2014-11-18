@@ -1020,7 +1020,7 @@ Execution methods are the end-of-chain methods in the QueryBuilder library. Once
 
 ### Handling Error Messages and Results
 
-The third parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. When you are working with `pool` and `cluster` type connection setups, a third paramter will be passed containing the `conn` (connection) object used to make the query. You would use this connection object to pass on to a successive query (to avoid having to get release and re-get another connection) or release the connection back to the pool(s). If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
+The third parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. When you are working with `pool` and `cluster` type connection setups, a third paramter will be passed containing the `conn` (connection) object used to make the query. You would use this connection object to pass on to a successive query (final paramter of all exec methods)&mdashto avoid having to get release and re-get another connection&mdash;or release the connection back to the pool(s). If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
 
 ### Response Format Examples
 
@@ -1067,7 +1067,7 @@ qb.insert('employees', data, function(err, res, conn) {
 			qb.get_where('employees', {id: insert_id}, function(err, res, conn) {
 				conn.release();
 				console.dir(res);
-			}, conn);
+			}, conn); // <----- Notice connection is passed as 4th parameter
 		}
 		else {
 			console.error("New user was not added to database!");
