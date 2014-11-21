@@ -20,7 +20,7 @@ describe('update()', function() {
 		qb.update('galaxies', test_data, test_where);
 		qb.from_array.should.eql(['`galaxies`']);
 	});
-	it('should only accept nothing or a string for the table (first) parameter', function() {
+	/* it('should only accept nothing or a string for the table (first) parameter', function() {
 		qb.reset_query();
 		
 		// Doing these to prevent other errors
@@ -119,5 +119,5 @@ describe('update()', function() {
 		qb.reset_query();
 		var sql = qb.insert_ignore('galaxies', test_data, 'ON DUPLICATE KEY UPDATE last_update = NOW()');
 		sql.should.eql("INSERT IGNORE INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral') ON DUPLICATE KEY UPDATE last_update = NOW()");
-	});
+	}); */
 });
