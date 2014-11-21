@@ -4,57 +4,43 @@
 // @param	Object	qb			The QueryBuilder object
 // @param	Object	adapter		The connection adapter object
 // ****************************************************************************
-var QueryExec = function(qb, adapter) {
+var QueryExec = function(qb, conn) {
 	
-	var do_query = function(conn, sql, callback) {
-		conn.query(sql, function(err, results) {
-			// Standardize some important properties
-			if (!err && results.length > 0) {
-			
-				// Insert ID
-				if (results.hasOwnProperty('insertId')) {
-					results.insert_id = results.insertId;
-				}
-				
-				// Affected Rows
-				if (results.hasOwnProperty('affectedRows')) {
-					results.affected_rows = results.affectedRows;
-				}
-				
-				// Changed Rows
-				if (results.hasOwnProperty('changedRows')) {
-					results.changed_rows = results.changedRows;
-				}
-			}
-		
-			if (adapter.connection_type === 'standard') {
-				callback(err, results);
-			} else {
-				callback(err, results, conn);
-			}
-		});
-	};
-	
-	var exec = function(sql, callback, conn) {
+	var exec = function(sql, callback) {
 		if (Object.prototype.toString.call(conn) == Object.prototype.toString.call({})) {
-			do_query(conn, sql, callback);
-		}
-		else {
-			adapter.get_connection(function(connection) {
-				if (connection === null) {
-					throw Error("A connection to the database could not be established!");
+			conn.query(sql, function(err, results) {
+				// Standardize some important properties
+				if (!err && results.length > 0) {
+				
+					// Insert ID
+					if (results.hasOwnProperty('insertId')) {
+						results.insert_id = results.insertId;
+					}
+					
+					// Affected Rows
+					if (results.hasOwnProperty('affectedRows')) {
+						results.affected_rows = results.affectedRows;
+					}
+					
+					// Changed Rows
+					if (results.hasOwnProperty('changedRows')) {
+						results.changed_rows = results.changedRows;
+					}
 				}
-				do_query(connection, sql, callback);
+			
+				callback(err, results);
 			});
+		} else {
+			throw new Error("No connection object supplied to the Query Exec Library!");
 		}
 	};
 	
 	return {
-		query: function(sql, callback, conn) {
-			exec(sql, callback, conn);
+		query: function(sql, callback) {
+			exec(sql, callback);
 		},
 	
-		count: function(table, callback, conn) {
+		count: function(table, callback) {
 			if (typeof table === 'function' && typeof callback !== 'function') {
 				table = null;
 				callback = table;
@@ -69,7 +55,7 @@ var QueryExec = function(qb, adapter) {
 				else {
 					callback(err, row);
 				}
-			}, conn);
+			});
 		},
 		
 		get: function(table,callback,conn) {
@@ -83,10 +69,10 @@ var QueryExec = function(qb, adapter) {
 		
 			var sql = qb.get(table);
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 		
-		get_where: function(table,where,callback,conn) {
+		get_where: function(table,where,callback) {
 			if (typeof table !== 'string' && Object.prototype.toString.call(table) !== Object.prototype.toString.call([])) {
 				throw new Error("First parameter of get_where() must be a string or an array of strings.");
 			}
@@ -95,28 +81,28 @@ var QueryExec = function(qb, adapter) {
 			}
 			var sql = qb.get_where(table,where);
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 		
-		insert: function(table,set,callback,ignore,suffix,conn) {
+		insert: function(table,set,callback,ignore,suffix) {
 			var sql = qb.insert(table,set,ignore,suffix);
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 		
-		insert_ignore: function(table,set,callback,conn) {
+		insert_ignore: function(table,set,callback) {
 			var sql = qb.insert_ignore(table,set);
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 		
-		insert_batch: function(table,set,callback,conn) {
+		insert_batch: function(table,set,callback) {
 			var sql = qb.insert_batch(table,set);
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 		
-		update: function(table,set,where,callback,conn) {
+		update: function(table,set,where,callback) {
 			// The where parameter is optional, it could be the callback...
 			if (typeof where === 'function' && typeof callback !== 'function') {
 				callback = where;
@@ -129,24 +115,17 @@ var QueryExec = function(qb, adapter) {
 				where = null;
 			}
 			
-			var sql = qb.update(table,set,where,conn);
+			var sql = qb.update(table,set,where);
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 		
 		// TODO: Write this complicated-ass function
 		update_batch: function(table,set,where,callback,conn) {
-			adapter.get_connection(function(connection) {
-				if (adapter.connection_type === 'standard') {
-					callback(new Error("This function is not currently available!"),null);
-				} else {
-					callback(new Error("This function is not currently available!"),null, connection);
-				}
-				
-			});
+			callback(new Error("This function is not currently available!"),null);
 		},
 		
-		delete: function(table, where, callback,conn) {
+		delete: function(table, where, callback) {
 			if (typeof where === 'function' && typeof callback !== 'function') {
 				callback = where;
 				where = undefined;
@@ -165,19 +144,19 @@ var QueryExec = function(qb, adapter) {
 			var sql = qb.delete(table, where);
 			
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 		
-		empty_table: function(table, callback,conn) {
+		empty_table: function(table, callback) {
 			var sql = qb.empty_table(table,callback);
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 		
-		truncate: function(table, callback,conn) {
+		truncate: function(table, callback) {
 			var sql = qb.truncate(table,callback);
 			qb.reset_query(sql);
-			exec(sql,callback,conn);
+			exec(sql,callback);
 		},
 	}
 }

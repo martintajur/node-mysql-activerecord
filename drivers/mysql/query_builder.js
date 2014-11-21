@@ -1409,7 +1409,7 @@ var QueryBuilder = function() {
 			throw new Error("This function has not yet been implemented!");
 		},
 		
-		_last_query: function() {
+		last_query: function() {
 			return this.last_query_string[0] || '';
 		}
 	}

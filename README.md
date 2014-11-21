@@ -1016,11 +1016,11 @@ Execution Methods
 
 ### What are "Execution Methods"??
 
-Execution methods are the end-of-chain methods in the QueryBuilder library. Once these methods are called, all the chainable methods you've called up until this point will be compiled into a query string and sent to the driver's `query()` method. At this point, the QueryBuilder will be reset and ready to build a new query. The database driver will respond positively with resultset/boolean depending on the type of query being executed or negatively with an error message. Both (if provided) will be supplied to the callback function.
+Execution methods are the end-of-chain methods in the QueryBuilder library. Once these methods are called, all the chainable methods you've called up until this point will be compiled into a query string and sent to the driver's `query()` method. At this point, the QueryBuilder will be reset and ready to build a new query. The database driver will respond with results depending on the type of query being executed or with an error message. Both (if provided) will be supplied to the callback function.
 
 ### Handling Error Messages and Results
 
-The third parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. When you are working with `pool` and `cluster` type connection setups, a third paramter will be passed containing the `conn` (connection) object used to make the query. You would use this connection object to pass on to a successive query (final paramter of all exec methods)&mdashto avoid having to get release and re-get another connection&mdash;or release the connection back to the pool(s). If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
+The final parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
 
 ### Response Format Examples
 
@@ -1035,8 +1035,8 @@ The third parameter of every execution method will be a callback function. For `
 #### Callback Example
 
 ```javascript
-var callback =  function(err, response, connection) {
-	connection.release(); // if you're working with a pool or cluster...
+var callback =  function(err, response) {
+	qb.release();
 	if (err) {
 		console.error(err);
 	}
@@ -1049,42 +1049,46 @@ var callback =  function(err, response, connection) {
 		}
 	}
 };
-qb.get('foo',callback);
+pool.get_connection(function(qb) {
+	qb.get('foo',callback);
+});
 ```
 
 #### Using the Same Connection Pool Connection for Successive Calls
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
+var pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
 var data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
-qb.insert('employees', data, function(err, res, conn) {
-	if (err) {
-		console.error(err);
-	}
-	else {
-		if (res.affected_rows > 0) {
-			var insert_id = res.insert_id;
-			qb.get_where('employees', {id: insert_id}, function(err, res, conn) {
-				conn.release();
-				console.dir(res);
-			}, conn); // <----- Notice connection is passed as 4th parameter
+
+pool.get_connection(function(qb) {
+	qb.insert('employees', data, function(err, res) {
+		if (err) {
+			console.error(err);
 		}
 		else {
-			console.error("New user was not added to database!");
+			if (res.affected_rows > 0) {
+				var insert_id = res.insert_id;
+				qb.get_where('employees', {id: insert_id}, function(err, res) {
+					qb.release();
+					console.dir(res);
+				});
+			}
+			else {
+				console.error("New user was not added to database!");
+			}
 		}
-	}
+	});
 });
 ```
 
 -------------
 
-### .query(query_string,callback[,connection])
+### .query(query_string,callback)
 
 | Parameter		| Type		| Default	| Description													|
 | :--------		| :--------	| :-----	| :------------------------------------------------------------	|
 | query_string	| String	| Required	| Query to send directly to your database driver				|
 | callback		| Function	| Required	| What to do when the driver has responded						|
-| connection	| Object	| undefined	| (optional) Pass if you want to re-use a connection from a pool|
 
 *****This method bypasses the entire QueryBuilder portion of this module***** is simply uses your database driver's native querying method. You should be cautious when using this as none of this module's security and escaping functionality will be utilized.
 
@@ -1102,13 +1106,12 @@ qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 
 -------------
 
-### .get([table,]callback[,connection])
+### .get([table,]callback)
 
 | Parameter	| Type		| Default	| Description														|
 | :--------	| :--------	| :-----	| :---------------------------------------------------------------- |
 | table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.		|
 | callback	| Function	| Required	| What to do when the driver has responded							|
-| connection| Object	| undefined	| (optional) Pass if you want to re-use a connection from a pool	|
 
 This method is used when running queries that might respond with rows of data (namely, "SELECT" statements...). You can pass a table name as the first parameter to avoid having to call [.from()](#from) seperately. If the table name is omitted, and the first paramter is a callback function, there will be no need to pass a callback function into the second parameter.
 
@@ -1172,14 +1175,13 @@ qb.limit(10)
 
 -------------
 
-### .get_where(table,where,callback[,connection])
+### .get_where(table,where,callback)
 
 | Parameter	| Type				| Default	| Description													|
 | :--------	| :----------------	| :-------- | :------------------------------------------------------------ |
 | table		| String or Array	| Required	| Used to avoid having to call `.from()` seperately.			|
 | where		| Object			| Required	| Used to avoid having to call `.where()` seperately			|
 | callback	| Function			| Required	| What to do when the driver has responded.						|
-| connection| Object			| undefined	| (optional) Pass if you want to re-use a connection from a pool|
 
 This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` seperately).  The other difference is that *all* parameters are required and they must be in the proper order.
 
@@ -1205,13 +1207,12 @@ qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, ca
 
 -------------
 
-### .count([table,]callback[,connection])
+### .count([table,]callback)
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
 | table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.	|
 | callback	| Function	| Required	| What to do when the driver has responded.						|
-| connection| Object	| undefined	| (optional) Pass if you want to re-use a connection from a pool|
 
 This method is used to determine the total number of results that a query would return without actually returning the entire resultset back to this module. Obviously, you could simply execute the same query with `.get()` and then check the `length` property of the response array, but, that would take significantly more time and memory for very large resultsets.
 
@@ -1234,7 +1235,7 @@ qb.where('type',type).count('galaxies', function(err, count) {
 
 -------------
 
-### .update(table,data[,where],callback[,connection])
+### .update(table,data[,where],callback)
 
 | Parameter	| Type		| Default	| Description																							|
 | :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
@@ -1242,7 +1243,6 @@ qb.where('type',type).count('galaxies', function(err, count) {
 | data		| Object	| Required	| The data to update (ex. {field: value})																|
 | where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
 | callback	| Function	| Required	| What to do when the driver has responded.																|
-| connection| Object	| undefined	| (optional) Pass if you want to re-use a connection from a pool										|
 
 This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
 
@@ -1258,7 +1258,7 @@ Here's a contrived example of how it might be used in an app made with the Expre
 var express = require('express');
 var app = express();
 var settings = require('db.json');
-var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/update_account', function(req, res) {
 	var user_id = req.session.user_id;
@@ -1272,14 +1272,16 @@ app.post('/update_account', function(req, res) {
 		bio: sanitize_bio(req.body.bio),
 	};
 	
-	qb.update('users', data, {id:user_id}, function(err, res, conn) {
-		connection.release();
-		if (err) return console.error(err);
-		
-		var page_data = {
-			prefill: data,
-		}
-		return res.render('/account_updated', page_data);
+	pool.get_connection(function(qb) {
+		qb.update('users', data, {id:user_id}, function(err, res) {
+			qb.release();
+			if (err) return console.error(err);
+			
+			var page_data = {
+				prefill: data,
+			}
+			return res.render('/account_updated', page_data);
+		});
 	});
 });
 ```

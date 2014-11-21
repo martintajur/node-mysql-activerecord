@@ -19,7 +19,8 @@
 	"dependencies": {
 		"mysql": "2.5.*",
 		"chai": "~1.4.2",
-		"mocha": "*"
+		"mocha": "*",
+		"underscore": "*"
 	},
 	"main" : "./",
 	"engines": {
