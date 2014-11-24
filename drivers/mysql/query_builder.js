@@ -406,7 +406,7 @@ var QueryBuilder = function() {
 	var compile_update = function(qb) {		
 		var valstr = [];
 		for (var i in qb.set_array) {
-			valstr.push(key + ' = ' + qb.set_array[i]);
+			valstr.push(i + ' = ' + qb.set_array[i]);
 		}
 		
 		if (qb.from_array.length === 1) { 
@@ -423,7 +423,7 @@ var QueryBuilder = function() {
 		var limit_to = qb.limit_to[0] || false;
 		
 		var limit = (!limit_to ? '' : ' LIMIT ' + limit_to);
-		sql = 'UPDATE ' + table + " SET " + valstr.join(', ');
+		var sql = 'UPDATE ' + table + " SET " + valstr.join(', ');
 		sql += build_where_clause(qb);
 		sql += build_order_by_clause(qb);
 		sql += build_limit_clause(qb);
@@ -1352,8 +1352,7 @@ var QueryBuilder = function() {
 				this.where(where);
 			}
 
-			var sql = this._update(this);
-			return sql;
+			return compile_update(this);
 		},
 		
 		delete: function(table, where) {			
