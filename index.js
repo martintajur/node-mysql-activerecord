@@ -103,7 +103,19 @@ var Adapter = function(settings) {
 	var rawWhereString = {};
 	
 	var escapeFieldName = function(str) {
-		return (typeof rawWhereString[str] === 'undefined' && typeof rawWhereClause[str] === 'undefined' ? '`' + str.replace('.','`.`') + '`' : str);
+		if (typeof rawWhereString[str] === 'undefined' && typeof rawWhereClause[str] === 'undefined') {
+			var regex_as = /(.*)\s+as\s+(\w*)/i;
+			var regex_space = /(.*)\s(\w*)/i;
+			var format_as = '`$1` AS `$2`';
+
+			if (regex_as.test(str)) {
+				return str.replace(regex_as, format_as);
+			} else {
+				return regex_space.test(str) ? str.replace(regex_space, format_as) : '`' + str.replace('.','`.`') + '`';
+			}
+		} else {
+			return str;
+		}
 	};
 	
 	var buildDataString = function(dataSet, separator, clause) {
