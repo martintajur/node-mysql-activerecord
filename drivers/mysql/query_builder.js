@@ -279,12 +279,8 @@ var QueryBuilder = function() {
 	};
 
 	var qb_escape = function(qb,str) {
-		if(qb.hasOwnProperty('escape')) {
-			var do_escape = qb.escape;
-		} else {
-			var SqlString = require('../../node_modules/mysql/lib/protocol/SqlString.js');
-			var do_escape = SqlString.escape;
-		}
+		var SqlString = require('../../node_modules/mysql/lib/protocol/SqlString.js');
+		var do_escape = SqlString.escape;
 	
 		if (typeof str === 'string' && !str.match(/^\d+$/)) {
 			str = do_escape(str);
@@ -1189,7 +1185,7 @@ var QueryBuilder = function() {
 			
 			table = table.trim();
 			
-			if (table !== '' && (!table.match(/[a-zA-Z]/) || !table.match(/^[a-zA-Z0-9\$_]+/))) {
+			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
 				throw new Error("insert(): Invalid table name provided!");
 			}
 			
@@ -1325,27 +1321,46 @@ var QueryBuilder = function() {
 		},
 		
 		update: function(table, set, where) {
+			table = table || '';
 			set = set || null;
+			where = where || null;
+			
+			if ((typeof set).match(/^(number|boolean)$/) || (typeof set == 'string' && set !== '') || Object.prototype.toString.call(set) === Object.prototype.toString.call(/test/)) {
+				throw new Error("insert(): Invalid data provided to update database!");
+			}
+			
+			if (Object.prototype.toString.call(set) === Object.prototype.toString.call([])) {
+				return this.update_batch(table, set, where);
+			}
 			
 			if (set !== null) {
-				this.set(set);
+				if (Object.prototype.toString.call(set) === Object.prototype.toString.call({}) && Object.keys(set).length > 0) {
+					this.set(set);
+				}
 			}
 			
 			if (this.set_array.length == 0) {
 				throw new Error("You must set a some field value pairs to update using the set method or in object for in the second parameter of the update method!");
 			}
 			
+			if (typeof table !== 'string') {
+				throw new Error("insert(): Table parameter must be a string!");
+			}
+			
+			table = table.trim();
+			
+			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
+				throw new Error("update(): You have not set any tables to update!");
+			}
+			
 			if (table == '') {
-				if (this.from_array.length === 0) {
-					throw new Error("You have not set any tables to update!");
+				if (this.from_array.length == 0) {
+					throw new Error('No tables set to insert into!');
 				}
-
 				table = this.from_array[0];
 			} else {
 				clear_array(this.from_array);
 				this.from(table);
-				
-				table = this.from_array[0];
 			}
 			
 			if (where != null) {
@@ -1410,7 +1425,11 @@ var QueryBuilder = function() {
 		
 		last_query: function() {
 			return this.last_query_string[0] || '';
-		}
+		},
+		
+		escape: function(val) {
+			return qb_escape(this, val);
+		},
 	}
 };
 

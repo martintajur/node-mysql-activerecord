@@ -140,6 +140,38 @@ var Adapters = function(nqb) {
 	// @return	Object		Adapter object
 	// ****************************************************************************
 	var Pool = function() {
+		// Return Pool Object
+		var return_pool = function() {
+			return {
+				pool: function() {
+					return nqb.pool;
+				},
+				get_connection: function(callback) {
+					if (null === nqb.pool) {
+						var error_msg = "Connection pool not available!";
+						if (console && console.hasOwnProperty('error')) console.error(error_msg);
+						throw new Error(error_msg);
+					}
+					
+					nqb.pool.getConnection(function (err, connection) {
+						if (err) throw err;
+						var adapter = new Adapter({
+							pool: {
+								pool: nqb.pool,
+								connection: connection
+							}
+						});
+						
+						callback(adapter);
+					});
+				},
+				disconnect: function(callback) {
+					nqb.pool.end(callback);
+				}
+			}
+		}
+		
+		// Create pool for node-querybuild object if it doesn't already have one.
 		if (!nqb.hasOwnProperty('pool') || nqb.pool.length === 0) {
 			// Create connection Pool
 			nqb.pool = mysql.createPool(that.connection_settings);
@@ -152,37 +184,11 @@ var Adapters = function(nqb) {
 					if (that.debugging === true) {
 						console.log('mysql connection pool created');
 					}
+					return return_pool();
 				});
 			});
-		}
-		
-		// Return Pool Object
-		return {
-			pool: function() {
-				return nqb.pool;
-			},
-			get_connection: function(callback) {
-				if (null === nqb.pool) {
-					var error_msg = "Connection pool not available!";
-					if (console && console.hasOwnProperty('error')) console.error(error_msg);
-					throw new Error(error_msg);
-				}
-				
-				nqb.pool.getConnection(function (err, connection) {
-					if (err) throw err;
-					var adapter = new Adapter({
-						pool: {
-							pool: nqb.pool,
-							connection: connection
-						}
-					});
-					
-					callback(adapter);
-				});
-			},
-			disconnect: function(callback) {
-				nqb.pool.end(callback);
-			}
+		} else {
+			return return_pool();
 		}
 	};
 	

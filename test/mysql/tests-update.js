@@ -20,53 +20,53 @@ describe('update()', function() {
 		qb.update('galaxies', test_data, test_where);
 		qb.from_array.should.eql(['`galaxies`']);
 	});
-	/* it('should only accept nothing or a string for the table (first) parameter', function() {
+	it('should accept a string or falsy value for the table (first) parameter', function() {
 		qb.reset_query();
 		
 		// Doing these to prevent other errors
 		qb.from('galaxies'); 
 		
-		expect(function() { qb.insert([], test_data); 		}, 'empty array provided').to.throw(Error);
-		expect(function() { qb.insert({}, test_data); 		}, 'empty object provided').to.throw(Error);
-		expect(function() { qb.insert(3, test_data); 		}, 'integer provided').to.throw(Error);
-		expect(function() { qb.insert(3.5, test_data); 		}, 'float provided').to.throw(Error);
-		expect(function() { qb.insert(true, test_data); 	}, 'true provided').to.throw(Error);
-		expect(function() { qb.insert(Infinity, test_data);	}, 'Infinity provided').to.throw(Error);
-		expect(function() { qb.insert([1,2], test_data); 	}, 'array of numbers provided').to.throw(Error);
-		expect(function() { qb.insert(/foobar/, test_data);	}, 'regex provided').to.throw(Error);
+		expect(function() { qb.update([], test_data); 		}, 'empty array provided').to.throw(Error);
+		expect(function() { qb.update({}, test_data); 		}, 'empty object provided').to.throw(Error);
+		expect(function() { qb.update(3, test_data); 		}, 'integer provided').to.throw(Error);
+		expect(function() { qb.update(3.5, test_data); 		}, 'float provided').to.throw(Error);
+		expect(function() { qb.update(true, test_data); 	}, 'true provided').to.throw(Error);
+		expect(function() { qb.update(Infinity, test_data);	}, 'Infinity provided').to.throw(Error);
+		expect(function() { qb.update([1,2], test_data); 	}, 'array of numbers provided').to.throw(Error);
+		expect(function() { qb.update(/foobar/, test_data);	}, 'regex provided').to.throw(Error);
 		
-		expect(function() { qb.insert(NaN, test_data); 		}, 'NaN provided').to.not.throw(Error);
-		expect(function() { qb.insert(false, test_data); 	}, 'false provided').to.not.throw(Error);
-		expect(function() { qb.insert('', test_data); 		}, 'empty string provided').to.not.throw(Error);
-		expect(function() { qb.insert('  ', test_data); 	}, 'string full of spaces provided').to.not.throw(Error);
-		expect(function() { qb.insert(null, test_data); 	}, 'null provided').to.not.throw(Error);
-		expect(function() { qb.insert(undefined, test_data);},'undefined provided').to.not.throw(Error);
+		expect(function() { qb.update(NaN, test_data); 		}, 'NaN provided').to.not.throw(Error);
+		expect(function() { qb.update(false, test_data); 	}, 'false provided').to.not.throw(Error);
+		expect(function() { qb.update('', test_data); 		}, 'empty string provided').to.not.throw(Error);
+		expect(function() { qb.update('  ', test_data); 	}, 'string full of spaces provided').to.not.throw(Error);
+		expect(function() { qb.update(null, test_data); 	}, 'null provided').to.not.throw(Error);
+		expect(function() { qb.update(undefined, test_data);},'undefined provided').to.not.throw(Error);
 	});
 	it('should fail if a number, non-standard object, regex, boolean, array of non-objects, or non-empty string is provided in data parameter', function() {
 		qb.reset_query();
 		
-		expect(function() { qb.insert('galaxies',test_data);}, 'non-empty array provided').to.not.throw(Error);
-		expect(function() { qb.insert('galaxies',[]); 		}, 'empty array provided').to.not.throw(Error);
-		expect(function() { qb.insert('galaxies',[test_data,test_data]); }, 'array of non-empty standard objects provided').to.not.throw(Error);
-		expect(function() { qb.insert('galaxies',{}); 		}, 'empty object provided').to.not.throw(Error);
-		expect(function() { qb.insert('galaxies',''); 		}, 'empty string provided').to.not.throw(Error);
-		expect(function() { qb.insert('galaxies',null); 	}, 'null provided').to.not.throw(Error);
-		expect(function() { qb.insert('galaxies',undefined);}, 'undefined provided').to.not.throw(Error);
-		expect(function() { qb.insert('galaxies');			}, 'nothing provided').to.not.throw(Error);
+		expect(function() { qb.update('galaxies',test_data);}, 'non-empty array provided').to.not.throw(Error);
+		expect(function() { qb.update('galaxies',[]); 		}, 'empty array provided').to.not.throw(Error);
+		expect(function() { qb.update('galaxies',[test_data,test_data]); }, 'array of non-empty standard objects provided').to.not.throw(Error);
+		expect(function() { qb.update('galaxies',{}); 		}, 'empty object provided').to.not.throw(Error);
+		expect(function() { qb.update('galaxies',''); 		}, 'empty string provided').to.not.throw(Error);
+		expect(function() { qb.update('galaxies',null); 	}, 'null provided').to.not.throw(Error);
+		expect(function() { qb.update('galaxies',undefined);}, 'undefined provided').to.not.throw(Error);
+		expect(function() { qb.update('galaxies');			}, 'nothing provided').to.not.throw(Error);
 		
-		expect(function() { qb.insert('galaxies',3); 		}, 'integer provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',3.5); 		}, 'float provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',true); 	}, 'true provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',Infinity);	}, 'Infinity provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',[{},{}]); 	}, 'array of empty objects provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',[1,2]); 	}, 'array of numbers provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',['abc',2,{foo:'bar'}]); }, 'array of mixed values provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',/foobar/);	}, 'regex provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',NaN); 		}, 'NaN provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies',false); 	}, 'false provided').to.throw(Error);
-		expect(function() { qb.insert('galaxies','  '); 	}, 'string full of spaces provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',3); 		}, 'integer provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',3.5); 		}, 'float provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',true); 	}, 'true provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',Infinity);	}, 'Infinity provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',[{},{}]); 	}, 'array of empty objects provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',[1,2]); 	}, 'array of numbers provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',['abc',2,{foo:'bar'}]); }, 'array of mixed values provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',/foobar/);	}, 'regex provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',NaN); 		}, 'NaN provided').to.throw(Error);
+		expect(function() { qb.update('galaxies',false); 	}, 'false provided').to.throw(Error);
+		expect(function() { qb.update('galaxies','  '); 	}, 'string full of spaces provided').to.throw(Error);
 	});
-	it('should allow for an empty data parameter', function() {
+	/*it('should allow for an empty data parameter', function() {
 		qb.reset_query();
 		var sql = qb.insert('galaxies');
 		sql.should.eql("INSERT INTO `galaxies` () VALUES ()");

@@ -1,6 +1,6 @@
 /**
  * QueryBuilder for Node.js
- * (C) Kyle Farris 2014
+ * (C) Kyle Farris 2014-2015
  * kyle@chomponllc.com
  * 
  * A generic Query Builder for any SQL or NOSQL database adapter. 

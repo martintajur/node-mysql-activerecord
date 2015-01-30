@@ -677,6 +677,8 @@ This SQL command is used to find close matches where as the "WHERE" command is f
 | value			| String/Number	| Required	| The value you want the field to closely match		|
 | side			| String		| 'both'	| before: '%value'; after: 'value%', both: '%value%'|
 
+**NOTE:** You can, alternatively, use `'right'` and `'left'` in place of `'before'` and '`after`' if you prefer.
+
 #### .like(field,match[,side])
 
 All fields are escaped automatically, no exceptions. Multiple calls will be joined together with 'AND'. You can also pass an object of field/match pairs. Wildcard sides are interchangeable between before/left and after/right--choose the one that makes the most sense to you (there are examples of each below).
@@ -1240,7 +1242,7 @@ qb.where('type',type).count('galaxies', function(err, count) {
 | Parameter	| Type		| Default	| Description																							|
 | :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
 | table		| String	| Required	| The table/collection you'd like to update																|
-| data		| Object	| Required	| The data to update (ex. {field: value})																|
+| data		| Object	| Required	| The data to update (ex. `{field: value}`)																|
 | where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
 | callback	| Function	| Required	| What to do when the driver has responded.																|
 
@@ -1248,7 +1250,7 @@ This method is used to update a table (SQL) or collection (NoSQL) with new data.
 
 **Type of Response Sent to Callback**
 
-Object containing infomration about the results of the query.
+Object containing information about the results of the query.
 
 **Examples**
 
@@ -1262,14 +1264,14 @@ var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/update_account', function(req, res) {
 	var user_id = req.session.user_id;
-	var sanitize_name = function(name) {
-		return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim();
-	};
+	var sanitize_name = function(name) { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
+	var sanitize_age = function(age)  { return age.replace(/[^0-9]+$/,'').trim(); };
+	
 	var data = {
 		first_name: sanitize_name(req.body.first_name),
 		last_name: sanitize_name(req.body.last_name),
 		age: sanitize_age(req.body.last_name),
-		bio: sanitize_bio(req.body.bio),
+		bio: req.body.bio,
 	};
 	
 	pool.get_connection(function(qb) {
@@ -1290,21 +1292,116 @@ app.post('/update_account', function(req, res) {
 
 ### .update_batch(table,dataset,where,callback)
 
+Documentation for this method coming soon!
+
 -------------
 
 ### .insert(table,data,callback)
+
+| Parameter	| Type		| Default	| Description																							|
+| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to insert into														|
+| data		| Object	| Required	| The data to insert (ex. `{field: value}`)																|
+| callback	| Function	| Required	| What to do when the driver has responded.																|
+
+This method is used to insert new data into a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the ID of the newly inserted item, the affected rows (should be 1), etc...
+
+**Type of Response Sent to Callback**
+
+Object containing information about the result of the query.
+
+**Examples**
+
+Here's a contrived example of how it might be used in an app made with the Express framework:
+
+```javascript
+var express = require('express');
+var app = express();
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+
+app.post('/add_article', function(req, res) {
+	var user_id = req.session.user_id;
+	
+	var data = {
+		title: req.body.first_name,
+		body: req.body.last_name,
+		author: user_id,
+		publish_date: sanitize_age(req.body.last_name)
+	};
+	
+	pool.get_connection(function(qb) {
+		qb.insert('articles', data, function(err, res) {
+			qb.release();
+			if (err) return console.error(err);
+			
+			var page_data = {
+				article_id: res.insert_id,
+			}
+			return res.render('/article_manager', page_data);
+		});
+	});
+});
+```
 
 -------------
 
 ### .insert_batch(table,dataset,callback)
 
+Documentation for this method coming soon!
+
 -------------
 
 ### .insert_ignore(table,data,callback)
 
+Documentation for this method coming soon!
+
 -------------
 
 ### .delete(table,where,callback)
+
+| Parameter	| Type		| Default	| Description																							|
+| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to delete records from.												|
+| where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
+| callback	| Function	| Required	| What to do when the driver has responded.																|
+
+This method is used to delete records from a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with the number of affected rows.
+
+**Type of Response Sent to Callback**
+
+Object containing information about the result of the query.
+
+**Examples**
+
+Here's a contrived example of how it might be used in an app made with the Express framework (NOTE: you should do better with error handling):
+
+```javascript
+var express = require('express');
+var app = express();
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+
+app.post('/delete_comment/:id', function(req, res) {
+	var comment_id = req.params.id;
+	
+	pool.get_connection(function(qb) {
+		qb.get('comments', {id: id}, function(err, res) {
+			if (err) return console.error(err);
+			var article_id = res.article_id;
+			
+			qb.delete('comments', {id: id}, function(err, res) {
+				qb.release();
+				if (err) return console.error(err);
+				
+				var page_data = {
+					num_removed: res.affected_rows,
+				}
+				return res.render('/article/' + article_id, page_data);
+			});
+	});
+});
+```
 
 -------------
 
@@ -1332,25 +1429,179 @@ Used to get a new connection from the connection pool or cluster pool.
 
 ### .last_query()
 
+This is used to ascertain the query string that was most-recently executed. This MUST be called before closing the connection or releasing a connection back to the pool. This is useful for debugging what the `node-querybuilder` library is executing (or trying to execute).
+
+**Examples**
+
+```javascript
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+pool.get_connection(function(qb) {
+	var id = 4531;
+	qb.get('comments', {id: id}, function(err, res) {
+		// SELECT * FROM `comments` WHERE `id` = 4531
+		console.log(qb.last_query());
+		qb.release();
+	});
+});
+```
+
 -------------
 
 ### .escape(value)
 
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| value		| Mixed		| Required	| The value to escape based on your database driver				|
+
+This can be used to excape a value using your driver's native escape method. If your driver does not have a native escape method, the value will simply be returned. This is useful for when you want to build a SQL string manually (for instance, you don't want certain items to be escaped).
+
+**What should happen:**
+*Examples given are for MySQL*
+
+| Input Type	| Output Type	| Ex. Input			| Ex. Output					|
+| :------------	| :-----------:	| :---------------:	| :---------------------------:	|
+| String		| String		| "\n\s\x1a"		| "\\n\\s\\x1a"					|
+| Integer		| String		| 76				| '76'							|
+| Array			| String		| [1,2,3]			| '1','2',3'					|
+| Date			| String		| new Date()		| '2015-01-30 16:54:23.1856'	|
+| Buffer		| String		| new Buffer(1)		| 'X\'00\''						|
+| Object		| String		| {foo: 'bar', i: 3}| "`foo` = 'bar', `i` = 3"		|
+
+
+**Example**
+
+```javascript 
+var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+var sql = 'SELECT count(*) FROM `star_systems` WHERE ' + qb.escape({planet_num: 5}) + ' LIMIT 10';
+qb.query(sql, function(err, res) {
+	console.dir(res);
+});
+```
+
 -------------
 
-### .get_compiled_select()
+### SQL Compilation Methods
+
+These methods can be used to build a query string without having to execute it. This is a fantastic option if you want to use the querybuilder to simply build queries and display the resulting string or to send the compiled query string off to a driver/engine other than the one offered by `node-querybuilder`.
+
+These are excellent educational tools and can be used like a SQL/NoSQL language rosetta stone of sorts.
+
+The callback will respond with the standard `(err, res)` format. The `res` parameter will contain the compiled query string.
+
+#### .get_compiled_select(table, callback)
+
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
+| callback	| Function	| Required	| What to do when the string has been compiled					|
+
+Compiles a SELECT-like query into a properly-escaped string.
+
+**Example:**
+
+Get certain details of a user account
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+qb.select(['id','username','first_name','last_name'])
+	.from('users')
+	.like('username','k','after')
+	.get_compiled_select(function(err, res) {
+		if (err) return console.error(err);
+		
+		// SELECT `id`, `username`, `first_name`, `last_name` FROM `users` WHERE `username` LIKE 'k%'
+		console.log(res);
+	});
+```
 
 -------------
 
-### .get_compiled_insert()
+#### .get_compiled_insert(table, callback)
+
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
+| callback	| Function	| Required	| What to do when the string has been compiled					|
+
+Compiles a INSERT-like query into a properly-escaped string.
+
+**Example:**
+
+Add a new user to a `users` table.
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+var crypto = require('crypto');
+var data = {
+	username: 'foobar',
+	password: crypto.createHash('sha1').update('password').digest('hex'),
+	first_name: 'Foo',
+	last_name: 'Bar'
+};
+qb.set(data).get_compiled_insert('users', function(err, res) {
+	if (err) return console.error(err);
+	
+	// INSERT INTO `users` (`username`, `password`, `first_name`, `last_name`) VALUES ('foobar', '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8', 'Foo', 'Bar')
+	console.log(res);
+});
+```
 
 -------------
 
-### .get_compiled_update()
+#### .get_compiled_update(table, callback)
+
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
+| callback	| Function	| Required	| What to do when the string has been compiled					|
+
+Compiles an UPDATE-like query into a properly-escaped string.
+
+**Example:**
+
+Update the password of a user
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+var crypto = require('crypto');
+var data = {
+	password: crypto.createHash('sha1').update('P@$$w0rD').digest('hex'),
+};
+qb.where('id',4321)
+	.set(data)
+	.get_compiled_update('users', function(err, res) {
+		if (err) return console.error(err);
+		
+		// UPDATE `users` SET `password` = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' WHERE `id` = 4321
+		console.log(res);
+	});
+```
 
 -------------
 
-### .get_compiled_delete()
+#### .get_compiled_delete(table, callback)
+
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
+| callback	| Function	| Required	| What to do when the string has been compiled					|
+
+Compiles a SELECT-like query into a properly-escaped string.
+
+**Example:**
+
+Delete a user
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+qb.where('id',4321).get_compiled_delete('users', function(err, res) {
+	if (err) return console.error(err);
+	
+	// DELETE FROM `users` WHERE `id` = 4321
+	console.log(res);
+});
+```
 
 -------------
 
