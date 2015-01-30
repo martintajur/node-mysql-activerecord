@@ -4,7 +4,7 @@ This file is a manually maintained list of changes for each release. Feel free
 to add your changes here when sending pull requests. Also send corrections if
 you spot any mistakes.
 
-## v0.9.0 (2014-11-14)
+## v0.9.0 (2015-01-30)
 
 * Added this history file
 * Added the ability to do `SELECT DISTINCT` queries
@@ -33,3 +33,4 @@ you spot any mistakes.
 * Name of internal methods and properties have been normalized to use the "lower_case" syntax.
 * Dependency for node-mysql upgraded to 2.5.
 * travis-ci functionality added to repository
+* Added public `escape()` method
