@@ -1322,15 +1322,16 @@ var QueryBuilder = function() {
 		
 		update: function(table, set, where) {
 			table = table || '';
-			set = set || null;
 			where = where || null;
 			
-			if ((typeof set).match(/^(number|boolean)$/) || (typeof set == 'string' && set !== '') || Object.prototype.toString.call(set) === Object.prototype.toString.call(/test/)) {
-				throw new Error("insert(): Invalid data provided to update database!");
-			}
-			
+			// Send to batch_update if the data param is an array
 			if (Object.prototype.toString.call(set) === Object.prototype.toString.call([])) {
 				return this.update_batch(table, set, where);
+			}
+			
+			// If set is a number, boolean, a non-empty string, or regex, fail
+			if ((typeof set).match(/^(number|boolean)$/) || (typeof set == 'string' && set !== '') || Object.prototype.toString.call(set) === Object.prototype.toString.call(/test/)) {
+				throw new Error("update(): Invalid data provided to update database!");
 			}
 			
 			if (set !== null) {
@@ -1344,7 +1345,7 @@ var QueryBuilder = function() {
 			}
 			
 			if (typeof table !== 'string') {
-				throw new Error("insert(): Table parameter must be a string!");
+				throw new Error("update(): Table parameter must be a string!");
 			}
 			
 			table = table.trim();
@@ -1368,6 +1369,17 @@ var QueryBuilder = function() {
 			}
 
 			return compile_update(this);
+		},
+		
+		update_batch: function(table, set, where) {
+			for (var i in set) {
+				if (Object.prototype.toString.call(set[i]) === Object.prototype.toString.call({}) && Object.keys(set).length > 0) {
+					this.set(set[i]);
+				} else {
+					throw new Error("update_batch(): You have supplied an invalid object to batch update!");
+				}
+			}
+			return '';
 		},
 		
 		delete: function(table, where) {			
