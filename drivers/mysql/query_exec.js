@@ -121,8 +121,47 @@ var QueryExec = function(qb, conn) {
 		},
 		
 		// TODO: Write this complicated-ass function
-		update_batch: function(table,set,where,callback,conn) {
-			callback(new Error("This function is not currently available!"),null);
+		update_batch: function(table,set,index,where,callback) {
+			// The where parameter is optional, it could be the callback...
+			if (typeof where === 'function' && typeof callback !== 'function') {
+				callback = where;
+				where = null;
+			}
+			else if (typeof where === 'undefined' && typeof callback !== 'function') {
+				throw new Error("No callback function has been provided in your update_batch call!");
+			}
+			else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && where.length == 0)) {
+				where = null;
+			}
+			
+			var sqls = qb.update_batch(table,set,index,where);
+			var results = null;
+			var errors = [];
+			
+			// Execute each batch of (at least) 100
+			(function next_batch() {
+				var sql = sqls.shift();
+				qb.reset_query(sql);
+				
+				exec(sql, function(err, res) {
+					if (!err) {
+						if (null === results) {
+							results = res;
+						} else {
+							results.affected_rows += res.affected_rows;
+							results.changed_rows += res.changed_rows;
+						}
+					} else {
+						errors.push(err);
+					}
+					
+					if (sql.length > 0) {
+						setTimeout(next_batch,0);
+					} else {
+						return callback(errors, results);
+					}
+				});
+			})();
 		},
 		
 		delete: function(table, where, callback) {

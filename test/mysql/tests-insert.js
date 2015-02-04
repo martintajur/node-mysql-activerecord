@@ -76,13 +76,13 @@ describe('insert()', function() {
 		var sql = qb.insert();
 		sql.should.eql("INSERT INTO `galaxies` () VALUES ()");
 	});
-	it('should utilize pre-existing tables set in in setArray', function() {
+	it('should utilize pre-existing values set in in set_array', function() {
 		qb.reset_query();
 		qb.set(test_data);
 		var sql = qb.insert('galaxies');
 		sql.should.eql("INSERT INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral')");
 	});
-	it('should utilize pre-existing tables and values from setArray and from_array, respectively', function() {
+	it('should utilize pre-existing tables and values from from_aray and set_array, respectively', function() {
 		qb.reset_query();
 		qb.from('galaxies').set(test_data);
 		var sql = qb.insert();

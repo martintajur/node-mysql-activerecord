@@ -57,46 +57,46 @@ describe('set()', function() {
 	it('should add first param (key) and second param (value) to hash and escape them properly', function() {
 		qb.reset_query();
 		qb.set('galaxy_name','Milky Way');
-		qb.set_array.should.eql({"`galaxy_name`": "'Milky Way'"});
+		qb.set_array.should.eql([{"`galaxy_name`": "'Milky Way'"}]);
 	});
 	it('should merge passed object into set_array and escape items properly', function() {
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way'});
-		qb.set_array.should.eql({"`galaxy_name`": "'Milky Way'"});
+		qb.set_array.should.eql([{"`galaxy_name`": "'Milky Way'"}]);
 		
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way', galaxy_class: 'C'});
-		qb.set_array.should.eql({"`galaxy_name`": "'Milky Way'", "`galaxy_class`": "'C'"});
+		qb.set_array.should.eql([{"`galaxy_name`": "'Milky Way'"}, {"`galaxy_class`": "'C'"}]);
 	});
 	it('should not escape items if asked not to', function() {
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way'}, null, false);
-		qb.set_array.should.eql({galaxy_name: 'Milky Way'});
+		qb.set_array.should.eql([{galaxy_name: 'Milky Way'}]);
 	});
 	it('should append more items to set_array as set() is called', function() {
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way'}, null, false);
 		qb.set({galaxy_class: 'C'}, null, false);
 		qb.set('galaxy_size','D');
-		qb.set_array.should.eql({galaxy_name: 'Milky Way', galaxy_class: 'C', "`galaxy_size`": "'D'"});
+		qb.set_array.should.eql([{galaxy_name: 'Milky Way'}, {galaxy_class: 'C'}, {"`galaxy_size`": "'D'"}]);
 	});
 	it('should be chainable', function() {
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way', galaxy_class: 'C'}, null, false).set('galaxy_size','D');
-		qb.set_array.should.eql({galaxy_name: 'Milky Way', galaxy_class: 'C', "`galaxy_size`": "'D'"});
+		qb.set_array.should.eql([{galaxy_name: 'Milky Way'}, {galaxy_class: 'C'}, {"`galaxy_size`": "'D'"}]);
 	});
 	it('should overwrite values of keys that have been set already', function() {
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way'}, null, false);
 		qb.set({galaxy_class: 'C'});
 		qb.set('galaxy_class','D');
-		qb.set_array.should.eql({galaxy_name: 'Milky Way', "`galaxy_class`": "'D'"});
+		qb.set_array.should.eql([{galaxy_name: 'Milky Way'}, {"`galaxy_class`": "'D'"}]);
 	});
 	it('should NOT overwrite values of keys that are the same but have different escape flags', function() {
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way'}, null, false);
 		qb.set({galaxy_class: 'C'});
 		qb.set('galaxy_class','D', false);
-		qb.set_array.should.eql({galaxy_name: 'Milky Way', "`galaxy_class`": "'C'", galaxy_class: 'D'});
+		qb.set_array.should.eql([{galaxy_name: 'Milky Way'}, {"`galaxy_class`": "'C'"}, {galaxy_class: 'D'}]);
 	});
 });

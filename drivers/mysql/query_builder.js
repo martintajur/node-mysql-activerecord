@@ -402,7 +402,9 @@ var QueryBuilder = function() {
 	var compile_update = function(qb) {		
 		var valstr = [];
 		for (var i in qb.set_array) {
-			valstr.push(i + ' = ' + qb.set_array[i]);
+			var key = Object.keys(qb.set_array[i])[0];
+			var val = qb.set_array[i][key];
+			valstr.push(key + ' = ' + val);
 		}
 		
 		if (qb.from_array.length === 1) { 
@@ -417,15 +419,42 @@ var QueryBuilder = function() {
 		}
 		
 		var limit_to = qb.limit_to[0] || false;
+		var offset_val = qb.offset_val[0] || false;
 		
-		var limit = (!limit_to ? '' : ' LIMIT ' + limit_to);
 		var sql = 'UPDATE ' + table + " SET " + valstr.join(', ');
 		sql += build_where_clause(qb);
 		sql += build_order_by_clause(qb);
-		sql += build_limit_clause(qb);
-		return sql;
+		return build_limit_clause(sql, limit_to, offset_val);
 	};
-
+	
+	var compile_insert = function(qb, ignore, suffix) {
+		var keys = [];
+		var values = [];
+		
+		for (var i in qb.set_array) {			
+			var key = Object.keys(qb.set_array[i])[0];
+			var val = qb.set_array[i][key];
+			
+			keys.push(key);
+			values.push(val);
+		}
+		
+		var verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
+		
+		
+		if (qb.from_array.length === 1) { 
+			var table = qb.from_array.toString();
+		} else {
+			if (qb.from_array.length === 0) { 
+				throw new Error("You haven't provided any tables to build INSERT querty with!");
+				return '';
+			}
+			throw new Error("You have provided too many tables to build UPDATE query with!");
+			return '';
+		}
+		
+		return verb + 'INTO ' + qb.from_array[0] + ' (' + keys.join(', ') + ') VALUES (' + values.join(', ') + ')' + suffix;
+	};
 
 	// ---------------------------- ACTUAL QUERY BUILDER ----------------------------//
 	return {
@@ -434,7 +463,7 @@ var QueryBuilder = function() {
 		from_array: [],
 		join_array: [],
 		select_array: [],
-		set_array: {},
+		set_array: [],			// has to be array to work as reference
 		order_by_array: [],
 		group_by_array: [],
 		having_array: [],
@@ -802,7 +831,6 @@ var QueryBuilder = function() {
 				relation = ' ON ' + protect_identifiers(this,match[1],true) + match[2] + protect_identifiers(this,match[3],true);
 			}
 			else if (!has_operator(relation)) {
-				console.log("Has operator: " + relation);
 				relation = ' USING (' + (escape ? escape_identifiers(relation) : relation) + ')';
 			}
 			else {
@@ -1114,10 +1142,11 @@ var QueryBuilder = function() {
 			return this;
 		},
 		
-		set: function(key, value, escape) {
+		set: function(key, value, escape) {			
 			escape = (typeof escape === 'boolean' ? escape : true);
 			
 			if (typeof key === 'string') {
+				// Convert key and value params to {key: value}
 				key = key.trim();
 				if (key.length == 0) {
 					throw new Error("set(): Invalid field name provided!");
@@ -1127,8 +1156,8 @@ var QueryBuilder = function() {
 				key_array[key] = value;
 				key = key_array;
 			}
-			else if(Object.prototype.toString.call(key) === Object.prototype.toString.call({})) {
-				if (Object.keys(key).length == 0) {
+			else if (Object.prototype.toString.call(key) === Object.prototype.toString.call({})) {
+				if (Object.keys(key).length === 0) {
 					throw new Error("set(): The object you provided is empty.");
 				}
 				
@@ -1140,22 +1169,47 @@ var QueryBuilder = function() {
 				throw new Error("set(): First parameter must be a non-empty string or non-empty object! " + typeof key + " provided.");
 			}
 			
+			
+			// Add each key:value pair to the set_array
 			for (var i in key) {
 				var v = key[i];
 				
 				if ((typeof v).match(/^(number|string|boolean)$/) === null && v !== null) {
 					throw new Error("set(): Invalid value provided!");
 				}
-				else if(typeof v === 'number' && (v === Infinity || v !== +v)) {
+				else if (typeof v === 'number' && (v === Infinity || v !== +v)) {
 					throw new Error("set(): Infinity and NaN are not valid values in MySQL!");
 				}
 				
+				// Escape the key to be DRY
+				var escaped_key = protect_identifiers(this,i,escape);
+				
+				// Build a temporary object with escaped key and val
+				var temp = {};
 				if (escape === false) {
-					this.set_array[protect_identifiers(this,i,escape)] = v;
+					temp[escaped_key] = v;
 				} else {
-					this.set_array[protect_identifiers(this,i,escape)] = qb_escape(this,v);
+					temp[escaped_key] = qb_escape(this,v);
+				}
+				
+				// Determine if this key has already been set
+				var found_index = null;
+				for (var j in this.set_array) {
+					if (this.set_array[j].hasOwnProperty(escaped_key)) {
+						found_index = j;
+						break;
+					}
+				}
+				
+				// Update value if key already set or add if not found
+				if (found_index !== null) {
+					this.set_array[found_index] = temp;
+				} else {
+					this.set_array.push(temp);
 				}
 			}
+			
+			//console.dir(this.set_array);
 			
 			return this;
 		},
@@ -1199,10 +1253,7 @@ var QueryBuilder = function() {
 				this.from(table);
 			}
 			
-			var keys = Object.keys(this.set_array);
-			var values = array_values(this.set_array);
-			var verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
-			return verb + 'INTO ' + this.from_array[0] + ' (' + keys.join(', ') + ') VALUES (' + values.join(', ') + ')' + suffix;
+			return compile_insert(this, ignore, suffix);
 		},
 		
 		insert_ignore: function(table, set, suffix) {
@@ -1322,11 +1373,22 @@ var QueryBuilder = function() {
 		
 		update: function(table, set, where) {
 			table = table || '';
+			set = set || null;
 			where = where || null;
 			
 			// Send to batch_update if the data param is an array
 			if (Object.prototype.toString.call(set) === Object.prototype.toString.call([])) {
-				return this.update_batch(table, set, where);
+				var index = null;
+				if (set.length > 0) {
+					if (Object.prototype.toString.call(set[0]) === Object.prototype.toString.call({})) {
+						index = Object.keys(set[0])[0];
+					}
+				}
+				if (index) {
+					return this.update_batch(table, set, index, where);
+				} else {
+					throw new Error("update(): update_batch attempted but could not ascertain a valid index to use from the dataset provided.");
+				}
 			}
 			
 			// If set is a number, boolean, a non-empty string, or regex, fail
@@ -1334,26 +1396,108 @@ var QueryBuilder = function() {
 				throw new Error("update(): Invalid data provided to update database!");
 			}
 			
+			// If data object was provided, set it
 			if (set !== null) {
 				if (Object.prototype.toString.call(set) === Object.prototype.toString.call({}) && Object.keys(set).length > 0) {
 					this.set(set);
+				} else {
+					throw new Error("update(): Empty data object provided. This is not allowed.");
 				}
 			}
 			
+			// Fail if, at this point, nothing has been set
 			if (this.set_array.length == 0) {
-				throw new Error("You must set a some field value pairs to update using the set method or in object for in the second parameter of the update method!");
+				throw new Error("update(): You must set some field value pairs to update using the set method or via an object passed to the second parameter of the update method!");
 			}
 			
+			// NOTE: If falsy table provided, table will have been converted to an empty string...
 			if (typeof table !== 'string') {
 				throw new Error("update(): Table parameter must be a string!");
 			}
 			
 			table = table.trim();
 			
+			// Table name must be in a legitimate format
 			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
 				throw new Error("update(): You have not set any tables to update!");
 			}
 			
+			// If table not supplied, it must have been supplied already
+			if (table == '') {
+				if (this.from_array.length == 0) {
+					throw new Error('update(): No tables set to update!');
+				}
+				table = this.from_array[0];
+			} else {
+				clear_array(this.from_array);
+				this.from(table);
+			}
+			
+			// Set where array if a where statement was provided
+			if (where !== null) {
+				this.where(where);
+			}
+			
+			return compile_update(this);
+		},
+		
+		update_batch: function(table, set, index, where) {
+			table = table || '';
+			set = set || null;
+			index = index || null;
+			where = where || null;
+			
+			// Make sure an index has been provided!
+			if (typeof index !== 'string' || (typeof index === 'string' && index.length === 0)) {
+				throw new Error("update_batch(): Invalid index provided to generate batch update query!");
+			}
+			
+			// Check to make sure we have a dataset
+			if (Object.prototype.toString.call(set) !== Object.prototype.toString.call([])) {
+				throw new Error("update_batch(): Array of object expected and non-array received.");
+			}		
+			
+			// Make sure our dataset isn't emtpy
+			if (set.length === 0) {
+				throw new Error("update_batch(): You must supply some data to batch update the table with.");
+			}
+			
+			// Make sure each item in the dataset has the specified index and then add data to set_array
+			//console.dir(set);
+			for (var i in set) {
+				var clean = {};
+				var row = set[i];
+				if (Object.prototype.toString.call(row) === Object.prototype.toString.call({}) && Object.keys(row).length > 0) {
+					var keys = Object.keys(row);
+					if (keys.indexOf(index) !== -1) {
+						for (var j in row) {
+							clean[protect_identifiers(this, j)] = qb_escape(this, row[j]);
+						}
+						this.set_array.push(clean);
+					}
+				} else {
+					throw new Error("update_batch(): You have supplied an invalid object to batch update!");
+				}
+			}
+			
+			// Fail if, at this point, nothing has been set
+			if (this.set_array.length == 0) {
+				throw new Error("update_batch(): You must provide some data to batch update!");
+			}
+			
+			// NOTE: If falsy table provided, table will have been converted to an empty string...
+			if (typeof table !== 'string') {
+				throw new Error("update(): Table parameter must be a string!");
+			}
+			
+			table = table.trim();
+			
+			// Table name must be in a legitimate format
+			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
+				throw new Error("update(): You have not set any tables to update!");
+			}
+			
+			// If table not supplied, it must have been supplied already
 			if (table == '') {
 				if (this.from_array.length == 0) {
 					throw new Error('No tables set to insert into!');
@@ -1364,22 +1508,69 @@ var QueryBuilder = function() {
 				this.from(table);
 			}
 			
+			// Set where array if a where statement was provided
 			if (where != null) {
 				this.where(where);
 			}
-
-			return compile_update(this);
-		},
-		
-		update_batch: function(table, set, where) {
-			for (var i in set) {
-				if (Object.prototype.toString.call(set[i]) === Object.prototype.toString.call({}) && Object.keys(set).length > 0) {
-					this.set(set[i]);
-				} else {
-					throw new Error("update_batch(): You have supplied an invalid object to batch update!");
+			
+			// Verify there is a table in the from_array
+			if (this.from_array.length === 1) { 
+				var table = this.from_array.toString();
+			} else {
+				if (this.from_array.length === 0) { 
+					throw new Error("You haven't provided any tables to build batch UPDATE query with!");
 				}
+				throw new Error("You have provided too many tables to build batch UPDATE query with!");
 			}
-			return '';
+			
+			
+			// Limit to 100 rows per batch
+			var batches = [];
+			for (var i = 0, total = this.set_array.length; i < total; i += 100) {
+				var when_then = {};
+				var ids = [];
+				var where = (this.where_array.length > 0 ? build_where_clause(this) + ' AND ' : '');
+				var chunk = this.set_array.slice(i,100);
+				
+				// Escape the index
+				index = protect_identifiers(this, index);
+				
+				for (var j in chunk) {
+					ids.push(chunk[j][index]);
+					
+					var keys = Object.keys(chunk[j]);
+					for (var k in keys) {
+						if (keys[k] != index) {
+							if (!when_then.hasOwnProperty(keys[k])) {
+								when_then[keys[k]] = [];
+							}
+							when_then[keys[k]].push('WHEN ' + index + ' = ' + ids[j] + ' THEN ' + chunk[j][keys[k]] + ' ');
+						}
+					}
+				}
+				
+				// Build the actual SQL statement
+				var sql = 'UPDATE ' + table + ' SET ';
+				var cases = '';
+				
+				for (var l in when_then) {
+					cases += l + ' = CASE ';
+					
+					for (var m in when_then[l]) {
+						cases += when_then[l][m];
+					}
+					
+					cases += 'ELSE ' + l + ' END, ';
+				}
+				
+				sql += cases.substr(0, cases.length - 2);
+				sql += ' WHERE ' + where + index + ' IN (' + ids.join(',') + ')';
+				
+				// Add query to batch
+				batches.push(sql);
+			}
+			
+			return batches;
 		},
 		
 		delete: function(table, where) {			
@@ -1432,7 +1623,11 @@ var QueryBuilder = function() {
 		},
 		
 		get_compiled_insert: function(table) {
-			throw new Error("This function has not yet been implemented!");
+			if (typeof table !== 'function') {
+				track_aliases(this,table);
+				this.from(table);
+			}
+			return compile_insert(this);
 		},
 		
 		last_query: function() {

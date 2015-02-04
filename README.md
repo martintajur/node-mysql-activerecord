@@ -1241,12 +1241,16 @@ qb.where('type',type).count('galaxies', function(err, count) {
 
 | Parameter	| Type		| Default	| Description																							|
 | :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to update																|
-| data		| Object	| Required	| The data to update (ex. `{field: value}`)																|
-| where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
+| table		| String	| null		| (suggested) The table/collection you'd like to update													|
+| data		| Object	| null		| (suggested) The data to update (ex. `{field: value}`)													|
+| where		| Object	| null		| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
 | callback	| Function	| Required	| What to do when the driver has responded.																|
 
 This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
+
+**NOTE:**
+
+The first and second parameters are not required but I do suggest you use them as your code will be much easier to read. If you choose not to use them, you will need to pass a falsy value to each... you can't simply skip them. My recommendation is to use `null`. The way you would supply these values without using this method would be through the `from()` method for the first paramater and the `set()` method for the second paramter.
 
 **Type of Response Sent to Callback**
 
@@ -1288,11 +1292,80 @@ app.post('/update_account', function(req, res) {
 });
 ```
 
+Here's another (more-direct) example where one decided to supply the table, data, and filters through alternative methods:
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
+qb.where('id', 42)
+	.from('users')
+	.set('email', 'email@domain.net')
+	.update(null, null, null, function(err, res) {
+		if (err) return console.error(err);
+		console.log("Updated: " + res.affected_rows + " rows);
+	});
+```
+
 -------------
 
-### .update_batch(table,dataset,where,callback)
+### .update_batch(table,dataset,index,where,callback)
 
-Documentation for this method coming soon!
+| Parameter	| Type		| Default	| Description																							|
+| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to insert into														|
+| dataset	| Array		| Required	| An array of data (rows) to update (ex. `[{id: 3, field: value}, {id: 4, field: val}]`)				|
+| index		| String	| Required	| Name of the key in each data object that represents a `where` clause. 								|
+| where		| Object	| NULL		| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
+| callback	| Function	| Required	| What to do when the driver has responded.																|
+
+This method is a somewhat-complex one and, when using transactional databases, a bit pointless. Nevertheless, this will allow you to update a batch of rows with one query which, in theory, should be faster than running multiple update queries.
+
+The important thing to understand is that there are, essentially, *two* `where` clause portions with this method: a local one, and a global one. The `index` you specify in the 3rd parameter represents the name of the key in each data object of the dataset that will act as the local `where` clause for that particular row to be updated. That row, however, will only be updated if the global where clause(s) (4th param) have been satisfied as well.
+
+**NOTE:** This method will create batches of up to 100 rows at a time. So, if you have 250 rows to update, this will make 3 queries to your database.
+
+**Example:**
+
+```javascript
+var qb =  require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
+
+// The key to use as the local where clause
+var key = 'id';
+
+// All objects in this dataset must have an id key
+var dataset = [
+	{id: 4569, name: 'Cartwheel', constellation: 'Sculptor'},
+	{id: 5631, name: 'Black Eye', constellation: 'Coma Berenices'},
+	{id: 1238, name: 'Sombrero',  constellation: 'Virgo'}
+];
+
+var where = {'last_updated <' : '2015-01-01'}
+
+qb.update_batch('galaxies', dataset, key, where, function(err, res) {
+	if (err) return console.error(err);
+	
+	/* 
+	 * UPDATE `galaxies` 
+	 * SET 
+	 * `name` = CASE
+	 * 	 WHEN `id` = 4569 THEN 'Cartwheel'
+	 * 	 WHEN `id` = 5631 THEN 'Black Eye'
+	 * 	 WHEN `id` = 1238 THEN 'Sombrero'
+	 * 	 ELSE `name`
+	 * END,
+	 * `constellation` = CASE
+	 * 	 WHEN `id` = 4569 THEN 'Sculptor'
+	 * 	 WHEN `id` = 5631 THEN 'Coma Berenices'
+	 * 	 WHEN `id` = 1238 THEN 'Virgo'
+	 * 	 ELSE `constellation`
+	 * END
+	 * WHERE `id` IN(4569, 5631, 1238)
+	 * AND `last_updated` < '2015-01-01'
+	 */
+	var last_query = qb.last_query();
+});
+```
+
+As you can see, in each `CASE` statement, the `key` and it's value are being used to determine what to set the other items to. It's important to know that the `key` and it's `value` will not be updated in the batch update... they are just there to make sure we set the right values in the right place.
 
 -------------
 
@@ -1402,6 +1475,12 @@ app.post('/delete_comment/:id', function(req, res) {
 	});
 });
 ```
+
+-------------
+
+### .set(key[, value[, escape]])
+
+stuff
 
 -------------
 
