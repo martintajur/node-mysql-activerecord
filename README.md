@@ -1336,7 +1336,7 @@ qb.where('id', 42)
 
 -------------
 
-### .update_batch(table,dataset,index,where,callback)
+### .update_batch(table,dataset,index[,where],callback)
 
 | Parameter	| Type		| Default	| Description																							|
 | :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
