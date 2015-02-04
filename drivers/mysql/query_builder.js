@@ -1142,7 +1142,7 @@ var QueryBuilder = function() {
 			return this;
 		},
 		
-		set: function(key, value, escape) {			
+		set: function(key, value, escape) {
 			escape = (typeof escape === 'boolean' ? escape : true);
 			
 			if (typeof key === 'string') {

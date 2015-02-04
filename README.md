@@ -1000,6 +1000,35 @@ qb.limit(5).offset(25).get('users',callback);
 
 -------------
 
+### SET
+#### .set(key[, value[, escape]])
+
+This SQL is used to set values to fields when utilizing the `update`, and `insert` methods. More than likely, you will choose use the shorthand notation provided by the aforementioned methods, but, this can be handy in some cases.
+
+| Parameter	| Type			| Default	| Description 																		|
+| :--------	| :------------	| :-----	| :--------------------------------------------------------------------------------	|
+| key		| String/Object	| Required	| The key of field to be set or an object of key:value pairs						|
+| value		| Mixed			| NULL		| Required if `key` is a string. Pass NULL if you'd like to use the 3rd parameter	|
+| escape	| String/Object	| true		| If false, keys and values will not be escaped. 									|
+
+**Examples**
+
+Basic single seting of a value
+
+```javascript
+// UPDATE `users` SET `birthday` = '2015-02-04'
+qb.set('birthday','2015-02-04').update('users', callback);
+```
+
+Set multiple keys and values at once
+
+```javascript
+// UPDATE `users` SET `birthday` = '2015-02-04', `anniversary` = '2010-05-15'
+qb.set({birthday: '1986-02-04', anniversary: '2010-05-15'}).update('users', callback);
+```
+
+-------------
+
 Execution Methods
 -----------------
 
@@ -1475,12 +1504,6 @@ app.post('/delete_comment/:id', function(req, res) {
 	});
 });
 ```
-
--------------
-
-### .set(key[, value[, escape]])
-
-stuff
 
 -------------
 
