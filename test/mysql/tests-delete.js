@@ -14,25 +14,40 @@ describe('delete()', function() {
 		qb.delete('galaxies');
 		qb.from_array.should.eql(['`galaxies`']);
 	});
-	it('should add a set of tables to from_array when an array of tables is supplied', function() {
+	it('should only accept nothing or a non-empty-string for the table (first) parameter', function() {
+		qb.reset_query(); 
+		
+		expect(function() { qb.delete([]); 		}, 'empty array provided').to.throw(Error);
+		expect(function() { qb.delete({}); 		}, 'empty object provided').to.throw(Error);
+		expect(function() { qb.delete(3); 		}, 'integer provided').to.throw(Error);
+		expect(function() { qb.delete(3.5); 	}, 'float provided').to.throw(Error);
+		expect(function() { qb.delete(true); 	}, 'true provided').to.throw(Error);
+		expect(function() { qb.delete(Infinity);}, 'Infinity provided').to.throw(Error);
+		expect(function() { qb.delete([1,2]); 	}, 'array of numbers provided').to.throw(Error);
+		expect(function() { qb.delete(/foobar/);}, 'regex provided').to.throw(Error);
+		expect(function() { qb.delete(NaN); 	}, 'NaN provided').to.throw(Error);
+		expect(function() { qb.delete(false); 	}, 'false provided').to.throw(Error);
+		expect(function() { qb.delete(''); 		}, 'empty string provided').to.throw(Error);
+		expect(function() { qb.delete('  '); 	}, 'string full of spaces provided').to.throw(Error);
+		expect(function() { qb.delete(null); 	}, 'null provided').to.throw(Error);
+		
+		// An undefined/nothing option will only work if a table has already been provided
+		qb.from('galaxies'); expect(function() { qb.delete(undefined);	},'undefined provided').to.not.throw(Error);
+		qb.from('galaxies'); expect(function() { qb.delete();			},'nothing provided').to.not.throw(Error);
+	});
+	it('should only use the first table supplied in a list if an array of table is supplied with the from() method.', function() {
 		qb.reset_query();
-		qb.delete(['galaxies','star_systems','planets']);
-		qb.from_array.should.eql(['`galaxies`','`star_systems`','`planets`']);
+		var sql = qb.from(['galaxies','star_systems','planets']).delete();
+		sql.should.eql("DELETE FROM (`galaxies`)");
 	});
 	it('should add where conditions to where_array when conditions are supplied', function() {
 		qb.reset_query();
 		qb.delete('planets', {continents: 7, star_system: 'Solar'});
 		qb.where_array.should.eql(["`continents` = 7", "AND `star_system` = 'Solar'"]);
 	});
-	it('should accept an array of tables and an object of where conditions and put each in their respective arrays', function() {
-		qb.reset_query();
-		qb.delete(['galaxies','star_systems','planets'], {continents: 7, star_system: 'Solar'});
-		qb.from_array.should.eql(['`galaxies`','`star_systems`','`planets`']);
-		qb.where_array.should.eql(["`continents` = 7", "AND `star_system` = 'Solar'"]);
-	});
 	it('should return a string', function() {
 		qb.reset_query();
-		var sql = qb.delete(['galaxies','star_systems','planets'], {continents: 7, star_system: 'Solar'});
+		var sql = qb.delete('galaxies', {continents: 7, star_system: 'Solar'});
 		expect(sql).to.be.a('string');
 		expect(sql).to.exist;
 		expect(sql).to.not.eql('');
@@ -47,17 +62,7 @@ describe('delete()', function() {
 		var sql = qb.delete('galaxies', {class: 'M'});
 		sql.should.eql("DELETE FROM (`galaxies`) WHERE `class` = 'M'");
 	});
-	it('should build a properly-escaped delete statement that deletes all records in a set of tables if an array of tables is given', function() {
-		qb.reset_query();
-		var sql = qb.delete(['galaxies','star_systems','planets']);
-		sql.should.eql('DELETE FROM (`galaxies`, `star_systems`, `planets`)');
-	});
-	it('should build a properly-escaped delete statement that deletes all records in a set of tables that match the passed conditions', function() {
-		qb.reset_query();
-		var sql = qb.delete(['galaxies','star_systems','planets'], {class: 'M'});
-		sql.should.eql("DELETE FROM (`galaxies`, `star_systems`, `planets`) WHERE `class` = 'M'");
-	});
-	it('should use tables added previously via the from() method', function() {
+	it('should use ONLY the FIRST table added previously via the from() method', function() {
 		qb.reset_query();
 		qb.from('galaxies');
 		var sql = qb.delete();
@@ -65,7 +70,7 @@ describe('delete()', function() {
 		
 		qb.reset_query();
 		var sql = qb.from(['galaxies','star_systems','planets']).delete();
-		sql.should.eql('DELETE FROM (`galaxies`, `star_systems`, `planets`)');
+		sql.should.eql('DELETE FROM (`galaxies`)');
 	});
 	it('should accept where conditions added previously via the where() method', function() {
 		qb.reset_query();

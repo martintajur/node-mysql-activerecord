@@ -387,10 +387,12 @@ var QueryBuilder = function() {
 	};
 	
 	var compile_delete = function(qb) {
-		if (qb.from_array.length == 0) {
+		if (qb.from_array.length === 0) {
 			throw new Error('You have not specified any tables to delete from!');
-			return this;
+			return '';
 		}
+		
+		qb.from_array = qb.from_array.slice(0,1);
 		
 		var limit_to = qb.limit_to[0] || false;
 		var offset_val = qb.offset_val[0] || false;
@@ -1573,8 +1575,9 @@ var QueryBuilder = function() {
 			return batches;
 		},
 		
-		delete: function(table, where) {			
-			if ((typeof table == 'string' && table.trim().length > 0) || Object.prototype.toString.call(table) === Object.prototype.toString.call([])) {
+		delete: function(table, where) {
+			if (typeof table == 'string' && table.trim().length > 0) {
+				clear_array(this.from_array);
 				this.from(table);
 			}
 			
@@ -1652,6 +1655,34 @@ var QueryBuilder = function() {
 		
 		escape: function(val) {
 			return qb_escape(this, val);
+		},
+		
+		empty_table: function(table) {
+			if (typeof table === 'string' && table.trim().length > 0) {
+				clear_array(this.from_array);
+				this.from(table);
+			}
+			
+			if (this.from_array.length === 0) {
+				throw new Error('empty_table(): You have not specified a table to empty!');
+				return '';
+			}
+			
+			return "DELETE FROM " + this.from_array[0];
+		},
+		
+		truncate: function(table) {
+			if (typeof table === 'string' && table.trim().length > 0) {
+				clear_array(this.from_array);
+				this.from(table);
+			}
+			
+			if (this.from_array.length === 0) {
+				throw new Error('truncate(): You have not specified a table to truncate!');
+				return '';
+			}
+			
+			return "TRUNCATE " + this.from_array[0];
 		},
 	}
 };

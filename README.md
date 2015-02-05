@@ -1045,6 +1045,8 @@ Execution Methods
 | [insert_batch()](#insert_batch)	| N/A			| &#x2713;	|		|			|			|			|		|
 | [insert_ignore()](#insert-ignore)	| INSERT IGNORE	| &#x2713;	|		|			|			|			|		|
 | [delete()](#delete)				| DELETE		| &#x2713;	|		|			|			|			|		|
+| [truncate()](#truncate)			| TRUNCATE		| &#x2713;	|		|			|			|			|		|
+| [empty_table()](#empty_table)		| DELETE		| &#x2713;	|		|			|			|			|		|
 
 ### What are "Execution Methods"??
 
@@ -1115,6 +1117,7 @@ pool.get_connection(function(qb) {
 
 -------------
 
+<a name="query"></a>
 ### .query(query_string,callback)
 
 | Parameter		| Type		| Default	| Description													|
@@ -1138,6 +1141,7 @@ qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 
 -------------
 
+<a name="get"></a>
 ### .get([table,]callback)
 
 | Parameter	| Type		| Default	| Description														|
@@ -1207,6 +1211,7 @@ qb.limit(10)
 
 -------------
 
+<a name="get_where"></a>
 ### .get_where(table,where,callback)
 
 | Parameter	| Type				| Default	| Description													|
@@ -1239,6 +1244,7 @@ qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, ca
 
 -------------
 
+<a name="count"></a>
 ### .count([table,]callback)
 
 | Parameter	| Type		| Default	| Description													|
@@ -1267,6 +1273,7 @@ qb.where('type',type).count('galaxies', function(err, count) {
 
 -------------
 
+<a name="update"></a>
 ### .update(table,data[,where],callback)
 
 | Parameter	| Type		| Default	| Description																							|
@@ -1337,6 +1344,7 @@ qb.where('id', 42)
 
 -------------
 
+<a name="update_batch"></a>
 ### .update_batch(table,dataset,index[,where],callback)
 
 | Parameter	| Type		| Default	| Description																							|
@@ -1399,6 +1407,7 @@ As you can see, in each `CASE` statement, the `key` and it's value are being use
 
 -------------
 
+<a name="insert"></a>
 ### .insert(table,data,callback)
 
 | Parameter	| Type		| Default	| Description																							|
@@ -1449,18 +1458,21 @@ app.post('/add_article', function(req, res) {
 
 -------------
 
+<a name="insert_batch"></a>
 ### .insert_batch(table,dataset,callback)
 
 Documentation for this method coming soon!
 
 -------------
 
+<a name="insert_ignore"></a>
 ### .insert_ignore(table,data,callback)
 
 Documentation for this method coming soon!
 
 -------------
 
+<a name="delete"></a>
 ### .delete(table,where,callback)
 
 | Parameter	| Type		| Default	| Description																							|
@@ -1470,6 +1482,8 @@ Documentation for this method coming soon!
 | callback	| Function	| Required	| What to do when the driver has responded.																|
 
 This method is used to delete records from a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with the number of affected rows.
+
+**NOTE:** If tables are added to the querybuilder query cache via the `from()` method, only first table in the array (the first added) will be used for this method.
 
 **Type of Response Sent to Callback**
 
@@ -1502,6 +1516,103 @@ app.post('/delete_comment/:id', function(req, res) {
 				}
 				return res.render('/article/' + article_id, page_data);
 			});
+		});
+	});
+});
+```
+
+-------------
+
+<a name="truncate"></a>
+### .truncate(table,callback)
+
+| Parameter	| Type		| Default	| Description									|
+| :--------	| :--------	| :-----	| :-------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to truncate.	|
+| callback	| Function	| Required	| What to do when the driver has responded.		|
+
+For drivers that support it (MySQL), this method will utilize the `TRUNCATE` directive to empty a table of all it's data. The main difference between the `truncate()` method and the `empty_table()` method is that, when available, and when possible, truncating a table will reset your AUTO_INCREMENT counter back to zero. If you simply delete every row from a table, the next item inserted will just continue with the next highest ID from the deleted records.
+
+For drivers that don't support the truncate method, this will simply act as a wrapper to the [.empty_table()](#empty_table) method.
+
+**Type of Response Sent to Callback**
+
+Object containing information about the result of the query.
+
+**Examples**
+
+```javascript
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+
+/*
+ * Assume we have a table like this to start with...
+ * [
+ *   { id: 1, name: 'Mary' },
+ *   { id: 2, name: 'Jane' },
+ *   { id: 3, name: 'Joe'  }
+ * ];
+ */
+
+pool.get_connection(function(qb) {
+	qb.truncate('users', function(err, res) {
+		if (err) throw err;
+		qb.insert('users', {name: 'Bob'}, function(err, res) {
+			if (err) throw err;
+			qb.get_where('users', {id: res.insert_id}, function(err, res) {
+				qb.release();
+				if (err) throw err;
+				// { id: 1, name: 'Bob' } (notice ID is 1)
+				console.dir(res);
+			});
+		});
+	});
+});
+```
+
+-------------
+
+<a name="empty_table"></a>
+### .empty_table(table,callback)
+
+| Parameter	| Type		| Default	| Description									|
+| :--------	| :--------	| :-----	| :-------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to truncate.	|
+| callback	| Function	| Required	| What to do when the driver has responded.		|
+
+This method will allow you to delete all records from a table/collection.
+
+**Type of Response Sent to Callback**
+
+Object containing information about the result of the query.
+
+**Examples**
+
+```javascript
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+
+/*
+ * Assume we have a table like this to start with...
+ * [
+ *   { id: 1, name: 'Mary' },
+ *   { id: 2, name: 'Jane' },
+ *   { id: 3, name: 'Joe'  }
+ * ];
+ */
+
+pool.get_connection(function(qb) {
+	qb.empty_table('users', function(err, res) {
+		if (err) throw err;
+		qb.insert('users', {name: 'Bob'}, function(err, res) {
+			if (err) throw err;
+			qb.get_where('users', {id: res.insert_id}, function(err, res) {
+				qb.release();
+				if (err) throw err;
+				// { id: 4, name: 'Bob' } (notice ID is 4)
+				console.dir(res);
+			});
+		});
 	});
 });
 ```
@@ -1516,6 +1627,7 @@ These are methods that aren't part of the query-building chain, but, rather, met
 | API Method									| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
 | :--------------------------------------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
 | [get_connection()](#get_connection)			| &#x2713;	| 		|			|			|			|		|
+| [release()](#release)							| &#x2713;	| 		|			|			|			|		|
 | [last_query()](#last_query)					| &#x2713;	| 		|			|			|			|		|
 | [escape()](#escape)							| &#x2713;	| 		|			|			|			|		|
 | [get_compiled_select()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
@@ -1523,13 +1635,68 @@ These are methods that aren't part of the query-building chain, but, rather, met
 | [get_compiled_update()](#get_compiled_update)	| &#x2713;	| 		|			|			|			|		|
 | [get_compiled_delete()](#get_compiled_delete)	| &#x2713;	| 		|			|			|			|		|
 
+-------------
 
+<a name="get_connection"></a>
 ### .get_connection(callback)
 
-Used to get a new connection from the connection pool or cluster pool.
+| Parameter	| Type		| Default	| Description													|
+| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
+| callback	| Function	| Required	| What to do when the connection is retrieved from the pool.	|
+
+Used to get a new connection from the connection pool or cluster pool. An instances of the QueryBuilder adapter for your specific connection will be passed to the callback. Make sure that your connection is [release](#release)d when you are done with it!
+
+**Example**
+
+```javascript
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+
+pool.get_connection(function(qb) {
+	qb.limit(10).get('users', function(err, res) {
+		qb.release();
+		// Do stuff with results or err
+	});
+});
+```
 
 -------------
 
+<a name="release"></a>
+### .release()
+
+Releases a connection back to the pool when you are done with it. Calling this is *super* important!
+
+**Example**
+
+Below is a contrived example (with no error handling--for brevity) that gets a list of all users in a users table where their username starts with a `|` character. It them loops over each one and removed the `|` from the username and reinserts it. Notice that the connection is not released until all the queries that needed to be executed have been executed.
+
+```javascript
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+
+pool.get_connection(function(qb) {
+	qb.like('username','|','right').get_where('users', {active: true}, function(err, res) {
+		var users = users;
+		(function update_user() {
+			var user = users.shift();
+			user.username = user.username.replace(/\^|/,'');
+			
+			qb.update('users', user, {id: user.id}, function(err, res) {
+				if (user.length > 0) {
+					setTimeout(update_user,0);
+				} else {
+					qb.release();
+				}
+			});
+		})();
+	});
+});
+```
+
+-------------
+
+<a name="last_query"></a>
 ### .last_query()
 
 This is used to ascertain the query string that was most-recently executed. This MUST be called before closing the connection or releasing a connection back to the pool. This is useful for debugging what the `node-querybuilder` library is executing (or trying to execute).
@@ -1551,6 +1718,7 @@ pool.get_connection(function(qb) {
 
 -------------
 
+<a name="escape"></a>
 ### .escape(value)
 
 | Parameter	| Type		| Default	| Description													|
@@ -1592,9 +1760,12 @@ These are excellent educational tools and can be used like a SQL/NoSQL language 
 
 These methods are not asynchronous and, therefore, just return the compiled query string.
 
+-------------
+
+<a name="get_compiled_select"></a>
 #### .get_compiled_select(table)
 
-***Alias:*** **compile_select(table)**
+***Alias:*** *compile_select(table)*
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
@@ -1621,9 +1792,10 @@ console.log(sql);
 
 -------------
 
+<a name="get_compiled_insert"></a>
 #### .get_compiled_insert(table)
 
-***Alias:*** **compile_insert(table)**
+***Alias:*** *compile_insert(table)*
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
@@ -1653,9 +1825,10 @@ console.log(sql);
 
 -------------
 
+<a name="get_compiled_update"></a>
 #### .get_compiled_update(table)
 
-***Alias:*** **compile_update(table)**
+***Alias:*** *compile_update(table)*
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
@@ -1684,9 +1857,10 @@ console.log(sql);
 
 -------------
 
+<a name="get_compiled_delete"></a>
 #### .get_compiled_delete(table)
 
-***Alias:*** **compile_delete(table)**
+***Alias:*** *compile_delete(table)*
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
