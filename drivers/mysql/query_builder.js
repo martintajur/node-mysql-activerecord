@@ -1242,12 +1242,12 @@ var QueryBuilder = function() {
 			table = table.trim();
 			
 			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
-				throw new Error("insert(): Invalid table name provided!");
+				throw new Error("insert(): Invalid table name ('" + table + "') provided!");
 			}
 			
 			if (table == '') {
 				if (this.from_array.length == 0) {
-					throw new Error('No tables set to insert into!');
+					throw new Error('insert(): No tables set to insert into!');
 				}
 				table = this.from_array[0];
 			} else {
@@ -1264,17 +1264,26 @@ var QueryBuilder = function() {
 		
 		insert_batch: function(table,set,ignore,suffix) {
 			var self = this;
-			table = table || '';
+			var orig_table = table = table || '';
 			set = set || null;
 			ignore = (typeof ignore !== 'boolean' ? false : ignore);
 			suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
-			if(suffix == ' ') suffix = '';
+			if (suffix == ' ') suffix = '';
+			
+			if (typeof table !== 'string') {
+				throw new Error("insert(): Table parameter must be a string!");
+			}
+			
+			table = table.trim();
+			
+			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
+				throw new Error("insert(): Invalid table name ('" + table + "') provided!");
+			}
 			
 			if (table == '') {
 				if (this.from_array.length === 0) {
 					throw new Error("insert_batch(): You have not set any tables to insert into.");
 				}
-
 				table = this.from_array[0];
 			} else {
 				clear_array(this.from_array);
@@ -1286,15 +1295,27 @@ var QueryBuilder = function() {
 			}
 			
 			for (var key in set) {
-				var value = set[key];
-				var is_object = Object.prototype.toString.call(value) == Object.prototype.toString.call({});
-				if (!is_object || (is_object && Object.keys(value).length === 0)) {
+				var row = set[key];
+				var is_object = Object.prototype.toString.call(row) == Object.prototype.toString.call({});
+				if (!is_object || (is_object && Object.keys(row).length === 0)) {
 					throw new Error('insert_batch(): An invalid item was found in the data array!');
+				} else {
+					for (var i in row) {
+						var v = row[i];
+						
+						if ((typeof v).match(/^(number|string|boolean)$/) === null && v !== null) {
+							throw new Error("set(): Invalid value provided!");
+						}
+						else if (typeof v === 'number' && (v === Infinity || v !== +v)) {
+							throw new Error("set(): Infinity and NaN are not valid values in MySQL!");
+						}
+					}
 				}
 			}
 			
-			
-			if (set.length == 0) return false;
+			if (set.length == 0) {
+				return this.insert(orig_table, {}, ignore, (suffix === '' ? null : suffix));
+			}
 			
 			var map = [];
 			var columns = [];

@@ -96,7 +96,8 @@ describe('insert()', function() {
 	it('should convert call to insert_batch() if an array of non-emtpy objects is passed in the data parameter', function() {
 		qb.reset_query();
 		var sql = qb.insert('galaxies', test_data_set);
-		sql.should.eql("INSERT INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral'), (4, 'Andromeda', 'spiral')");
+		var sql_b = qb.insert_batch('galaxies', test_data_set);
+		sql.should.eql(sql_b);
 	});
 	it('should fail if any invalid values are passed in the data object.', function() {
 		qb.reset_query();
