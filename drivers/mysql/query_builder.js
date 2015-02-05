@@ -1630,6 +1630,22 @@ var QueryBuilder = function() {
 			return compile_insert(this);
 		},
 		
+		compile_select: function(table) {
+			return this.get_compiled_select(table);
+		},
+		
+		compile_delete: function(table) {
+			return this.get_compiled_delete(table);
+		},
+		
+		compile_update: function(table) {
+			return this.get_compiled_update(table);
+		},
+		
+		compile_insert: function(table) {
+			return this.get_compiled_insert(table);
+		},
+		
 		last_query: function() {
 			return this.last_query_string[0] || '';
 		},

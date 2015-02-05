@@ -1594,6 +1594,8 @@ These methods are not asynchronous and, therefore, just return the compiled quer
 
 #### .get_compiled_select(table)
 
+***Alias:*** **compile_select(table)**
+
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
 | table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
@@ -1620,6 +1622,8 @@ console.log(sql);
 -------------
 
 #### .get_compiled_insert(table)
+
+***Alias:*** **compile_insert(table)**
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
@@ -1651,6 +1655,8 @@ console.log(sql);
 
 #### .get_compiled_update(table)
 
+***Alias:*** **compile_update(table)**
+
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
 | table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
@@ -1679,6 +1685,8 @@ console.log(sql);
 -------------
 
 #### .get_compiled_delete(table)
+
+***Alias:*** **compile_delete(table)**
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
