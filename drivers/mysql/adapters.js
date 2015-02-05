@@ -12,9 +12,9 @@ var Adapters = function(nqb) {
 	
 	// Enable debugging if necessary
 	this.debugging = false;
-	if (nqb.settings.hasOwnProperty('qb_debug') && settings.qb_debug === true) {
+	if (nqb.settings.hasOwnProperty('qb_debug') && nqb.settings.qb_debug === true) {
 		this.debugging = true;
-		delete settings.qb_debug;
+		delete nqb.settings.qb_debug;
 	}
 	
 	// Verify that required fields are provided...
@@ -169,27 +169,28 @@ var Adapters = function(nqb) {
 					nqb.pool.end(callback);
 				}
 			}
-		}
+		};
 		
 		// Create pool for node-querybuild object if it doesn't already have one.
 		if (!nqb.hasOwnProperty('pool') || nqb.pool.length === 0) {
 			// Create connection Pool
 			nqb.pool = mysql.createPool(that.connection_settings);
 			
-			// Test connection pool (asynchronous)
-			nqb.pool.getConnection(function(err, connection) {
-				connection.query('SELECT 1 + 1 AS solution', function(err) {
-					connection.release();
-					if (err) throw err;
-					if (that.debugging === true) {
-						console.log('mysql connection pool created');
-					}
-					return return_pool();
+			// Test connection pool (asynchronous -- this shouldn't prevent the pool from initially loading)
+			if (that.debugging === true) {
+				nqb.pool.getConnection(function(err, connection) {
+					connection.query('SELECT 1 + 1 AS solution', function(err) {
+						connection.release();
+						if (err) {
+							console.error(err);
+						} else {
+							console.log('mysql connection pool created');
+						}
+					});
 				});
-			});
-		} else {
-			return return_pool();
+			}
 		}
+		return return_pool();
 	};
 	
 	// ****************************************************************************
@@ -222,9 +223,7 @@ var Adapters = function(nqb) {
 		}
 	}
 	
-	var adapter = determine_adapter();
-	//console.dir(adapter); process.exit(1);
-	return adapter;
+	return determine_adapter();
 };
 
 exports.Adapters = Adapters;

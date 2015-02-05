@@ -113,7 +113,7 @@ var QueryBuilder = function(settings,driver,type) {
 	// ****************************************************************************
 	var get_adapter = function(qb) {
 		try {
-			var adapter = adapter = require(qb.driver_info.path + 'adapters.js').Adapters(qb);
+			var adapter = require(qb.driver_info.path + 'adapters.js').Adapters(qb);
 			return adapter;
 		} catch(e) {
 			throw new Error("Couldn't load the Connection library for " + qb.driver + ": " + e);

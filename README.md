@@ -1005,11 +1005,11 @@ qb.limit(5).offset(25).get('users',callback);
 
 This SQL is used to set values to fields when utilizing the `update`, and `insert` methods. More than likely, you will choose use the shorthand notation provided by the aforementioned methods, but, this can be handy in some cases.
 
-| Parameter	| Type			| Default	| Description 																		|
-| :--------	| :------------	| :-----	| :--------------------------------------------------------------------------------	|
-| key		| String/Object	| Required	| The key of field to be set or an object of key:value pairs						|
-| value		| Mixed			| NULL		| Required if `key` is a string. Pass NULL if you'd like to use the 3rd parameter	|
-| escape	| String/Object	| true		| If false, keys and values will not be escaped. 									|
+| Parameter	| Type			| Default	| Description 																								|
+| :--------	| :------------	| :-----	| :--------------------------------------------------------------------------------------------------------	|
+| key		| String/Object	| Required	| The key of field to be set or an object of key:value pairs												|
+| value		| Mixed			| NULL		| Required if `key` is a string. Pass NULL if `key` is an object and you'd like to use the 3rd parameter	|
+| escape	| String/Object	| true		| If false, keys and values will not be escaped. 															|
 
 **Examples**
 
@@ -1023,8 +1023,9 @@ qb.set('birthday','2015-02-04').update('users', callback);
 Set multiple keys and values at once
 
 ```javascript
+var birthday = new Date(1986, 7, 5, 8, 15, 23);
 // UPDATE `users` SET `birthday` = '2015-02-04', `anniversary` = '2010-05-15'
-qb.set({birthday: '1986-02-04', anniversary: '2010-05-15'}).update('users', callback);
+qb.set({birthday: birthday, anniversary: '2010-05-15'}).update('users', callback);
 ```
 
 -------------
@@ -1589,14 +1590,13 @@ These methods can be used to build a query string without having to execute it. 
 
 These are excellent educational tools and can be used like a SQL/NoSQL language rosetta stone of sorts.
 
-The callback will respond with the standard `(err, res)` format. The `res` parameter will contain the compiled query string.
+These methods are not asynchronous and, therefore, just return the compiled query string.
 
-#### .get_compiled_select(table, callback)
+#### .get_compiled_select(table)
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
 | table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
-| callback	| Function	| Required	| What to do when the string has been compiled					|
 
 Compiles a SELECT-like query into a properly-escaped string.
 
@@ -1606,25 +1606,24 @@ Get certain details of a user account
 
 ```javascript
 var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
-qb.select(['id','username','first_name','last_name'])
+
+var sql = qb
+	.select(['id','username','first_name','last_name'])
 	.from('users')
 	.like('username','k','after')
-	.get_compiled_select(function(err, res) {
-		if (err) return console.error(err);
-		
-		// SELECT `id`, `username`, `first_name`, `last_name` FROM `users` WHERE `username` LIKE 'k%'
-		console.log(res);
-	});
+	.get_compiled_select();
+
+// SELECT `id`, `username`, `first_name`, `last_name` FROM `users` WHERE `username` LIKE 'k%'	
+console.log(sql);
 ```
 
 -------------
 
-#### .get_compiled_insert(table, callback)
+#### .get_compiled_insert(table)
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
 | table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
-| callback	| Function	| Required	| What to do when the string has been compiled					|
 
 Compiles a INSERT-like query into a properly-escaped string.
 
@@ -1641,22 +1640,20 @@ var data = {
 	first_name: 'Foo',
 	last_name: 'Bar'
 };
-qb.set(data).get_compiled_insert('users', function(err, res) {
-	if (err) return console.error(err);
-	
-	// INSERT INTO `users` (`username`, `password`, `first_name`, `last_name`) VALUES ('foobar', '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8', 'Foo', 'Bar')
-	console.log(res);
+var sql = qb.set(data).get_compiled_insert('users');
+
+// INSERT INTO `users` (`username`, `password`, `first_name`, `last_name`) VALUES ('foobar', '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8', 'Foo', 'Bar')
+console.log(sql);
 });
 ```
 
 -------------
 
-#### .get_compiled_update(table, callback)
+#### .get_compiled_update(table)
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
 | table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
-| callback	| Function	| Required	| What to do when the string has been compiled					|
 
 Compiles an UPDATE-like query into a properly-escaped string.
 
@@ -1670,24 +1667,22 @@ var crypto = require('crypto');
 var data = {
 	password: crypto.createHash('sha1').update('P@$$w0rD').digest('hex'),
 };
-qb.where('id',4321)
+var sql = qb
+	.where('id',4321)
 	.set(data)
-	.get_compiled_update('users', function(err, res) {
-		if (err) return console.error(err);
-		
-		// UPDATE `users` SET `password` = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' WHERE `id` = 4321
-		console.log(res);
-	});
+	.get_compiled_update('users');
+	
+// UPDATE `users` SET `password` = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' WHERE `id` = 4321
+console.log(sql);
 ```
 
 -------------
 
-#### .get_compiled_delete(table, callback)
+#### .get_compiled_delete(table)
 
 | Parameter	| Type		| Default	| Description													|
 | :--------	| :--------	| :-----	| :------------------------------------------------------------ |
 | table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
-| callback	| Function	| Required	| What to do when the string has been compiled					|
 
 Compiles a SELECT-like query into a properly-escaped string.
 
@@ -1697,11 +1692,10 @@ Delete a user
 
 ```javascript
 var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
-qb.where('id',4321).get_compiled_delete('users', function(err, res) {
-	if (err) return console.error(err);
-	
-	// DELETE FROM `users` WHERE `id` = 4321
-	console.log(res);
+var sql = qb.where('id',4321).get_compiled_delete('users');
+
+// DELETE FROM `users` WHERE `id` = 4321
+console.log(sql);
 });
 ```
 
