@@ -1,3 +1,11 @@
+before_script:
+	- mysql -e 'create database mock_db;'
 language: node_js
 node_js:
     - "0.10"
+services: mysql
+test:
+	adapter: mysql2
+	database: mock_db
+	username: travis
+	encoding: utf8
