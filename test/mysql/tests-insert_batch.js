@@ -42,7 +42,7 @@ describe('insert_batch()', function() {
 	it('should build a proper batch INSERT string', function() {
 		qb.reset_query();
 		var sql = qb.insert_batch('galaxies', test_data);
-		sql.should.eql("INSERT INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral'), (4, 'Andromeda', 'spiral')");
+		sql.should.eql("INSERT INTO (`galaxies`) (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral'), (4, 'Andromeda', 'spiral')");
 	});
 	it('should only accept an array as the second parameter', function() {
 		qb.reset_query();
@@ -72,13 +72,13 @@ describe('insert_batch()', function() {
 	it('should allow for an empty data parameter', function() {
 		qb.reset_query();
 		var sql = qb.insert_batch('galaxies',[]);
-		sql.should.eql("INSERT INTO `galaxies` () VALUES ()");
+		sql.should.eql("INSERT INTO (`galaxies`) () VALUES ()");
 	});
 	it('should utilize pre-existing tables set in from_array', function() {
 		qb.reset_query();
 		qb.from('galaxies');
 		var sql = qb.insert_batch(null,[]);
-		sql.should.eql("INSERT INTO `galaxies` () VALUES ()");
+		sql.should.eql("INSERT INTO (`galaxies`) () VALUES ()");
 	});
 	it('should fail if any invalid values are passed into one of the data objects in the dataset', function() {
 		qb.reset_query();
@@ -98,6 +98,6 @@ describe('insert_batch()', function() {
 	it('should support insert ignore statements', function() {
 		qb.reset_query();
 		var sql = qb.insert_batch('galaxies', test_data, true, 'ON DUPLICATE KEY UPDATE last_update = NOW()');
-		sql.should.eql("INSERT IGNORE INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral'), (4, 'Andromeda', 'spiral') ON DUPLICATE KEY UPDATE last_update = NOW()");
+		sql.should.eql("INSERT IGNORE INTO (`galaxies`) (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral'), (4, 'Andromeda', 'spiral') ON DUPLICATE KEY UPDATE last_update = NOW()");
 	});
 });

@@ -75,24 +75,24 @@ describe('update()', function() {
 		qb.reset_query();
 		qb.from('galaxies');
 		var sql = qb.update(null, test_data, test_where);
-		sql.should.eql("UPDATE `galaxies` SET `name` = 'Milky Way', `type` = 'spiral' WHERE `id` = 3");
+		sql.should.eql("UPDATE (`galaxies`) SET `name` = 'Milky Way', `type` = 'spiral' WHERE `id` = 3");
 	});
 	it('should utilize pre-existing value set in in set_array', function() {
 		qb.reset_query();
 		qb.set(test_data);
 		var sql = qb.update('galaxies');
-		sql.should.eql("UPDATE `galaxies` SET `name` = 'Milky Way', `type` = 'spiral'");
+		sql.should.eql("UPDATE (`galaxies`) SET `name` = 'Milky Way', `type` = 'spiral'");
 	});
 	it('should utilize pre-existing tables and values from from_aray and set_array, respectively', function() {
 		qb.reset_query();
 		qb.from('galaxies').set(test_data);
 		var sql = qb.update();
-		sql.should.eql("UPDATE `galaxies` SET `name` = 'Milky Way', `type` = 'spiral'");
+		sql.should.eql("UPDATE (`galaxies`) SET `name` = 'Milky Way', `type` = 'spiral'");
 	});
 	it('should accept a non-empty object for the data parameter', function() {
 		qb.reset_query();
 		var sql = qb.update('galaxies', test_data);
-		sql.should.eql("UPDATE `galaxies` SET `name` = 'Milky Way', `type` = 'spiral'");
+		sql.should.eql("UPDATE (`galaxies`) SET `name` = 'Milky Way', `type` = 'spiral'");
 	});
 	it('should convert call to update_batch() if an array of non-emtpy objects is passed in the data parameter', function() {
 		qb.reset_query();

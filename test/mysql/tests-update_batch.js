@@ -15,6 +15,6 @@ describe('update_batch()', function() {
 	it('should build a proper batch UPDATE string', function() {
 		qb.reset_query();
 		var sql = qb.update_batch('galaxies', test_data, 'id');
-		sql.should.eql(["UPDATE `galaxies` SET `name` = CASE WHEN `id` = 3 THEN 'Milky Way' WHEN `id` = 4 THEN 'Andromeda' ELSE `name` END, `type` = CASE WHEN `id` = 3 THEN 'spiral' WHEN `id` = 4 THEN 'spiral' ELSE `type` END WHERE `id` IN (3,4)"]);
+		sql.should.eql(["UPDATE (`galaxies`) SET `name` = CASE WHEN `id` = 3 THEN 'Milky Way' WHEN `id` = 4 THEN 'Andromeda' ELSE `name` END, `type` = CASE WHEN `id` = 3 THEN 'spiral' WHEN `id` = 4 THEN 'spiral' ELSE `type` END WHERE `id` IN (3,4)"]);
 	});
 });

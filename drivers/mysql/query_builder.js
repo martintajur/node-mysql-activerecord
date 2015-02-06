@@ -423,7 +423,7 @@ var QueryBuilder = function() {
 		var limit_to = qb.limit_to[0] || false;
 		var offset_val = qb.offset_val[0] || false;
 		
-		var sql = 'UPDATE ' + table + " SET " + valstr.join(', ');
+		var sql = 'UPDATE (' + table + ") SET " + valstr.join(', ');
 		sql += build_where_clause(qb);
 		sql += build_order_by_clause(qb);
 		return build_limit_clause(sql, limit_to, offset_val);
@@ -432,6 +432,7 @@ var QueryBuilder = function() {
 	var compile_insert = function(qb, ignore, suffix) {
 		var keys = [];
 		var values = [];
+		suffix = suffix || '';
 		
 		for (var i in qb.set_array) {			
 			var key = Object.keys(qb.set_array[i])[0];
@@ -443,7 +444,6 @@ var QueryBuilder = function() {
 		
 		var verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
 		
-		
 		if (qb.from_array.length === 1) { 
 			var table = qb.from_array.toString();
 		} else {
@@ -451,11 +451,11 @@ var QueryBuilder = function() {
 				throw new Error("You haven't provided any tables to build INSERT querty with!");
 				return '';
 			}
-			throw new Error("You have provided too many tables to build UPDATE query with!");
+			throw new Error("You have provided too many tables to build INSERT query with!");
 			return '';
 		}
 		
-		return verb + 'INTO ' + qb.from_array[0] + ' (' + keys.join(', ') + ') VALUES (' + values.join(', ') + ')' + suffix;
+		return verb + 'INTO (' + qb.from_array[0] + ') (' + keys.join(', ') + ') VALUES (' + values.join(', ') + ')' + suffix;
 	};
 
 	// ---------------------------- ACTUAL QUERY BUILDER ----------------------------//
@@ -1345,7 +1345,7 @@ var QueryBuilder = function() {
 			}
 			
 			var verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
-			return verb + 'INTO ' + this.from_array[0] + ' (' + columns.join(', ') + ') VALUES ' + map.join(', ') + suffix;
+			return verb + 'INTO (' + this.from_array[0] + ') (' + columns.join(', ') + ') VALUES ' + map.join(', ') + suffix;
 		},
 
 		get: function(table) {
@@ -1573,7 +1573,7 @@ var QueryBuilder = function() {
 				}
 				
 				// Build the actual SQL statement
-				var sql = 'UPDATE ' + table + ' SET ';
+				var sql = 'UPDATE (' + table + ') SET ';
 				var cases = '';
 				
 				for (var l in when_then) {

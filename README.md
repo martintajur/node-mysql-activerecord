@@ -222,6 +222,7 @@ Chainable methods can be called as many times as you'd like in any order you lik
 | [from()](#from)						| FROM 			| &#x2713;	|		|			|			|			|		|
 | [join()](#join)						| JOIN			| &#x2713;	|		|			|			|			|		|
 | [where()](#where)						| WHERE 		| &#x2713;	|		|			|			|			|		|
+| [where_in()](#where_in)				| IN 			| &#x2713;	|		|			|			|			|		|
 | [where_not_in()](#where_not_in)		| WHERE			| &#x2713;	|		|			|			|			|		|
 | [or_where()](#or_where)				| WHERE			| &#x2713;	|		|			|			|			|		|
 | [or_where_in()](#or_where_in)			| WHERE			| &#x2713;	|		|			|			|			|		|
@@ -230,7 +231,6 @@ Chainable methods can be called as many times as you'd like in any order you lik
 | [or_like()](#or_like)					| LIKE			| &#x2713;	|		|			|			|			|		|
 | [or_not_like()](#or_not_like)			| LIKE			| &#x2713;	|		|			|			|			|		|
 | [not_like()](#not_like)				| LIKE			| &#x2713;	|		|			|			|			|		|
-| [where_in()](#where_in)				| IN 			| &#x2713;	|		|			|			|			|		|
 | [group_by()](#group-by)				| GROUP BY		| &#x2713;	|		|			|			|			|		|
 | [having()](#having)					| HAVING		| &#x2713;	|		|			|			|			|		|
 | [or_having()](#or_having)				| HAVING		| &#x2713;	|		|			|			|			|		|
@@ -1763,9 +1763,9 @@ pool.get_connection(function(qb) {
 
 Releases a connection back to the pool when you are done with it. Calling this is *super* important!
 
-**Example**
+**Examples**
 
-Below is a contrived example (with no error handling--for brevity) that gets a list of all users in a users table where their username starts with a `|` character. It them loops over each one and removed the `|` from the username and reinserts it. Notice that the connection is not released until all the queries that needed to be executed have been executed.
+Below is a contrived example (with no error handling--for brevity) that gets a list of all users in a users table where their username starts with a `|` character. It then loops over each one and removes the `|` from the username and re-inserts it. Notice that the connection is not released until all the queries that needed to be executed have been executed.
 
 ```javascript
 var settings = require('db.json');
@@ -1790,12 +1790,29 @@ pool.get_connection(function(qb) {
 });
 ```
 
+Here's a simpler example so you can better see how it will most often be used
+
+```javascript
+var settings = require('db.json');
+var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+
+pool.get_connection(function(qb) {
+	qb.get_where('users', {username: 'foobar'}, function(err, res) {
+		qb.release();
+		if (err) throw err;
+		console.dir(res);
+	});
+});
+```
+
 -------------
 
 <a name="last_query"></a>
 ### .last_query()
 
-This is used to ascertain the query string that was most-recently executed. This MUST be called before closing the connection or releasing a connection back to the pool. This is useful for debugging what the `node-querybuilder` library is executing (or trying to execute).
+This is used to retrieve the query string that was most-recently executed. This MUST be called before closing the connection or releasing a connection back to the pool. This is useful for debugging what the `node-querybuilder` library is executing (or trying to execute).
+
+If you'd rather the engine not execute the query first, you can always use the appropriate [compilation methods](#compilation_methods) detailed below.
 
 **Examples**
 
@@ -1848,6 +1865,7 @@ qb.query(sql, function(err, res) {
 
 -------------
 
+<a name="compilation_methods"></a>
 ### SQL Compilation Methods
 
 These methods can be used to build a query string without having to execute it. This is a fantastic option if you want to use the querybuilder to simply build queries and display the resulting string or to send the compiled query string off to a driver/engine other than the one offered by `node-querybuilder`.
