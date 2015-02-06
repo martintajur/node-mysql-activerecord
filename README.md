@@ -1408,13 +1408,15 @@ As you can see, in each `CASE` statement, the `key` and it's value are being use
 -------------
 
 <a name="insert"></a>
-### .insert(table,data,callback)
+### .insert(table,data[,ignore[,on_dupe]],callback)
 
-| Parameter	| Type		| Default	| Description																							|
-| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to insert into														|
-| data		| Object	| Required	| The data to insert (ex. `{field: value}`)																|
-| callback	| Function	| Required	| What to do when the driver has responded.																|
+| Parameter	| Type		| Default	| Description																										|
+| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to insert into																	|
+| data		| Object	| Required	| The data to insert (ex. `{field: value}`)																			|
+| ignore	| Boolean	| false		| (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.	|
+| on_dupe	| String	| undefined	| (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).					|
+| callback	| Function	| Required	| What to do when the driver has responded.																			|
 
 This method is used to insert new data into a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the ID of the newly inserted item, the affected rows (should be 1), etc...
 
@@ -1459,16 +1461,110 @@ app.post('/add_article', function(req, res) {
 -------------
 
 <a name="insert_batch"></a>
-### .insert_batch(table,dataset,callback)
+### .insert_batch(table,dataset[,ignore[,on_dupe]],callback)
 
-Documentation for this method coming soon!
+| Parameter	| Type		| Default	| Description																											|
+| :--------	| :--------	| :-----	| :-------------------------------------------------------------------------------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to delete records from.																|
+| dataset	| Array		| undefined	| An array of objects containing the data you want to insert. Pass *can* pass an empty array if you want to be silly.	|
+| ignore	| Boolean	| false		| (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.		|
+| on_dupe	| String	| undefined	| (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).						|
+| callback	| Function	| Required	| What to do when the driver has responded.																				|
+
+The goal of this method is to speed the insertion of many rows. For instance, if you were insert 1,000 rows... Instead of making 1,000 queries to the server, you could just call `insert_batch()` and it would generate a single query to insert 1,000 rows. This is *much* more efficient and less taxing on your app and database server.
+
+**Type of Response Sent to Callback**
+
+Object containing information about the result of the query.
+
+**Example**
+
+```javascript
+var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+
+var data = [
+	{name: 'MySQL', version: '5.5.40'},
+	{name: 'Mongo', version: '2.6.7' },
+	{name: 'Postgres', version: '8.4'}
+];
+
+qb.insert_batch('db_engines', data, function(err, res) {
+	if (err) throw err;
+	
+	// INSERT INTO `db_engines` (`name`, `version`) 
+	// VALUES ('MySQL', '5.5.40'), ('Mongo', '2.6.7'), ('Postgres', '8.4');
+	console.log(qb.last_query());
+});
+```
 
 -------------
 
 <a name="insert_ignore"></a>
-### .insert_ignore(table,data,callback)
+### .insert_ignore(table,data[,on_dupe],callback)
 
-Documentation for this method coming soon!
+| Parameter	| Type		| Default	| Description																											|
+| :--------	| :--------	| :-----	| :-------------------------------------------------------------------------------------------------------------------- |
+| table		| String	| Required	| The table/collection you'd like to delete records from.																|
+| data		| Object	| undefined	| An array of objects containing the data you want to insert. Pass *can* pass an empty array if you want to be silly.	|
+| on_dupe	| String	| undefined	| (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).						|
+| callback	| Function	| Required	| What to do when the driver has responded.																				|
+
+This method is just a wrapper to the `insert()` method which passes `true` to the ignore parameter. The purpose of using `IGNORE` syntax, for the drivers that support it, is so that a row insertion will be skipped if it's an exact duplicate of another row in the database. Optionally, you can provide a 3rd paramter containing a query that will update specified keys in the case of a duplicate entry (instead of simply ignoring it).
+
+**Type of Response Sent to Callback**
+
+Object containing information about the result of the query.
+
+**Example**
+
+```javascript
+/*
+ * Current Table Structure:
+ * 
+ * [
+ *		{name: 'MySQL', version: '5.5.40', last_modified: 1423252221 },
+ *		{name: 'Mongo', version: '2.6.7',  last_modified: 1423252232 },
+ *		{name: 'Postgres', version: '8.4', last_modified: 1423252248 }
+ *	]
+ */
+
+var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+qb.insert_ignore('db_engines', data, function(err, res) {
+	if (err) throw err;
+	var data = {name: 'Postgres', version: '8.4'};
+	
+	// INSERT INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
+	console.log(qb.last_query());
+	
+	// 0 (because this data already exists...)
+	console.log(res.affected_rows);
+});
+```
+
+This time we'll do it with an `on_dupe` string
+
+```javascript
+qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NOW()', function(err, res) {
+	if (err) throw err;
+	var data = {name: 'Postgres', version: '8.4'};
+	
+	// INSERT INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
+	console.log(qb.last_query());
+	
+	// 1 (because we updated the last_modified field)
+	console.log(res.affected_rows);
+	
+	/*
+	 * Resulting Table Structure:
+	 * 
+	 * [
+	 *		{name: 'MySQL', version: '5.5.40', last_modified: 1423252221 },
+	 *		{name: 'Mongo', version: '2.6.7',  last_modified: 1423252232 },
+	 *		{name: 'Postgres', version: '8.4', last_modified: 1423264972 }
+	 *	]
+	 */
+});
+```
 
 -------------
 
