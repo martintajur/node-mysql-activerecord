@@ -104,14 +104,14 @@ Connecting to Your Database
 Quick Reference
 ---------------
 
-| Driver	| Default	| Ready		| single	| pool	| cluster	| Additional Connection Options								|
-| :--------	| :------ 	| :-----	| :--------	| :----	| :----		| :--------------------------------------------------------	|
-| mysql		| &#x2713;	| Yes		| Yes		| Yes	| Yes		| [node-mysql connection options](https://github.com/felixge/node-mysql#connection-options)	|
-| mssql		|			| No		| Yes		| ???	| ???		|															|
-| sqlite	|			| No		| Yes		| ???	| ???		|															|
-| oracle	|			| No		| Yes		| ???	| ???		|															|
-| postgres	|			| No		| Yes		| ???	| ???		|															|
-| mongodb	|			| No		| Yes		| ???	| ???		|															|
+| Driver									| Default	| Ready		| single	| pool	| cluster	| Additional Connection Options								|
+| :---------------------------------------- | :------ 	| :-----	| :--------	| :----	| :----		| :--------------------------------------------------------	|
+| [mysql](//www.npmjs.com/package/mysql)	| &#x2713;	| Yes		| Yes		| Yes	| Yes		| [node-mysql connection options](https://github.com/felixge/node-mysql#connection-options)	|
+| [mssql](//www.npmjs.com/package/mssql)	|			| No		| Yes		| ???	| ???		|															|
+| [sqlite3](//www.npmjs.com/package/sqlite3)|			| No		| Yes		| ???	| ???		|															|
+| [oracle](//www.npmjs.com/package/oracle)	|			| No		| Yes		| ???	| ???		|															|
+| [postgres](//www.npmjs.com/package/pg)	|			| Pending	| Yes		| Yes	| ???		|															|
+| [mongodb](//www.npmjs.com/package/mongodb)|			| No		| Yes		| ???	| ???		|															|
 
 
 Standard Connection Settings
