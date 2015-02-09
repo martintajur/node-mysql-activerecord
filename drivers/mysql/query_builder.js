@@ -282,14 +282,12 @@ var QueryBuilder = function() {
 		var SqlString = require('../../node_modules/mysql/lib/protocol/SqlString.js');
 		var do_escape = SqlString.escape;
 	
-		if (typeof str === 'string' && !str.match(/^\d+$/)) {
-			str = do_escape(str);
-		}
-		else if (typeof str === 'boolean') {
+		if (typeof str === 'boolean') {
 			str = (str === false ? 0 : 1);
-		}
-		else if (str === null) {
-			str = 'NULL';
+		} else if (typeof str === 'number' || (typeof str === 'string' && str.match(/^\d+$/))) {
+			str *= 1;
+		} else {
+			str = do_escape(str);
 		}
 
 		return str;

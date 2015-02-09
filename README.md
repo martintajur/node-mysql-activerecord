@@ -106,7 +106,7 @@ Quick Reference
 
 | Driver	| Default	| Ready		| single	| pool	| cluster	| Additional Connection Options								|
 | :--------	| :------ 	| :-----	| :--------	| :----	| :----		| :--------------------------------------------------------	|
-| mysql		| &#x2713;	| Yes		| Yes		| Yes	| Yes		| https://github.com/felixge/node-mysql#connection-options	|
+| mysql		| &#x2713;	| Yes		| Yes		| Yes	| Yes		| [node-mysql connection options](https://github.com/felixge/node-mysql#connection-options)	|
 | mssql		|			| No		| Yes		| ???	| ???		|															|
 | sqlite	|			| No		| Yes		| ???	| ???		|															|
 | oracle	|			| No		| Yes		| ???	| ???		|															|
@@ -125,7 +125,10 @@ The options listed below are available for all database drivers. Additional prop
 | user		| NULL		| No		| The database user								|
 | password	| NULL		| Yes		| The database `user`'s password				|
 | database	| NULL		| Yes		| The database to connect to					|
+| port		| NULL		| Yes		| The database port to use when connecting		|
 | pool_size	| 10 		| Yes		| Max connections for `pool` connection type	|
+| debug		| false		| Yes		| If true, debug info will be place in app log	|
+| version	| default	| Yes		| Version of database driver to use				|
 
 The best way to store these options is in a JSON file outsite of your web root where only root and the server user can access them.
 

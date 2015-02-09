@@ -130,7 +130,7 @@ describe('where()', function() {
 		qb.where({star_system:'Solar',planet:['Earth','Mars']},false);
 		qb.where_array.should.eql(["star_system = 'Solar'", "AND planet IN ('Earth', 'Mars')"]);
 	});
-	it("should split out and escape custom WHERE strings when that is the only thing provided (except when string containing parenthesis)", function() {
+	it("should split out and escape custom WHERE strings when that is the only thing provided (except when string contains parenthesis)", function() {
 		qb.reset_query();
 		qb.where("planet_id = 3 AND galaxy_id > 21645 OR planet = 'Earth'");
 		qb.where_array.should.eql(['`planet_id` = 3', 'AND `galaxy_id` > 21645', "OR `planet` = 'Earth'"]);

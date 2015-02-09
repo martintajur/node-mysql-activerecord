@@ -74,8 +74,12 @@ var QueryBuilder = function(settings,driver,type) {
 		}
 		
 		// Retrieve info about driver if available, error if not
-		if (Object.keys(qb.drivers[qb.driver].versions).indexOf(qb.driver_version) !== -1) {
-			qb.driver_info = qb.drivers[qb.driver].versions[qb.driver_version];
+		if (qb.drivers[qb.driver].versions.hasOwnProperty(qb.driver_version)) {
+			if (qb.drivers[qb.driver].versions[qb.driver_version].hasOwnProperty('version')) {
+				qb.driver_info = qb.drivers[qb.driver].versions[qb.drivers[qb.driver].versions[qb.driver_version].version];
+			} else {
+				qb.driver_info = qb.drivers[qb.driver].versions[qb.driver_version];
+			}
 		} else {
 			throw new Error(qb.driver_version + " is not a version of the " + qb.driver + " driver that this library specifically supports. Try being more generic.");
 		}
@@ -116,7 +120,7 @@ var QueryBuilder = function(settings,driver,type) {
 			var adapter = require(qb.driver_info.path + 'adapters.js').Adapters(qb);
 			return adapter;
 		} catch(e) {
-			throw new Error("Couldn't load the Connection library for " + qb.driver + ": " + e);
+			throw new Error("Couldn't load the Connection library for " + qb.driver + "(" + JSON.stringify(qb.settings) + "): " + e);
 		}
 	};
 	

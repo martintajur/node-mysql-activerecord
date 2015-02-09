@@ -18,9 +18,10 @@ var Adapters = function(nqb) {
 	}
 	
 	// Verify that required fields are provided...
+	if (Object.keys(nqb.settings).length === 0) throw new Error("No connection information provided!");
 	if (!nqb.settings.hasOwnProperty('host')) nqb.settings.host = 'localhost';
 	if (!nqb.settings.hasOwnProperty('user')) throw new Error("No user property provided. Hint: It can be NULL");
-	if (!nqb.settings.hasOwnProperty('password')) throw new Error("No user property provided. Hint: It can be NULL");
+	//if (!nqb.settings.hasOwnProperty('password')) throw new Error("No connection password provided. Hint: It can be NULL");
 	
 	this.connection_settings = {};
 	var that = this;
@@ -114,6 +115,10 @@ var Adapters = function(nqb) {
 				return that.connection_settings;
 			},
 			
+			connect: function(callback) {
+				return connection.connect(callback);
+			},
+			
 			connection: function() {
 				return connection;
 			},
@@ -122,8 +127,12 @@ var Adapters = function(nqb) {
 				return connection.escape(str);
 			},
 			
-			disconnect: function(str) {
-				return connection.end();
+			escape_id: function(str) {
+				return connection.escapeId(str);
+			},
+			
+			disconnect: function(callback) {
+				return connection.end(callback);
 			},
 			
 			release: function() {
