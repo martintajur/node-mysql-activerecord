@@ -1,5 +1,4 @@
-before_script:
-    - mysql -e 'create database mock_db;'
+before_script: ./test/create_mock_dbs.sh
 language: node_js
 node_js:
     - "0.10"
