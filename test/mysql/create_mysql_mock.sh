@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 mysql -e 'create database mock_db;'
-mysql -utravis mock_db < mock_data.sql
+mysql -utravis mock_db < ./test/mysql/mock_data.sql

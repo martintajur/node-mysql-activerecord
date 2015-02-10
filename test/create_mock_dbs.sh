@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./mysql/create_mysql_mock.sh
+./test/mysql/create_mysql_mock.sh
