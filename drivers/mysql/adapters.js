@@ -136,6 +136,7 @@ var Adapters = function(nqb) {
 			},
 			
 			release: function() {
+				if (!pool) throw new Error("You cannot release a non-pooled connection from a connection pool!");
 				pool.releaseConnection(connection);
 			}
 		}, qb, qe);
