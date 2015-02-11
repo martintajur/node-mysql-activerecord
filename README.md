@@ -119,16 +119,16 @@ Standard Connection Settings
 
 The options listed below are available for all database drivers. Additional properties may be passed if the driver of the database you are connecting to supports them. See the "Additional Connection Options" column above for a link to the a specific driver's connection options documentation.
 
-| Option	| Default 	| Optional 	| Description 									|
-| :--------	| :--------	| :--------	| :-------------------------------------------- |
-| host		| localhost | No		| The server you're connecting to				|
-| user		| NULL		| No		| The database user								|
-| password	| NULL		| Yes		| The database `user`'s password				|
-| database	| NULL		| Yes		| The database to connect to					|
-| port		| NULL		| Yes		| The database port to use when connecting		|
-| pool_size	| 10 		| Yes		| Max connections for `pool` connection type	|
-| debug		| false		| Yes		| If true, debug info will be place in app log	|
-| version	| default	| Yes		| Version of database driver to use				|
+| Option		| Default 	| Optional 	| Description 									|
+| :------------	| :--------	| :--------	| :-------------------------------------------- |
+| **host**		| localhost | No		| The server you're connecting to				|
+| **user**		| NULL		| No		| The database user								|
+| **password**	| NULL		| Yes		| The database `user`'s password				|
+| **database**	| NULL		| Yes		| The database to connect to					|
+| **port**		| NULL		| Yes		| The database port to use when connecting		|
+| **pool_size**	| 10 		| Yes		| Max connections for `pool` connection type	|
+| **debug**		| false		| Yes		| If true, debug info will be place in app log	|
+| **version**	| default	| Yes		| Version of database driver to use				|
 
 The best way to store these options is in a JSON file outsite of your web root where only root and the server user can access them.
 
@@ -184,12 +184,12 @@ Choosing the Connection Type
 
 This library currently supports 3 connection methods:
 
-* single (default)
+* ***single*** (default)
 	* This will use the driver's basic single connection capabilities. All connections to your app will use this single database connection. This is usually less than ideal for most web applications but might be quite suitable for command line scripts and the like. 
 	* **All drivers must have this connection type**.
-* pool
+* ***pool***
 	* This will utilize the driver's connection pooling capabilities if it is offered. Connection pooling allows your application to pull from a pool of connections that were created by the driver. Typically the connections will be handed out to requesting methods in a round-robin fashion. This is ideal for a web application.
-* cluster
+* ***cluster***
 	* When you have a cluster of servers and you want to create pools of connections to different servers to help load balance your stack, using the `cluster` connection type can come in handy. This is ideal for high-traffic web sites and applications that utilize a farm of database servers as opposed to just one.
 
 **Note:**
