@@ -1239,7 +1239,7 @@ var QueryBuilder = function() {
 			
 			table = table.trim();
 			
-			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
+			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/)) {
 				throw new Error("insert(): Invalid table name ('" + table + "') provided!");
 			}
 			
@@ -1274,7 +1274,7 @@ var QueryBuilder = function() {
 			
 			table = table.trim();
 			
-			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
+			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/)) {
 				throw new Error("insert(): Invalid table name ('" + table + "') provided!");
 			}
 			
@@ -1439,7 +1439,7 @@ var QueryBuilder = function() {
 			table = table.trim();
 			
 			// Table name must be in a legitimate format
-			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
+			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/)) {
 				throw new Error("update(): You have not set any tables to update!");
 			}
 			
@@ -1514,7 +1514,7 @@ var QueryBuilder = function() {
 			table = table.trim();
 			
 			// Table name must be in a legitimate format
-			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+$/)) {
+			if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/)) {
 				throw new Error("update(): You have not set any tables to update!");
 			}
 			
