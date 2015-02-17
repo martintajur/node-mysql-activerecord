@@ -36,7 +36,7 @@ describe('get_compiled_insert()', function() {
 	it('should return a SQL string', function() {
 		qb.reset_query();
 		var sql = qb.set({foo:'bar'}).get_compiled_insert('galaxies');
-		sql.should.eql("INSERT INTO (`galaxies`) (`foo`) VALUES ('bar')");
+		sql.should.eql("INSERT INTO `galaxies` (`foo`) VALUES ('bar')");
 	});
 });
 

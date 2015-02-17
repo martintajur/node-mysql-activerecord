@@ -108,13 +108,13 @@ describe('update()', function() {
 		var arr = [1,2,3];
 		var obj = {foo: 'bar'};
 		
-		qb.reset_query(); expect(function() { qb.insert('galaxies',{id: func}); 		}, 'function in data').to.throw(Error);
-		qb.reset_query(); expect(function() { qb.insert('galaxies',{id: regex}); 		}, 'regex in data').to.throw(Error);
-		qb.reset_query(); expect(function() { qb.insert('galaxies',{id: Infinity});		}, 'Infinity in data').to.throw(Error);
-		qb.reset_query(); expect(function() { qb.insert('galaxies',{id: undefined});	}, 'undefined in data').to.throw(Error);
-		qb.reset_query(); expect(function() { qb.insert('galaxies',{id: NaN});			}, 'NaN in data').to.throw(Error);
-		qb.reset_query(); expect(function() { qb.insert('galaxies',{id: arr});			}, 'array in data').to.throw(Error);
-		qb.reset_query(); expect(function() { qb.insert('galaxies',{id: obj});			}, 'object in data').to.throw(Error);
+		qb.reset_query(); expect(function() { qb.update('galaxies',{id: func}); 		}, 'function in data').to.throw(Error);
+		qb.reset_query(); expect(function() { qb.update('galaxies',{id: regex}); 		}, 'regex in data').to.throw(Error);
+		qb.reset_query(); expect(function() { qb.update('galaxies',{id: Infinity});		}, 'Infinity in data').to.throw(Error);
+		qb.reset_query(); expect(function() { qb.update('galaxies',{id: undefined});	}, 'undefined in data').to.throw(Error);
+		qb.reset_query(); expect(function() { qb.update('galaxies',{id: NaN});			}, 'NaN in data').to.throw(Error);
+		qb.reset_query(); expect(function() { qb.update('galaxies',{id: arr});			}, 'array in data').to.throw(Error);
+		qb.reset_query(); expect(function() { qb.update('galaxies',{id: obj});			}, 'object in data').to.throw(Error);
 		
 	});
 	/*

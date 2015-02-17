@@ -453,7 +453,7 @@ var QueryBuilder = function() {
 			return '';
 		}
 		
-		return verb + 'INTO ' + qb.from_array[0] + ' (' + keys.join(', ') + ') VALUES (' + values.join(', ') + ')';// + suffix;
+		return verb + 'INTO ' + qb.from_array[0] + ' (' + keys.join(', ') + ') VALUES (' + values.join(', ') + ')' + suffix;
 	};
 
 	// ---------------------------- ACTUAL QUERY BUILDER ----------------------------//
@@ -1173,7 +1173,9 @@ var QueryBuilder = function() {
 			// Add each key:value pair to the set_array
 			for (var i in key) {
 				var v = key[i];
-                if (typeof v === 'undefined') continue;
+                if (typeof v === 'undefined') {
+					throw new Error("set(): Invalid value provided! (provided: " + v + " (type: " + (typeof v) + ")");
+				}
 				
 				if ((typeof v).match(/^(number|string|boolean)$/) === null && v !== null) {
 					throw new Error("set(): Invalid value provided! (provided: " + v + " (type: " + (typeof v) + ")");
@@ -1344,7 +1346,7 @@ var QueryBuilder = function() {
 			}
 			
 			var verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
-			return verb + 'INTO (' + this.from_array[0] + ') (' + columns.join(', ') + ') VALUES ' + map.join(', ') + suffix;
+			return verb + 'INTO ' + this.from_array[0] + ' (' + columns.join(', ') + ') VALUES ' + map.join(', ') + suffix;
 		},
 
 		get: function(table) {
