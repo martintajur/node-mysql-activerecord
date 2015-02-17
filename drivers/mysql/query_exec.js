@@ -50,7 +50,8 @@ var QueryExec = function(qb, conn) {
 			qb.reset_query(sql);
 			exec(sql, function(err, row) {
 				if (!err) {
-					callback(err, row.numrows);
+                    //console.dir(row[0].numrows);
+					callback(err, row[0].numrows);
 				}
 				else {
 					callback(err, row);
