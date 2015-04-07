@@ -3,6 +3,10 @@
 	"version": "0.8.6",
 	"author": "Martin Tajur <martin@tajur.ee>",
 	"description": "A lightweight MySQL query builder on top of the node-mysql module.",
+	"licence": [
+		"MIT",
+		"GPL"
+	],
 	"homepage": "https://github.com/martintajur/node-mysql-activerecord",
 	"repository": {
 		"type": "git",
