@@ -7,10 +7,10 @@
     "scripts": {
         "test": "make test"
     },
-	"homepage": "https://github.com/martintajur/node-mysql-activerecord",
+	"homepage": "http://kylefarris.github.io/node-querybuilder/",
 	"repository": {
 		"type": "git",
-		"url": "git://github.com/martintajur/node-mysql-activerecord.git"
+		"url": "git@github.com:kylefarris/node-querybuilder.git"
 	},
 	"contributors": [
 		"Martin Tajur <martin@tajur.ee>",
