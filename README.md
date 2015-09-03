@@ -355,7 +355,7 @@ Basic UPDATE query
 	};
 	
 	db
-		.where({ id: 1 });
+		.where({ id: 1 })
 		.update('people', newData, function(err) {
 			if (!err) {
 				console.log('Updated!');
