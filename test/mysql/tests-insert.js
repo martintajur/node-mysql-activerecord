@@ -21,10 +21,10 @@ describe('insert()', function() {
 	});
 	it('should only accept nothing or a string for the table (first) parameter', function() {
 		qb.reset_query();
-		
+
 		// Doing these to prevent other errors
-		qb.from('galaxies'); 
-		
+		qb.from('galaxies');
+
 		expect(function() { qb.insert([], test_data); 		}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.insert({}, test_data); 		}, 'empty object provided').to.throw(Error);
 		expect(function() { qb.insert(3, test_data); 		}, 'integer provided').to.throw(Error);
@@ -33,7 +33,7 @@ describe('insert()', function() {
 		expect(function() { qb.insert(Infinity, test_data);	}, 'Infinity provided').to.throw(Error);
 		expect(function() { qb.insert([1,2], test_data); 	}, 'array of numbers provided').to.throw(Error);
 		expect(function() { qb.insert(/foobar/, test_data);	}, 'regex provided').to.throw(Error);
-		
+
 		expect(function() { qb.insert(NaN, test_data); 		}, 'NaN provided').to.not.throw(Error);
 		expect(function() { qb.insert(false, test_data); 	}, 'false provided').to.not.throw(Error);
 		expect(function() { qb.insert('', test_data); 		}, 'empty string provided').to.not.throw(Error);
@@ -43,7 +43,7 @@ describe('insert()', function() {
 	});
 	it('should fail if a number, non-standard object, regex, boolean, array of non-objects, or non-empty string is provided in data parameter', function() {
 		qb.reset_query();
-		
+
 		expect(function() { qb.insert('galaxies',test_data);}, 'non-empty array provided').to.not.throw(Error);
 		expect(function() { qb.insert('galaxies',[]); 		}, 'empty array provided').to.not.throw(Error);
 		expect(function() { qb.insert('galaxies',[test_data,test_data]); }, 'array of non-empty standard objects provided').to.not.throw(Error);
@@ -52,7 +52,7 @@ describe('insert()', function() {
 		expect(function() { qb.insert('galaxies',null); 	}, 'null provided').to.not.throw(Error);
 		expect(function() { qb.insert('galaxies',undefined);}, 'undefined provided').to.not.throw(Error);
 		expect(function() { qb.insert('galaxies');			}, 'nothing provided').to.not.throw(Error);
-		
+
 		expect(function() { qb.insert('galaxies',3); 		}, 'integer provided').to.throw(Error);
 		expect(function() { qb.insert('galaxies',3.5); 		}, 'float provided').to.throw(Error);
 		expect(function() { qb.insert('galaxies',true); 	}, 'true provided').to.throw(Error);
@@ -105,15 +105,19 @@ describe('insert()', function() {
 		var regex = /foobar/;
 		var arr = [1,2,3];
 		var obj = {foo: 'bar'};
-		
+
+		expect(function() { qb.insert('galaxies',{id: 1}); 			}, 'number in data').to.not.throw(Error);
+		expect(function() { qb.insert('galaxies',{id: 'foo'}); 		}, 'string in data').to.not.throw(Error);
+		expect(function() { qb.insert('galaxies',{id: false}); 		}, 'boolean in data').to.not.throw(Error);
+		expect(function() { qb.insert('galaxies',{id: null}); 		}, 'null in data').to.not.throw(Error);
+		expect(function() { qb.insert('galaxies',{id: undefined});	}, 'undefined in data').to.not.throw(Error);
 		expect(function() { qb.insert('galaxies',{id: func}); 		}, 'function in data').to.throw(Error);
 		expect(function() { qb.insert('galaxies',{id: regex}); 		}, 'regex in data').to.throw(Error);
 		expect(function() { qb.insert('galaxies',{id: Infinity});	}, 'Infinity in data').to.throw(Error);
-		expect(function() { qb.insert('galaxies',{id: undefined});	}, 'undefined in data').to.throw(Error);
 		expect(function() { qb.insert('galaxies',{id: NaN});		}, 'NaN in data').to.throw(Error);
 		expect(function() { qb.insert('galaxies',{id: arr});		}, 'array in data').to.throw(Error);
 		expect(function() { qb.insert('galaxies',{id: obj});		}, 'object in data').to.throw(Error);
-		
+
 	});
 });
 

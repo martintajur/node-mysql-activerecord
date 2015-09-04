@@ -31,11 +31,11 @@ describe('set()', function() {
 		expect(function() { qb.set(''); 		}, 'empty string provided').to.throw(Error);
 		expect(function() { qb.set('  '); 		}, 'string full of spaces provided').to.throw(Error);
 		expect(function() { qb.set(/foobar/); 	}, 'regex provided').to.throw(Error);
-		
+
 		expect(function() { qb.set('planet_position',3);	}, 'valid string provided').to.not.throw(Error);
 		expect(function() { qb.set({planet_position: 3}); 	}, 'valid object provided').to.not.throw(Error);
 	});
-	it('should not accept anything but a string, number, null, or boolean as second param', function() {
+	it('should not accept anything but a string, number, null, or boolean as second param if first param is a string.', function() {
 		qb.reset_query();
 		expect(function() { qb.set('planet_position'); 			}, 'nothing provided').to.throw(Error);
 		expect(function() { qb.set('planet_position',{}); 		}, 'empty object provided').to.throw(Error);
@@ -44,7 +44,7 @@ describe('set()', function() {
 		expect(function() { qb.set('planet_position',[]); 		}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.set('planet_position',[1,2]); 	}, 'array of numbers provided').to.throw(Error);
 		expect(function() { qb.set('planet_position',/foobar/); }, 'regex provided').to.throw(Error);
-		
+
 		expect(function() { qb.set('planet_position',null); 	}, 'null provided').to.not.throw(Error);
 		expect(function() { qb.set('planet_position',3);		}, 'Integer provided').to.not.throw(Error);
 		expect(function() { qb.set('planet_position',3.5); 		}, 'float provided').to.not.throw(Error);
@@ -63,7 +63,7 @@ describe('set()', function() {
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way'});
 		qb.set_array.should.eql([{"`galaxy_name`": "'Milky Way'"}]);
-		
+
 		qb.reset_query();
 		qb.set({galaxy_name: 'Milky Way', galaxy_class: 'C'});
 		qb.set_array.should.eql([{"`galaxy_name`": "'Milky Way'"}, {"`galaxy_class`": "'C'"}]);
