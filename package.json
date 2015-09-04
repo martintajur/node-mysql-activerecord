@@ -1,36 +1,36 @@
 {
-	"name" : "node-querybuilder",
-	"version": "0.9.0",
-	"author": "Kyle Farris <kyle@chomponllc.com>",
-	"description": "Modeled after Codeigniter's QueryBuilder. Build and execute queries in a safe and database-agnostic way.",
-	"keywords": "nodejs, node, mysql, active record, activerecord, querybuilder, query builder, codeigniter, postgres, mssql, mongo, sqlite, translator",
-    "scripts": {
-        "test": "make test"
-    },
-	"homepage": "http://kylefarris.github.io/node-querybuilder/",
-	"repository": {
-		"type": "git",
-		"url": "git@github.com:kylefarris/node-querybuilder.git"
-	},
-	"contributors": [
-		"Martin Tajur <martin@tajur.ee>",
-		"Daniel Bretoi <daniel@bretoi.com>",
-		"Daehyub Kim <lateau@gmail.com>"
-	],
-	"dependencies": {
-		"mssql": "1.3.*",
-		"pg": "4.2.*",
-		"mysql": "2.5.*",
-		"sqlite3": "3.0.*",
-		"mongodb": "1.4.*",
-		"underscore": "*"
-	},
-	"devDependencies": {
-		"chai": "~1.4.2",
-		"mocha": "*"
-	},
-	"main" : "./",
-	"engines": {
-		"node": "*"
-	}
+  "name": "node-querybuilder",
+  "version": "0.9.1",
+  "author": "Kyle Farris <kyle@chomponllc.com>",
+  "description": "Modeled after Codeigniter's QueryBuilder. Build and execute queries in a safe and database-agnostic way.",
+  "keywords": "nodejs, node, mysql, active record, activerecord, querybuilder, query builder, codeigniter, postgres, mssql, mongo, sqlite, translator",
+  "scripts": {
+    "test": "make test"
+  },
+  "homepage": "http://kylefarris.github.io/node-querybuilder/",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:kylefarris/node-querybuilder.git"
+  },
+  "contributors": [
+    "Martin Tajur <martin@tajur.ee>",
+    "Daniel Bretoi <daniel@bretoi.com>",
+    "Daehyub Kim <lateau@gmail.com>"
+  ],
+  "dependencies": {
+    "mssql": "1.3.*",
+    "pg": "4.2.*",
+    "mysql": "2.5.*",
+    "sqlite3": "3.0.*",
+    "mongodb": "1.4.*",
+    "underscore": "*"
+  },
+  "devDependencies": {
+    "chai": "~1.4.2",
+    "mocha": "*"
+  },
+  "main": "./",
+  "engines": {
+    "node": "*"
+  }
 }
