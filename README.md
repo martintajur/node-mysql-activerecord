@@ -40,17 +40,17 @@ Table of Contents
 	* [Execution Methods](#execution-methods)
 	* [Other Library-Specific Methods](#other-library-specific-methods)
 * [Contribute](#contribute)
- 
+
 Database Drivers
 ================
 
 Currently Written:
 ------------------
 * MySQL / MariaDB
- 
+
 Coming Soon:
 ------------
- 
+
 * Postgres
 * Microsoft SQL Server
 * Oracle
@@ -88,10 +88,10 @@ qb.select('name', 'position')
 	.where({type: 'rocky', 'diameter <': 12000})
 	.get('planets', function(err,response) {
 		if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
-		
+
 		// SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
 		console.log("Query Ran: " + qb.last_query());
-		
+
 		// [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
 		console.dir(response);
 	}
@@ -185,7 +185,7 @@ Choosing the Connection Type
 This library currently supports 3 connection methods:
 
 * ***single*** (default)
-	* This will use the driver's basic single connection capabilities. All connections to your app will use this single database connection. This is usually less than ideal for most web applications but might be quite suitable for command line scripts and the like. 
+	* This will use the driver's basic single connection capabilities. All connections to your app will use this single database connection. This is usually less than ideal for most web applications but might be quite suitable for command line scripts and the like.
 	* **All drivers must have this connection type**.
 * ***pool***
 	* This will utilize the driver's connection pooling capabilities if it is offered. Connection pooling allows your application to pull from a pool of connections that were created by the driver. Typically the connections will be handed out to requesting methods in a round-robin fashion. This is ideal for a web application.
@@ -250,7 +250,7 @@ Chainable methods can be called as many times as you'd like in any order you lik
 This method is used to specify the fields to pull into the resultset when running SELECT-like queries.
 
 | Parameter	| Type			| Default	| Description 									|
-| :--------	| :-------- 	| :-----	| :-------------------------------------------- | 
+| :--------	| :-------- 	| :-----	| :-------------------------------------------- |
 | fields 	| String/Array	| Required	| The fields in which to grab from the database |
 | escape 	| Boolean		| true		| TRUE: auto-escape fields; FALSE: don't escape |
 
@@ -380,7 +380,7 @@ qb.select_max('age', 'max_age').get('users',callback);
 This SQL command is used to find the average value for a specific field within a resultset.
 
 | Parameter	| Type		| Default	| Description							|
-| :--------	| :-------- | :-----	| :-------------------------------------| 
+| :--------	| :-------- | :-----	| :-------------------------------------|
 | field		| String	| Required	| The field to get the average value of |
 | alias		| String	| NULL		| Optional alias to rename field		|
 
@@ -453,7 +453,7 @@ qb.select('id,name,description').from('users').get(callback);
 ***Comma-Seperated***
 
 ```javascript
-// SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name` 
+// SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name`
 // FROM (`users` `u`, `groups` `g`)
 qb.select('u.id,u.name,u,description,g.name as group_name')
 	.from('users u, groups g')
@@ -463,7 +463,7 @@ qb.select('u.id,u.name,u,description,g.name as group_name')
 ***Array of Tables***
 
 ```javascript
-// SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name` 
+// SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name`
 // FROM (`users` `u`, `groups` `g`)
 qb.select('u.id,u.name,u,description,g.name as group_name')
 	.from(['users u', 'groups g'])
@@ -509,7 +509,7 @@ The table/view and the relationship of it to the main table/view (see: `.from()`
 If no direction is specified, "left" will be used:
 
 ```javascript
-// SELECT `u`.`id`, `u`.`name`, `t`.`name` AS `type_name` 
+// SELECT `u`.`id`, `u`.`name`, `t`.`name` AS `type_name`
 // FROM `users` `u`
 // LEFT JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
 qb.select('u.id,u.name,t.name as type_name').from('users u')
@@ -520,7 +520,7 @@ qb.select('u.id,u.name,t.name as type_name').from('users u')
 You may specify a direction:
 
 ```javascript
-// SELECT `u`.`id`, `u`.`name`, `t`.`name` AS `type_name` 
+// SELECT `u`.`id`, `u`.`name`, `t`.`name` AS `type_name`
 // FROM `users` `u`
 // RIGHT OUTER JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
 qb.select('u.id,u.name,t.name as type_name').from('users u')
@@ -593,7 +593,7 @@ qb.select('planet').where("order <= 3 AND class = 'M'").get('planets',callback);
 You can pass a non-empty array as a value and that portion will be treated as a call to `.where_in()`:
 
 ```javascript
-// SELECT `star_system` FROM `star_systems` 
+// SELECT `star_system` FROM `star_systems`
 // WHERE `planet_count` >= 4, `star` IN('Sun', 'Betelgeuse')
 qb.select('star_system')
 	.where({'planet_count >=': 4, star: ['Sun', 'Betelgeuse'])
@@ -606,7 +606,7 @@ qb.select('star_system')
 This method functions identically to [.where()](#where) except that it joins clauses with 'OR' instead of 'AND'.
 
 ```javascript
-// SELECT `star_system` FROM `star_systems` 
+// SELECT `star_system` FROM `star_systems`
 // WHERE `star` = 'Sun' OR `star` = 'Betelgeuse'
 qb.select('star_system').where('star', 'Sun')
 	.or_where('star', 'Betelgeuse')
@@ -619,7 +619,7 @@ qb.select('star_system').where('star', 'Sun')
 This will create a "WHERE IN" statement in traditional SQL which is useful when you're trying to find rows with fields matching many different values... It will be joined with existing "WHERE" statements with 'AND'.
 
 ```javascript
-// SELECT `star_system` FROM `star_systems` 
+// SELECT `star_system` FROM `star_systems`
 // WHERE `star` IN('Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri')
 var stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
 qb.select('star_system').where_in('star',stars).get('star_systems',callback);
@@ -631,7 +631,7 @@ qb.select('star_system').where_in('star',stars).get('star_systems',callback);
 Same as `.where_in()` except the clauses are joined by 'OR'.
 
 ```javascript
-// SELECT `star_system` FROM `star_systems` 
+// SELECT `star_system` FROM `star_systems`
 // WHERE `planet_count` = 4 OR `star` IN('Sun', 'Betelgeuse')
 var stars = ['Sun', 'Betelgeuse'];
 qb.select('star_system').where('planet_count',4)
@@ -645,7 +645,7 @@ qb.select('star_system').where('planet_count',4)
 Same as `.where_in()` except this generates a "WHERE NOT IN" statement. All clauses are joined with 'AND'.
 
 ```javascript
-// SELECT `star_system` FROM `star_systems` 
+// SELECT `star_system` FROM `star_systems`
 // WHERE `star` NOT IN('Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri')
 var stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
 qb.select('star_system').where_not_in('star',stars).get('star_systems',callback);
@@ -657,7 +657,7 @@ qb.select('star_system').where_not_in('star',stars).get('star_systems',callback)
 Same as `.where_not_in()` except that clauses are joined with 'OR'.
 
 ```javascript
-// SELECT `star_system` FROM `star_systems` 
+// SELECT `star_system` FROM `star_systems`
 // WHERE `star` NOT IN('Sun', 'Betelgeuse')
 // OR `planet_count` NOT IN [2,4,6,8]
 var stars = ['Sun', 'Betelgeuse'];
@@ -719,7 +719,7 @@ qb.select('first_name').like('first_name', 'kim', 'none').get('users',callback);
 If you'd like to have multiple like clauses, you can do that by calling like multiple times:
 
 ```javascript
-// SELECT `first_name` FROM `users` 
+// SELECT `first_name` FROM `users`
 // WHERE `first_name` LIKE 'Kim%'
 // AND `middle_name` LIKE '%lyt%'
 // AND `last_name` LIKE '%arris'
@@ -733,7 +733,7 @@ qb.select('first_name')
 Or you can do it with an object of field/match pairs. If you want to pass a wildcard side, provide `null` as the second paramter and the side as the third. **Note**: All `match` values in an object will share the same wildcard side.
 
 ```javascript
-// SELECT `first_name` FROM `users` 
+// SELECT `first_name` FROM `users`
 // WHERE `first_name` LIKE '%ly'
 // AND `middle_name` LIKE '%the'
 // AND `last_name` LIKE '%is'
@@ -750,7 +750,7 @@ This is exactly the same as the `.like()` method except that the clauses are joi
 **Example**
 
 ```javascript
-// SELECT `first_name` FROM `users` 
+// SELECT `first_name` FROM `users`
 // WHERE `first_name` LIKE 'Kim%'
 // OR `middle_name` LIKE '%lyt%'
 // OR `last_name` LIKE '%arris'
@@ -769,7 +769,7 @@ This is exactly the same as the `.like()` method except that it creates "NOT LIK
 **Example**
 
 ```javascript
-// SELECT `first_name` FROM `users` 
+// SELECT `first_name` FROM `users`
 // WHERE `first_name` NOT LIKE 'A%'
 // AND `middle_name` NOT LIKE 'B%'
 // AND `last_name` NOT LIKE 'C%'
@@ -786,7 +786,7 @@ This is exactly the same as the `.not_like()` method except that the clauses are
 **Example**
 
 ```javascript
-// SELECT `first_name` FROM `users` 
+// SELECT `first_name` FROM `users`
 // WHERE `first_name` NOT LIKE 'A%'
 // OR `middle_name` NOT LIKE 'B%'
 // OR `last_name` NOT LIKE 'C%'
@@ -842,7 +842,7 @@ This method works exactly the same way as the `.where()` method works with the e
 If you just want to add a single having clause:
 
 ```javascript
-// SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
+// SELECT COUNT(*) AS `num_planets` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` = 5
 qb.group_by('id').having('num_planets',5).count('star_systems',callback);
@@ -851,7 +851,7 @@ qb.group_by('id').having('num_planets',5).count('star_systems',callback);
 If you need more complex filtering using different operators (`<, >, <=, =>, !=, <>, etc...`), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
 
 ```javascript
-// SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
+// SELECT COUNT(*) AS `num_planets` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` > 5
 qb.group_by('id').having('num_planets >',5).count('star_systems',callback);
@@ -860,7 +860,7 @@ qb.group_by('id').having('num_planets >',5).count('star_systems',callback);
 You can conveniently pass an object of key:value pairs (which can also contain custom operators):
 
 ```javascript
-// SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
+// SELECT COUNT(*) AS `num_planets` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` > 5
 qb.group_by('id').having({'num_planets >': 5}).count('star_systems',callback);
@@ -869,7 +869,7 @@ qb.group_by('id').having({'num_planets >': 5}).count('star_systems',callback);
 You can construct complex WHERE clauses manually and they will be escaped properly. *Please, for custom clauses containing subqueries, make sure you escape everything properly!* ***ALSO NOTE:*** with this method, there may be conflicts between database drivers!
 
 ```javascript
-// SELECT COUNT(*) AS `num_planets` FROM `star_systems` 
+// SELECT COUNT(*) AS `num_planets` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` > (5+2)
 qb.group_by('id').having("`num_planets` > (5+2)",null,false).count('star_systems',callback);
@@ -881,7 +881,7 @@ qb.group_by('id').having("`num_planets` > (5+2)",null,false).count('star_systems
 This method functions identically to [.having()](#having) except that it joins clauses with 'OR' instead of 'AND'.
 
 ```javascript
-// SELECT SUM(planets) AS `num_planets`, SUM(moons) AS `num_moons` FROM `star_systems` 
+// SELECT SUM(planets) AS `num_planets`, SUM(moons) AS `num_moons` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` >= 5 OR `num_moons` <= 10
 qb.group_by('id')
@@ -1063,8 +1063,8 @@ The final parameter of every execution method will be a callback function. For `
 
 | API Method(s)						| Response Format																				|
 | :--------------------------------	| :-------------------------------------------------------------------------------------------- |
-| get(), get_where()				| `[{field:value,field2:value2},{field:value, field2:value2}]`									| 
-| count()							| Integer (ex. `578`)																				| 
+| get(), get_where()				| `[{field:value,field2:value2},{field:value, field2:value2}]`									|
+| count()							| Integer (ex. `578`)																				|
 | insert(), update(), delete()		| Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`	|
 | insert_batch(), update_batch() 	| Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`	|
 
@@ -1178,17 +1178,17 @@ Just a more-complicated example for the sake of it (note: using connection pool)
 
 ```javascript
 /**
- * SELECT 
- * 	`g`.`name`, 
+ * SELECT
+ * 	`g`.`name`,
  *	`g`.`diameter`,
- *	`g`.`type_id`, 
- *	`gt`.`name` AS `type`, 
+ *	`g`.`type_id`,
+ *	`gt`.`name` AS `type`,
  *	COUNT(`s`.`id`) as `num_stars`
  * FROM `galaxies` `g`
  * LEFT JOIN `galaxy_types` `gt` ON `gt`.`id`=`g`.`type_id`
  * LEFT JOIN `stars` `s` ON `s`.`galaxy_id`=`g`.`id`
  * GROUP BY `g`.`id`
- * ORDER BY `g`.`name` ASC 
+ * ORDER BY `g`.`name` ASC
  * LIMIT 10
  **/
 qb.limit(10)
@@ -1202,11 +1202,11 @@ qb.limit(10)
 	.get(function(err, response, conn) {
 		conn.release();
 		if (err) return console.error(err);
-		
+
 		for (var i in response) {
 			var row = response[i];
-			console.log("The " + row.name + " is a " + row.diameter 
-				+ " lightyear-wide " + row.type + " galaxy with " 
+			console.log("The " + row.name + " is a " + row.diameter
+				+ " lightyear-wide " + row.type + " galaxy with "
 				+ row.num_stars + " stars.");
 		}
 	});
@@ -1310,19 +1310,19 @@ app.post('/update_account', function(req, res) {
 	var user_id = req.session.user_id;
 	var sanitize_name = function(name) { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
 	var sanitize_age = function(age)  { return age.replace(/[^0-9]+$/,'').trim(); };
-	
+
 	var data = {
 		first_name: sanitize_name(req.body.first_name),
 		last_name: sanitize_name(req.body.last_name),
 		age: sanitize_age(req.body.last_name),
 		bio: req.body.bio,
 	};
-	
+
 	pool.get_connection(function(qb) {
 		qb.update('users', data, {id:user_id}, function(err, res) {
 			qb.release();
 			if (err) return console.error(err);
-			
+
 			var page_data = {
 				prefill: data,
 			}
@@ -1383,10 +1383,10 @@ var where = {'last_updated <' : '2015-01-01'}
 
 qb.update_batch('galaxies', dataset, key, where, function(err, res) {
 	if (err) return console.error(err);
-	
-	/* 
-	 * UPDATE `galaxies` 
-	 * SET 
+
+	/*
+	 * UPDATE `galaxies`
+	 * SET
 	 * `name` = CASE
 	 * 	 WHEN `id` = 4569 THEN 'Cartwheel'
 	 * 	 WHEN `id` = 5631 THEN 'Black Eye'
@@ -1439,19 +1439,19 @@ var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/add_article', function(req, res) {
 	var user_id = req.session.user_id;
-	
+
 	var data = {
 		title: req.body.first_name,
 		body: req.body.last_name,
 		author: user_id,
 		publish_date: sanitize_age(req.body.last_name)
 	};
-	
+
 	pool.get_connection(function(qb) {
 		qb.insert('articles', data, function(err, res) {
 			qb.release();
 			if (err) return console.error(err);
-			
+
 			var page_data = {
 				article_id: res.insert_id,
 			}
@@ -1493,8 +1493,8 @@ var data = [
 
 qb.insert_batch('db_engines', data, function(err, res) {
 	if (err) throw err;
-	
-	// INSERT INTO `db_engines` (`name`, `version`) 
+
+	// INSERT INTO `db_engines` (`name`, `version`)
 	// VALUES ('MySQL', '5.5.40'), ('Mongo', '2.6.7'), ('Postgres', '8.4');
 	console.log(qb.last_query());
 });
@@ -1523,7 +1523,7 @@ Object containing information about the result of the query.
 ```javascript
 /*
  * Current Table Structure:
- * 
+ *
  * [
  *		{name: 'MySQL', version: '5.5.40', last_modified: 1423252221 },
  *		{name: 'Mongo', version: '2.6.7',  last_modified: 1423252232 },
@@ -1535,10 +1535,10 @@ var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
 qb.insert_ignore('db_engines', data, function(err, res) {
 	if (err) throw err;
 	var data = {name: 'Postgres', version: '8.4'};
-	
+
 	// INSERT INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
 	console.log(qb.last_query());
-	
+
 	// 0 (because this data already exists...)
 	console.log(res.affected_rows);
 });
@@ -1550,16 +1550,16 @@ This time we'll do it with an `on_dupe` string
 qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NOW()', function(err, res) {
 	if (err) throw err;
 	var data = {name: 'Postgres', version: '8.4'};
-	
+
 	// INSERT INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
 	console.log(qb.last_query());
-	
+
 	// 1 (because we updated the last_modified field)
 	console.log(res.affected_rows);
-	
+
 	/*
 	 * Resulting Table Structure:
-	 * 
+	 *
 	 * [
 	 *		{name: 'MySQL', version: '5.5.40', last_modified: 1423252221 },
 	 *		{name: 'Mongo', version: '2.6.7',  last_modified: 1423252232 },
@@ -1600,16 +1600,16 @@ var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/delete_comment/:id', function(req, res) {
 	var comment_id = req.params.id;
-	
+
 	pool.get_connection(function(qb) {
 		qb.get('comments', {id: id}, function(err, res) {
 			if (err) return console.error(err);
 			var article_id = res.article_id;
-			
+
 			qb.delete('comments', {id: id}, function(err, res) {
 				qb.release();
 				if (err) return console.error(err);
-				
+
 				var page_data = {
 					num_removed: res.affected_rows,
 				}
@@ -1780,7 +1780,7 @@ pool.get_connection(function(qb) {
 		(function update_user() {
 			var user = users.shift();
 			user.username = user.username.replace(/\^|/,'');
-			
+
 			qb.update('users', user, {id: user.id}, function(err, res) {
 				if (user.length > 0) {
 					setTimeout(update_user,0);
@@ -1858,7 +1858,7 @@ This can be used to excape a value using your driver's native escape method. If 
 
 **Example**
 
-```javascript 
+```javascript
 var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 var sql = 'SELECT count(*) FROM `star_systems` WHERE ' + qb.escape({planet_num: 5}) + ' LIMIT 10';
 qb.query(sql, function(err, res) {
@@ -1903,7 +1903,7 @@ var sql = qb
 	.like('username','k','after')
 	.get_compiled_select();
 
-// SELECT `id`, `username`, `first_name`, `last_name` FROM `users` WHERE `username` LIKE 'k%'	
+// SELECT `id`, `username`, `first_name`, `last_name` FROM `users` WHERE `username` LIKE 'k%'
 console.log(sql);
 ```
 
@@ -1967,7 +1967,7 @@ var sql = qb
 	.where('id',4321)
 	.set(data)
 	.get_compiled_update('users');
-	
+
 // UPDATE `users` SET `password` = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' WHERE `id` = 4321
 console.log(sql);
 ```
