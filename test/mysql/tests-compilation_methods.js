@@ -22,7 +22,7 @@ describe('get_compiled_select()', function() {
 	it('should return a SQL string', function() {
 		qb.reset_query();
 		var sql = qb.get_compiled_select('galaxies');
-		sql.should.eql('SELECT * FROM (`galaxies`)');
+		sql.should.eql('SELECT * FROM `galaxies`');
 	});
 });
 
@@ -64,6 +64,6 @@ describe('get_compiled_delete()', function() {
 	it('should return a SQL string', function() {
 		qb.reset_query();
 		var sql = qb.where('id',45).get_compiled_delete('galaxies');
-		sql.should.eql("DELETE FROM (`galaxies`) WHERE `id` = 45");
+		sql.should.eql("DELETE FROM `galaxies` WHERE `id` = 45");
 	});
 });

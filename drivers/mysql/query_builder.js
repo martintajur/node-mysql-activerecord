@@ -311,7 +311,7 @@ var QueryBuilder = function() {
         } else {
             throw new Error("You have not provided any tables, views, or store procedures for this query!!");
         }
-        sql += '(' + qb.from_array.join(', ') + ')';
+        sql += qb.from_array.join(', ');
         return sql;
     };
 

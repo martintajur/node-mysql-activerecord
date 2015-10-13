@@ -30,26 +30,26 @@ describe('count()', function() {
 	it('should create a properly-escaped SELECT query', function() {
 		qb.reset_query();
 		var sql = qb.count('galaxies');
-		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM (`galaxies`)");
+		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `galaxies`");
 	});
 	it('should include WHERE statements', function() {
 		qb.reset_query();
 		var sql = qb.where({type:'spiral'}).count('galaxies');
-		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM (`galaxies`) WHERE `type` = 'spiral'");
+		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `galaxies` WHERE `type` = 'spiral'");
 	});
 	it('should work when table/view/procedure is provided earlier in chain but not in count() method', function() {
 		qb.reset_query();
 		var sql = qb.from('galaxies').count();
-		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM (`galaxies`)");
+		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `galaxies`");
 	});
 	it('should work with multiple tables/views/stored procedures', function() {
 		qb.reset_query();
 		var sql = qb.from(['planets','galaxies']).count();
-		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM (`planets`, `galaxies`)");
+		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `planets`, `galaxies`");
 	});
 	it('should include any joins that were added in the chain', function() {
 		qb.reset_query();
 		var sql = qb.join('galaxies g','g.id=s.galaxy_id','left').count('star_systems s');
-		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM (`star_systems` `s`) LEFT JOIN `galaxies` `g` ON `g`.`id`=`s`.`galaxy_id`");
+		sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `star_systems` `s` LEFT JOIN `galaxies` `g` ON `g`.`id`=`s`.`galaxy_id`");
 	});
 });
