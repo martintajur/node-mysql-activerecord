@@ -1341,7 +1341,7 @@ qb.where('id', 42)
 	.set('email', 'email@domain.net')
 	.update(null, null, null, function(err, res) {
 		if (err) return console.error(err);
-		console.log("Updated: " + res.affected_rows + " rows);
+		console.log("Updated: " + res.affected_rows " + rows);
 	});
 ```
 
