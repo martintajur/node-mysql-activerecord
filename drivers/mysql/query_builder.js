@@ -181,7 +181,7 @@ var QueryBuilder = function() {
 
         protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
 
-        if(Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
+        if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
             var escaped_array = {};
 
             for (k in item) {
@@ -1364,21 +1364,32 @@ var QueryBuilder = function() {
         get_where: function(table, where) {
             table = table || null;
             where = where || null;
+			
+			// Check if table is either a string or array
+            if (typeof table !== 'string' && !Array.isArray(table))
+                throw new Error('You must specify a table or array of tables in the first parameter of get_where()');
+            
+			// If table is a string, make sure it's not empty
+			if (typeof table === 'string' && table.trim().length <= 0)
+				throw new Error("Invalid table string specified!");
+			
+			// If table is array, make sure there are only strings in there and that they are non-empty strings
+			if (Array.isArray(table)) {
+				for (var v in table) {
+					if (typeof v !== 'string' || (typeof v === 'string' && v.trim().length <= 0)) {
+						throw new Error("Invalid table string specified in array of tables!");
+						break;
+					}
+				}
+			}
 
-            if (table === null || (typeof table === 'string' && table.trim().length === 0)) {
-                throw new Error('You must specify a table or tables in the first parameter of get_where()');
-            }
-            else {
-                this.from(table);
-            }
-
-            if (where === null || Object.keys(where).length === 0) {
+			this.from(table);
+           	
+            if (where === null || typeof where !== 'object' || Object.keys(where).length === 0)
                 throw new Error('You must supply an object of field:value pairs in the second parameter of get_where()');
-            }
-            else {
-                this.where(where);
-            }
-
+           	
+            this.where(where);
+            
             return compile_select(this);
         },
 

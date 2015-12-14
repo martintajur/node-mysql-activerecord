@@ -91,8 +91,12 @@ var QueryExec = function(qb, conn) {
             exec(sql,callback);
         },
 
-        insert_ignore: function(table,set,callback) {
-            var sql = qb.insert_ignore(table,set);
+        insert_ignore: function(table,set,on_dupe,callback) {
+			if (typeof on_dupe === 'function') {
+				callback = on_dupe;
+				on_dupe = null;
+			}
+			var sql = qb.insert_ignore(table,set,on_dupe);
             qb.reset_query(sql);
             exec(sql,callback);
         },
