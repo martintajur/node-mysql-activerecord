@@ -1532,9 +1532,9 @@ Object containing information about the result of the query.
  */
 
 var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+var data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, function(err, res) {
 	if (err) throw err;
-	var data = {name: 'Postgres', version: '8.4'};
 
 	// INSERT INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
 	console.log(qb.last_query());
@@ -1547,9 +1547,9 @@ qb.insert_ignore('db_engines', data, function(err, res) {
 This time we'll do it with an `on_dupe` string
 
 ```javascript
+var data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NOW()', function(err, res) {
 	if (err) throw err;
-	var data = {name: 'Postgres', version: '8.4'};
 
 	// INSERT INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
 	console.log(qb.last_query());
