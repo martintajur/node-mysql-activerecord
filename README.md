@@ -1512,7 +1512,7 @@ qb.insert_batch('db_engines', data, function(err, res) {
 | on_dupe	| String	| undefined	| (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).						|
 | callback	| Function	| Required	| What to do when the driver has responded.																				|
 
-This method is just a wrapper to the `insert()` method which passes `true` to the ignore parameter. The purpose of using `IGNORE` syntax, for the drivers that support it, is so that a row insertion will be skipped if it's an exact duplicate of another row in the database. Optionally, you can provide a 3rd paramter containing a query that will update specified keys in the case of a duplicate entry (instead of simply ignoring it).
+This method is just a wrapper to the `insert()` method which passes `true` to the ignore parameter. The purpose of using `IGNORE` syntax, for the drivers that support it, is so that a row insertion will be skipped if it's an exact duplicate of another row in the database. Optionally, you can provide a 3rd paramter containing a query that will update specified keys in the case of a duplicate entry (instead of simply ignoring it). With the third parameter, you can create an 'upsert' of sorts. Without the third parameter, it's essentially just "ignoring" errors, or, rather, converting them to simple warnings.
 
 **Type of Response Sent to Callback**
 
@@ -1536,7 +1536,7 @@ var data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, function(err, res) {
 	if (err) throw err;
 
-	// INSERT INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
+	// INSERT IGNORE INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
 	console.log(qb.last_query());
 
 	// 0 (because this data already exists...)
@@ -1551,7 +1551,7 @@ var data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NOW()', function(err, res) {
 	if (err) throw err;
 
-	// INSERT INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
+	// INSERT IGNORE INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4') ON DUPLICATE KEY UPDATE last_modified = NOW();
 	console.log(qb.last_query());
 
 	// 1 (because we updated the last_modified field)
