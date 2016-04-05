@@ -38,9 +38,10 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  * 
 **/
+var lo_assign = require('lodash.assign');
 var QueryBuilder = function(settings,driver,type) {
 	
-	this.settings = settings || {};
+	this.settings = (settings ? lo_assign({}, settings) : {});
 	this.driver = driver || 'mysql';
 	this.connection_type = type || 'single';
 	this.drivers = require('./drivers/drivers.json');
