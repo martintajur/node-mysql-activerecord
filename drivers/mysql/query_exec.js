@@ -160,7 +160,7 @@ var QueryExec = function(qb, conn) {
                         errors.push(err);
                     }
 
-                    if (sql.length > 0) {
+                    if (sqls.length > 0) {
                         setTimeout(next_batch,0);
                     } else {
                         return callback(errors, results);
