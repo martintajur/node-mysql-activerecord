@@ -1,7 +1,7 @@
 before_script: ./test/create_mock_dbs.sh
 language: node_js
 node_js:
-    - "0.10"
+    - "6.10.2"
 services: mysql
 test:
     adapter: mysql2
