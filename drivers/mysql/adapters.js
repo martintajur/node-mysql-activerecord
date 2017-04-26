@@ -1,7 +1,4 @@
 var Adapters = function(nqb) {
-
-    var _ = require('underscore');
-
     // Load MySQL Driver
     var mysql = require('mysql');
 
@@ -53,7 +50,7 @@ var Adapters = function(nqb) {
         delete nqb.settings.password
 
         // Merge any driver-specific settings into connection settings
-        that.connection_settings = _.extend(that.connection_settings, nqb.settings);
+        that.connection_settings = Object.assign(that.connection_settings, nqb.settings);
     }
 
     map_connection_settings();
@@ -110,7 +107,7 @@ var Adapters = function(nqb) {
         var qb = get_query_builder();
         var qe = get_query_exec(qb, connection);
 
-        var adapter = _.extend({
+        var adapter = Object.assign({
             connection_settings: function() {
                 return that.connection_settings;
             },
