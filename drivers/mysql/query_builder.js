@@ -1178,6 +1178,8 @@ var QueryBuilder = function() {
                 var v = key[i];
                 if (typeof v === 'undefined') continue;
 
+                if (v instanceof Date) v = v.toString();
+
                 if ((typeof v).match(/^(number|string|boolean)$/) === null && v !== null) {
                     throw new Error("set(): Invalid value provided! (provided: " + v + " (type: " + (typeof v) + ")");
                 }
@@ -1364,15 +1366,15 @@ var QueryBuilder = function() {
         get_where: function(table, where) {
             table = table || null;
             where = where || null;
-			
+
 			// Check if table is either a string or array
             if (typeof table !== 'string' && !Array.isArray(table))
                 throw new Error('You must specify a table or array of tables in the first parameter of get_where()');
-            
+
 			// If table is a string, make sure it's not empty
 			if (typeof table === 'string' && table.trim().length <= 0)
 				throw new Error("Invalid table string specified!");
-			
+
 			// If table is array, make sure there are only strings in there and that they are non-empty strings
 			if (Array.isArray(table)) {
 				for (var v in table) {
@@ -1384,12 +1386,12 @@ var QueryBuilder = function() {
 			}
 
 			this.from(table);
-           	
+
             if (where === null || typeof where !== 'object' || Object.keys(where).length === 0)
                 throw new Error('You must supply an object of field:value pairs in the second parameter of get_where()');
-           	
+
             this.where(where);
-            
+
             return compile_select(this);
         },
 

@@ -1,134 +1,116 @@
 [![Build Status](https://travis-ci.org/kylefarris/node-querybuilder.svg?branch=master)](https://travis-ci.org/kylefarris/node-querybuilder)
 
-Universal QueryBuilder for Node.js
-======================================
+# Universal QueryBuilder for Node.js
+Node-QueryBuilder is an ambitious attempt to create a kind of "universal translator" which provides programmers a consistent API to connect to and query _any_ database (traditional and NoSQL) supported by the module. The module is highly extensible and, in theory, can suppport any database provided that the driver has been written for it.
 
-Node-QueryBuilder is an ambitious attempt to create a kind of "universal translator" which provides programmers a consistent API to connect to and query *any* database (traditional and NoSQL) supported by the module. The module is highly extensible and, in theory, can suppport any database provided that the driver has been written for it.
-
-The API of this module very closely mimics Codeigniter's Active Record (now called "Query Builder") library and much of the code has been directly translated from the PHP libraries in Codeigniter to JavaScript. A lot of credit needs to go to the folks over at EllisLab (https://ellislab.com/codeigniter) and all the contributors to the Codeigniter project (of which I am one): https://github.com/EllisLab/CodeIgniter/
+The API of this module very closely mimics Codeigniter's Active Record (now called "Query Builder") library and much of the code has been directly translated from the PHP libraries in Codeigniter to JavaScript. A lot of credit needs to go to the folks over at EllisLab ([https://ellislab.com/codeigniter](https://ellislab.com/codeigniter)) and all the contributors to the Codeigniter project (of which I am one): [https://github.com/EllisLab/CodeIgniter/](https://github.com/EllisLab/CodeIgniter/)
 
 The primary benefits of this module (currently) are:
+- Ability to write queries agnostically to the database you intend to query
+- Supports all basic database commands (insert, update, delete, select, etc...)
+- Extend capabilities from the most popular native database drivers in NPM.
+- Supports method chaining
+- Automatically escapes field values and identifiers by default
+- Is fully unit tested
+- **Very thoroughly documented**
+- Allows for greater flexibility and more control over a full ORM
+- Ligher-weight than an ORM
+- Allows you to drop down to the native methods of your driver if you choose to
+- Allows for different drivers for different versions (SQLite 2 vs SQLite 3)
+- The order in which you call the methods is irrelevant except for the execution methods (get, insert, update, delete) which must be called last.
+- Can used as a learning tool/Rosetta stone
 
-* Ability to write queries agnostically to the database you intend to query
-* Supports all basic database commands (insert, update, delete, select, etc...)
-* Extend capabilities from the most popular native database drivers in NPM.
-* Supports method chaining
-* Automatically escapes field values and identifiers by default
-* Is fully unit tested
-* **Very thoroughly documented**
-* Allows for greater flexibility and more control over a full ORM
-* Ligher-weight than an ORM
-* Allows you to drop down to the native methods of your driver if you choose to
-* Allows for different drivers for different versions (SQLite 2 vs SQLite 3)
-* The order in which you call the methods is irrelevant except for the execution methods (get, insert, update, delete) which must be called last.
-* Can used as a learning tool/Rosetta stone
+# Table of Contents
+- [Database Drivers](#database-drivers)
+- [How to Install](#how-to-install)
+- [License Info](#license-info)
+- [Quick Example](#quick-example)
+- [Connecting to Your Database](#connecting-to-your-database)
+  - [Quick Reference](#quick-reference)
+  - [Standard Connection Settings](#standard-connection-settings)
+  - [Choosing the Database Type](#choosing-the-database-type)
+  - [Choosing the Connection Type](#choosing-the-connection-type)
 
-Table of Contents
-=================
+- [API Methods](#api-methods)
+  - [Chainable Methods](#chainable-methods)
+  - [Execution Methods](#execution-methods)
+  - [Other Library-Specific Methods](#other-library-specific-methods)
 
-* [Database Drivers](#database-drivers)
-* [How to Install](#how-to-install)
-* [License Info](#license-info)
-* [Quick Example](#quick-example)
-* [Connecting to Your Database](#connecting-to-your-database)
-	* [Quick Reference](#quick-reference)
-	* [Standard Connection Settings](#standard-connection-settings)
-	* [Choosing the Database Type](#choosing-the-database-type)
-	* [Choosing the Connection Type](#choosing-the-connection-type)
-* [API Methods](#api-methods)
-	* [Chainable Methods](#chainable-methods)
-	* [Execution Methods](#execution-methods)
-	* [Other Library-Specific Methods](#other-library-specific-methods)
-* [Contribute](#contribute)
+- [Contribute](#contribute)
 
-Database Drivers
-================
+# Database Drivers
+## Currently Written:
+- MySQL / MariaDB
 
-Currently Written:
-------------------
-* MySQL / MariaDB
+## Coming Soon:
+- Postgres
+- Microsoft SQL Server
+- Oracle
+- SQLite
+- MongoDB
 
-Coming Soon:
-------------
+# How to install
 
-* Postgres
-* Microsoft SQL Server
-* Oracle
-* SQLite
-* MongoDB
+```
+npm install node-querybuilder
+```
 
-How to install
-==============
-
-	npm install node-querybuilder
-
-License Info
-============
-
+# License Info
 Licensed under the GPL license and MIT:
+- [http://www.opensource.org/licenses/GPL-license.php](http://www.opensource.org/licenses/GPL-license.php)
+- [http://www.opensource.org/licenses/mit-license.php](http://www.opensource.org/licenses/mit-license.php)
 
-* http://www.opensource.org/licenses/GPL-license.php
-* http://www.opensource.org/licenses/mit-license.php
-
-Quick Example
-=============
-
+# Quick Example
 This quick example shows how to connect to and asynchronously query a MySQL database using a single connection.
 
 ```javascript
 var settings = {
-	host: 'localhost',
-	database: 'mydatabase',
-	user: 'myuser',
-	password: 'MyP@ssw0rd'
+    host: 'localhost',
+    database: 'mydatabase',
+    user: 'myuser',
+    password: 'MyP@ssw0rd'
 };
 var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
 
 qb.select('name', 'position')
-	.where({type: 'rocky', 'diameter <': 12000})
-	.get('planets', function(err,response) {
-		if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
+    .where({type: 'rocky', 'diameter <': 12000})
+    .get('planets', function(err,response) {
+        if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
 
-		// SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
-		console.log("Query Ran: " + qb.last_query());
+        // SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
+        console.log("Query Ran: " + qb.last_query());
 
-		// [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
-		console.dir(response);
-	}
+        // [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
+        console.dir(response);
+    }
 );
 ```
 
-Connecting to Your Database
-===========================
+# Connecting to Your Database
+## Quick Reference
 
-Quick Reference
----------------
+Driver                                     | Default  | Ready   | single | pool | cluster | Additional Connection Options
+:----------------------------------------- | :------- | :------ | :----- | :--- | :------ | :----------------------------------------------------------------------------------------
+[mysql](//www.npmjs.com/package/mysql)     | &#x2713; | Yes     | Yes    | Yes  | Yes     | [node-mysql connection options](https://github.com/felixge/node-mysql#connection-options)
+[mssql](//www.npmjs.com/package/mssql)     |          | No      | Yes    | ???  | ???     |
+[sqlite3](//www.npmjs.com/package/sqlite3) |          | No      | Yes    | ???  | ???     |
+[oracle](//www.npmjs.com/package/oracle)   |          | No      | Yes    | ???  | ???     |
+[postgres](//www.npmjs.com/package/pg)     |          | Pending | Yes    | Yes  | ???     |
+[mongodb](//www.npmjs.com/package/mongodb) |          | No      | Yes    | ???  | ???     |
 
-| Driver									| Default	| Ready		| single	| pool	| cluster	| Additional Connection Options								|
-| :---------------------------------------- | :------ 	| :-----	| :--------	| :----	| :----		| :--------------------------------------------------------	|
-| [mysql](//www.npmjs.com/package/mysql)	| &#x2713;	| Yes		| Yes		| Yes	| Yes		| [node-mysql connection options](https://github.com/felixge/node-mysql#connection-options)	|
-| [mssql](//www.npmjs.com/package/mssql)	|			| No		| Yes		| ???	| ???		|															|
-| [sqlite3](//www.npmjs.com/package/sqlite3)|			| No		| Yes		| ???	| ???		|															|
-| [oracle](//www.npmjs.com/package/oracle)	|			| No		| Yes		| ???	| ???		|															|
-| [postgres](//www.npmjs.com/package/pg)	|			| Pending	| Yes		| Yes	| ???		|															|
-| [mongodb](//www.npmjs.com/package/mongodb)|			| No		| Yes		| ???	| ???		|															|
-
-
-Standard Connection Settings
-----------------------------
-
+## Standard Connection Settings
 The options listed below are available for all database drivers. Additional properties may be passed if the driver of the database you are connecting to supports them. See the "Additional Connection Options" column above for a link to the a specific driver's connection options documentation.
 
-| Option		| Default 	| Optional 	| Description 									|
-| :------------	| :--------	| :--------	| :-------------------------------------------- |
-| **host**		| localhost | No		| The server you're connecting to				|
-| **user**		| NULL		| No		| The database user								|
-| **password**	| NULL		| Yes		| The database `user`'s password				|
-| **database**	| NULL		| Yes		| The database to connect to					|
-| **port**		| NULL		| Yes		| The database port to use when connecting		|
-| **pool_size**	| 10 		| Yes		| Max connections for `pool` connection type	|
-| **debug**		| false		| Yes		| If true, debug info will be place in app log	|
-| **version**	| default	| Yes		| Version of database driver to use				|
+Option        | Default   | Optional | Description
+:------------ | :-------- | :------- | :-------------------------------------------
+**host**      | localhost | No       | The server you're connecting to
+**user**      | NULL      | No       | The database user
+**password**  | NULL      | Yes      | The database `user`'s password
+**database**  | NULL      | Yes      | The database to connect to
+**port**      | NULL      | Yes      | The database port to use when connecting
+**pool_size** | 10        | Yes      | Max connections for `pool` connection type
+**debug**     | false     | Yes      | If true, debug info will be place in app log
+**version**   | default   | Yes      | Version of database driver to use
 
 The best way to store these options is in a JSON file outsite of your web root where only root and the server user can access them.
 
@@ -138,11 +120,11 @@ We'll call this `db.json`.
 
 ```javascript
 {
-	"host": "db.myserver.com",
-	"user": "myusername",
-	"password": "P@s$w0rD",
-	"database": "myDB",
-	"pool_size": 50
+    "host": "db.myserver.com",
+    "user": "myusername",
+    "password": "P@s$w0rD",
+    "database": "myDB",
+    "pool_size": 50
 }
 ```
 
@@ -160,40 +142,36 @@ Of course you can also just have a normal javascript object directly within your
 
 ```javascript
 var qb = require('node-querybuilder').QueryBuilder({
-	host: 'db.myserver.com',
-	user: 'myusername',
-	password: 'P@s$w0rD',
-	database: 'MyDB',
-	pool_size: 50
+    host: 'db.myserver.com',
+    user: 'myusername',
+    password: 'P@s$w0rD',
+    database: 'MyDB',
+    pool_size: 50
 });
 ```
 
-Choosing the Database Type
---------------------------
-
+## Choosing the Database Type
 This part is super simple. Just pass which one you'd like to use as the second paramter to the constructor (`mysql` is the default):
 
-***Example:***
+**_Example:_**
 
 ```javascript
 var qb = require('node-querybuilder').QueryBuilder(settings, 'postgres');
 ```
 
-Choosing the Connection Type
-----------------------------
-
+## Choosing the Connection Type
 This library currently supports 3 connection methods:
+- **_single_** (default)
+  - This will use the driver's basic single connection capabilities. All connections to your app will use this single database connection. This is usually less than ideal for most web applications but might be quite suitable for command line scripts and the like.
+  - **All drivers must have this connection type**.
 
-* ***single*** (default)
-	* This will use the driver's basic single connection capabilities. All connections to your app will use this single database connection. This is usually less than ideal for most web applications but might be quite suitable for command line scripts and the like.
-	* **All drivers must have this connection type**.
-* ***pool***
-	* This will utilize the driver's connection pooling capabilities if it is offered. Connection pooling allows your application to pull from a pool of connections that were created by the driver. Typically the connections will be handed out to requesting methods in a round-robin fashion. This is ideal for a web application.
-* ***cluster***
-	* When you have a cluster of servers and you want to create pools of connections to different servers to help load balance your stack, using the `cluster` connection type can come in handy. This is ideal for high-traffic web sites and applications that utilize a farm of database servers as opposed to just one.
+- **_pool_**
+  - This will utilize the driver's connection pooling capabilities if it is offered. Connection pooling allows your application to pull from a pool of connections that were created by the driver. Typically the connections will be handed out to requesting methods in a round-robin fashion. This is ideal for a web application.
 
-**Note:**
-You will specify the type of connection as the third parameter to the contructor
+- **_cluster_**
+  - When you have a cluster of servers and you want to create pools of connections to different servers to help load balance your stack, using the `cluster` connection type can come in handy. This is ideal for high-traffic web sites and applications that utilize a farm of database servers as opposed to just one.
+
+**Note:** You will specify the type of connection as the third parameter to the contructor
 
 **Example:**
 
@@ -201,68 +179,59 @@ You will specify the type of connection as the third parameter to the contructor
 var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 ```
 
+# API Methods
+**_NOTE:_** The compatibility portions of these tables are subject to change as features and drivers are written!
 
-
-
-API Methods
-===========
-
-***NOTE:*** The compatibility portions of these tables are subject to change as features and drivers are written!
-
-Chainable Methods
------------------
-
+## Chainable Methods
 Chainable methods can be called as many times as you'd like in any order you like. The final query will not be built and executed until one of the [execution methods](#execution-methods), like `get()`,  are callled. As the name implies, the methods can be chained together indefinitely but this is not required. You definitely call them individually with the same effect at execution time.
 
-| API Method							| SQL Command	| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
-| :------------------------------------	| :------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
-| [select()](#select)					| SELECT		| &#x2713;	|		|			|			|			|		|
-| [distinct()](#distinct)				| DISTINCT 		| &#x2713;	|		|			|			|			|		|
-| [select_min()](#min)					| MIN 			| &#x2713;	|		|			|			|			|		|
-| [select_max()](#max)					| MAX 			| &#x2713;	|		|			|			|			|		|
-| [select_avg()](#avg)					| AVG 			| &#x2713;	|		|			|			|			|		|
-| [select_sum()](#sum)					| SUM 			| &#x2713;	|		|			|			|			|		|
-| [from()](#from)						| FROM 			| &#x2713;	|		|			|			|			|		|
-| [join()](#join)						| JOIN			| &#x2713;	|		|			|			|			|		|
-| [where()](#where)						| WHERE 		| &#x2713;	|		|			|			|			|		|
-| [where_in()](#where_in)				| IN 			| &#x2713;	|		|			|			|			|		|
-| [where_not_in()](#where_not_in)		| WHERE			| &#x2713;	|		|			|			|			|		|
-| [or_where()](#or_where)				| WHERE			| &#x2713;	|		|			|			|			|		|
-| [or_where_in()](#or_where_in)			| WHERE			| &#x2713;	|		|			|			|			|		|
-| [or_where_not_in()](#or_where_not_in)	| WHERE			| &#x2713;	|		|			|			|			|		|
-| [like()](#like)						| LIKE			| &#x2713;	|		|			|			|			|		|
-| [or_like()](#or_like)					| LIKE			| &#x2713;	|		|			|			|			|		|
-| [or_not_like()](#or_not_like)			| LIKE			| &#x2713;	|		|			|			|			|		|
-| [not_like()](#not_like)				| LIKE			| &#x2713;	|		|			|			|			|		|
-| [group_by()](#group-by)				| GROUP BY		| &#x2713;	|		|			|			|			|		|
-| [having()](#having)					| HAVING		| &#x2713;	|		|			|			|			|		|
-| [or_having()](#or_having)				| HAVING		| &#x2713;	|		|			|			|			|		|
-| [order_by()](#order-by)				| ORDER BY		| &#x2713;	|		|			|			|			|		|
-| [limit()](#limit)						| LIMIT			| &#x2713;	|		|			|			|			|		|
-| [offset()](#offset)					| OFFSET		| &#x2713;	|		|			|			|			|		|
-| [set()](#set)							| SET			| &#x2713;	|		|			|			|			|		|
+API Method                            | SQL Command | MySQL    | MSSQL | Oracle | SQLite | Postgres | Mongo
+:------------------------------------ | :---------- | :------: | :---: | :----: | :----: | :------: | :---:
+[select()](#select)                   | SELECT      | &#x2713; |       |        |        |          |
+[distinct()](#distinct)               | DISTINCT    | &#x2713; |       |        |        |          |
+[select_min()](#min)                  | MIN         | &#x2713; |       |        |        |          |
+[select_max()](#max)                  | MAX         | &#x2713; |       |        |        |          |
+[select_avg()](#avg)                  | AVG         | &#x2713; |       |        |        |          |
+[select_sum()](#sum)                  | SUM         | &#x2713; |       |        |        |          |
+[from()](#from)                       | FROM        | &#x2713; |       |        |        |          |
+[join()](#join)                       | JOIN        | &#x2713; |       |        |        |          |
+[where()](#where)                     | WHERE       | &#x2713; |       |        |        |          |
+[where_in()](#where_in)               | IN          | &#x2713; |       |        |        |          |
+[where_not_in()](#where_not_in)       | WHERE       | &#x2713; |       |        |        |          |
+[or_where()](#or_where)               | WHERE       | &#x2713; |       |        |        |          |
+[or_where_in()](#or_where_in)         | WHERE       | &#x2713; |       |        |        |          |
+[or_where_not_in()](#or_where_not_in) | WHERE       | &#x2713; |       |        |        |          |
+[like()](#like)                       | LIKE        | &#x2713; |       |        |        |          |
+[or_like()](#or_like)                 | LIKE        | &#x2713; |       |        |        |          |
+[or_not_like()](#or_not_like)         | LIKE        | &#x2713; |       |        |        |          |
+[not_like()](#not_like)               | LIKE        | &#x2713; |       |        |        |          |
+[group_by()](#group-by)               | GROUP BY    | &#x2713; |       |        |        |          |
+[having()](#having)                   | HAVING      | &#x2713; |       |        |        |          |
+[or_having()](#or_having)             | HAVING      | &#x2713; |       |        |        |          |
+[order_by()](#order-by)               | ORDER BY    | &#x2713; |       |        |        |          |
+[limit()](#limit)                     | LIMIT       | &#x2713; |       |        |        |          |
+[offset()](#offset)                   | OFFSET      | &#x2713; |       |        |        |          |
+[set()](#set)                         | SET         | &#x2713; |       |        |        |          |
 
--------------
+--------------------------------------------------------------------------------
 
 ### SELECT
 #### .select(fields[,escape])
-
 This method is used to specify the fields to pull into the resultset when running SELECT-like queries.
 
-| Parameter	| Type			| Default	| Description 									|
-| :--------	| :-------- 	| :-----	| :-------------------------------------------- |
-| fields 	| String/Array	| Required	| The fields in which to grab from the database |
-| escape 	| Boolean		| true		| TRUE: auto-escape fields; FALSE: don't escape |
-
+Parameter | Type         | Default  | Description
+:-------- | :----------- | :------- | :--------------------------------------------
+fields    | String/Array | Required | The fields in which to grab from the database
+escape    | Boolean      | true     | TRUE: auto-escape fields; FALSE: don't escape
 
 The fields provided to this method will be automatically escaped by the database driver. The `fields` paramter can be passed in 1 of 2 ways (field names will be trimmed in either scenario):
 
-***NOTE:*** If the select method is never called before an execution method is ran, 'SELECT *' will be assumed.
+**_NOTE:_** If the select method is never called before an execution method is ran, 'SELECT *' will be assumed.
+- String with fields seperated by a comma:
+  - `.select('foo, bar, baz')`
 
-* String with fields seperated by a comma:
-	* `.select('foo, bar, baz')`
-* Array of field names
-	* `.select(['foo', 'bar', 'baz'])`
+- Array of field names
+  - `.select(['foo', 'bar', 'baz'])`
 
 **Examples**
 
@@ -302,16 +271,15 @@ You can optionally choose not to have the driver auto-escape the fieldnames (dan
 qb.select('CONCAT(first_name,' ',last_name) AS `full_name`',false);
 ```
 
-***NOTE:*** If you use this technique to add driver-specific functions, it may (and probably will) cause unexpected outcomes with other database drivers!
+**_NOTE:_** If you use this technique to add driver-specific functions, it may (and probably will) cause unexpected outcomes with other database drivers!
 
--------------
+--------------------------------------------------------------------------------
 
 ### DISTINCT
 #### .distinct()
-
 This SQL command is used to prevent duplicate rows from being returned in the resultset at the database level. It should only be used when querying data (execution methods: `.get()` & `.get_where()`) (not inserting, updating or removing). If it's provided to another execution method, it will simply be ignored.
 
-***This method takes no parameters***
+**_This method takes no parameters_**
 
 **Example**
 
@@ -320,17 +288,16 @@ This SQL command is used to prevent duplicate rows from being returned in the re
 qb.distinct().select('id,name,description').get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### MIN
 #### .select_min(field[,alias])
-
 This SQL command is used to find the minimum value for a specific field within a resultset.
 
-| Parameter	| Type		| Default	| Description							|
-| :--------	| :-------- | :-----	| :-------------------------------------|
-| field 	| String	| Required	| The field to get the minimum value of |
-| alias 	| String	| NULL 		| Optional alias to rename field		|
+Parameter | Type   | Default  | Description
+:-------- | :----- | :------- | :------------------------------------
+field     | String | Required | The field to get the minimum value of
+alias     | String | NULL     | Optional alias to rename field
 
 **Examples**
 
@@ -346,17 +313,16 @@ You can optionally include a second parameter to rename the resulting field
 qb.select_min('age', 'min_age').get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### MAX
 #### .select_max(field[,alias])
-
 This SQL command is used to find the maximum value for a specific field within a resultset.
 
-| Parameter	| Type		| Default	| Description 							|
-| :--------	| :-------- | :-----	| :-------------------------------------|
-| field		| String	| Required	| The field to get the maximum value of |
-| alias		| String	| NULL		| Optional alias to rename field		|
+Parameter | Type   | Default  | Description
+:-------- | :----- | :------- | :------------------------------------
+field     | String | Required | The field to get the maximum value of
+alias     | String | NULL     | Optional alias to rename field
 
 **Examples**
 
@@ -372,17 +338,16 @@ You can optionally include a second parameter to rename the resulting field
 qb.select_max('age', 'max_age').get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### AVG
 #### .select_avg(field[,alias])
-
 This SQL command is used to find the average value for a specific field within a resultset.
 
-| Parameter	| Type		| Default	| Description							|
-| :--------	| :-------- | :-----	| :-------------------------------------|
-| field		| String	| Required	| The field to get the average value of |
-| alias		| String	| NULL		| Optional alias to rename field		|
+Parameter | Type   | Default  | Description
+:-------- | :----- | :------- | :------------------------------------
+field     | String | Required | The field to get the average value of
+alias     | String | NULL     | Optional alias to rename field
 
 **Examples**
 
@@ -398,17 +363,16 @@ You can optionally include a second parameter to rename the resulting field
 qb.select_avg('age', 'avg_age').get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### SUM
 #### .select_sum(field[,alias])
-
 This SQL command is used to find the minimum value for a specific field within a result set.
 
-| Parameter	| Type		| Default	| Description 							|
-| :--------	| :-------- | :-----	| :------------------------------------	|
-| field		| String	| Required	| The field to get the minimum value of	|
-| alias		| String	| NULL		| Optional alias to rename field		|
+Parameter | Type   | Default  | Description
+:-------- | :----- | :------- | :------------------------------------
+field     | String | Required | The field to get the minimum value of
+alias     | String | NULL     | Optional alias to rename field
 
 **Examples**
 
@@ -424,83 +388,80 @@ You can optionally include a second parameter to rename the resulting field
 qb.select_sum('age', 'sum_age').get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### FROM
 #### .from(tables)
-
 This SQL command is used to determine which sources, available to the active connection, to obtain data from.
 
-| Parameter	| Type			| Default	| Description 									|
-| :--------	| :------------ | :--------	| :--------------------------------------------	|
-| tables	| String/Array	| Required	| Table(s), view(s), etc... to grab data from	|
+Parameter | Type         | Default  | Description
+:-------- | :----------- | :------- | :------------------------------------------
+tables    | String/Array | Required | Table(s), view(s), etc... to grab data from
 
 You can provide tables, views, or any other valid source of data in a comma-seperated list (string) or an array. When more than one data-source is provided when connected to a traditional RDMS, the tables will joined using a basic join. You can also `.from()` multiple times to get the same effect (the order in which they are called does not matter).
 
 Aliases can be provided and they will be escaped properly.
 
-***NOTE:*** You can also pass table/view names into the `.get()` and `.get_where()` methods and forego this method entirely.
+**_NOTE:_** You can also pass table/view names into the `.get()` and `.get_where()` methods and forego this method entirely.
 
 **Examples**
 
-***Basic***
+**_Basic_**
 
 ```javascript
 // SELECT `id`, `name`, `description` FROM `users`
 qb.select('id,name,description').from('users').get(callback);
 ```
 
-***Comma-Seperated***
+**_Comma-Seperated_**
 
 ```javascript
 // SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name`
 // FROM (`users` `u`, `groups` `g`)
 qb.select('u.id,u.name,u,description,g.name as group_name')
-	.from('users u, groups g')
-	.get(callback);
+    .from('users u, groups g')
+    .get(callback);
 ```
 
-***Array of Tables***
+**_Array of Tables_**
 
 ```javascript
 // SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name`
 // FROM (`users` `u`, `groups` `g`)
 qb.select('u.id,u.name,u,description,g.name as group_name')
-	.from(['users u', 'groups g'])
-	.get(callback);
+    .from(['users u', 'groups g'])
+    .get(callback);
 ```
 
-***Multiple From Calls***
+**_Multiple From Calls_**
 
 ```javascript
 // SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name`
 // FROM (`users` `u`, `groups` `g`)
 qb.from('groups g').select('u.id,u.name,u,description,g.name as group_name')
-	.from('users u')
-	.get(callback);
+    .from('users u')
+    .get(callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### JOIN
 #### .join(table,relation[,direction])
-
 This SQL command is used query multiple tables related and connected by keys and get a single resultset.
 
-| Parameter	| Type		| Default	| Description 												|
-| :--------	| :--------	| :--------	| :--------------------------------------------------------	|
-| table		| String	| Required	| The table or view to join to.								|
-| relation	| String	| Required	| The "ON" statement that relates two tables together		|
-| direction	| String	| "left"	| Direction of the join (see join types list below)			|
+Parameter | Type   | Default  | Description
+:-------- | :----- | :------- | :--------------------------------------------------
+table     | String | Required | The table or view to join to.
+relation  | String | Required | The "ON" statement that relates two tables together
+direction | String | "left"   | Direction of the join (see join types list below)
 
 **Join Types/Directions**
-
-* left
-* right
-* outer
-* inner
-* left outer
-* right outer
+- left
+- right
+- outer
+- inner
+- left outer
+- right outer
 
 The table/view and the relationship of it to the main table/view (see: `.from()`) must be specified. The specific type of join defaults to "left" if none is specified (althought it is recommened to always supply this value for readability). Multiple function calls can be made if you need several joins in one query. Aliases can (and should) be provided and they will be escaped properly.
 
@@ -513,8 +474,8 @@ If no direction is specified, "left" will be used:
 // FROM `users` `u`
 // LEFT JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
 qb.select('u.id,u.name,t.name as type_name').from('users u')
-	.join('types t', 't.id=u.type_id')
-	.get(callback);
+    .join('types t', 't.id=u.type_id')
+    .get(callback);
 ```
 
 You may specify a direction:
@@ -524,8 +485,8 @@ You may specify a direction:
 // FROM `users` `u`
 // RIGHT OUTER JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
 qb.select('u.id,u.name,t.name as type_name').from('users u')
-	.join('types t', 't.id=u.type_id', 'right outer')
-	.get(callback);
+    .join('types t', 't.id=u.type_id', 'right outer')
+    .get(callback);
 ```
 
 Multiple function calls can be made if you need several joins in one query:
@@ -537,26 +498,24 @@ Multiple function calls can be made if you need several joins in one query:
 // LEFT JOIN `locations` `l` ON `l`.`id`=`u`.`location_id`
 var select = ['u.id', 'u.name', 't.name as type', 'l.name as location'];
 qb.select(select).from('users u')
-	.join('types t', 't.id=u.type_id', 'right outer')
-	.join('locations l', 'l.id=u.location_id', 'left')
-	.get(callback);
+    .join('types t', 't.id=u.type_id', 'right outer')
+    .join('locations l', 'l.id=u.location_id', 'left')
+    .get(callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### WHERE
-
 This SQL command is used to limit the resultset based on filters.
 
-| Parameter		| Type			| Default	| Description 													|
-| :------------	| :------------	| :--------	| :------------------------------------------------------------	|
-| field/filters | String/Object	| Required	| A field name, a WHERE clause, or an object of key/value pairs |
-| value			| Mixed			| N/A		| When the first parameter is a field name, this is the value	|
-| escape		| Boolean		| TRUE		| TRUE: Escape field names and values; FALSE: No escaping		|
+Parameter     | Type          | Default  | Description
+:------------ | :------------ | :------- | :------------------------------------------------------------
+field/filters | String/Object | Required | A field name, a WHERE clause, or an object of key/value pairs
+value         | Mixed         | N/A      | When the first parameter is a field name, this is the value
+escape        | Boolean       | TRUE     | TRUE: Escape field names and values; FALSE: No escaping
 
 #### .where(field[,value[,escape]])
-
-This method can be called in many different ways depending on your style and the format of the data that you have at the time of calling it. For standard SQL, all clauses will be joined with 'AND'&mdash;if you need to join clauses by 'OR', please us `.or_where()`. By default, all values and field names passed to this function will be escaped automatically to produce safer queries. You can turn this off by passing **false** into the third parameter.
+This method can be called in many different ways depending on your style and the format of the data that you have at the time of calling it. For standard SQL, all clauses will be joined with 'AND'—if you need to join clauses by 'OR', please us `.or_where()`. By default, all values and field names passed to this function will be escaped automatically to produce safer queries. You can turn this off by passing **false** into the third parameter.
 
 If a valid field name is passed in the first parameter, you can pass an array the second parameter and the call will be treated as a [.where_in()](#where_in).
 
@@ -583,7 +542,7 @@ You can conveniently pass an object of key:value pairs (which can also contain c
 qb.select('planet').where({'order <=':3, class:'M'}).get('planets',callback);
 ```
 
-You can construct complex WHERE clauses manually and they will be escaped properly as long as there are no paranthesis within it. *Please, for custom clauses containing subqueries, make sure you escape everything properly!* ***ALSO NOTE:*** with this method, there may be conflicts between database drivers!
+You can construct complex WHERE clauses manually and they will be escaped properly as long as there are no paranthesis within it. _Please, for custom clauses containing subqueries, make sure you escape everything properly!_ **_ALSO NOTE:_** with this method, there may be conflicts between database drivers!
 
 ```javascript
 // SELECT `planet` FROM `planets` WHERE `order` <= 3 AND `class` = 'M'
@@ -596,26 +555,26 @@ You can pass a non-empty array as a value and that portion will be treated as a 
 // SELECT `star_system` FROM `star_systems`
 // WHERE `planet_count` >= 4, `star` IN('Sun', 'Betelgeuse')
 qb.select('star_system')
-	.where({'planet_count >=': 4, star: ['Sun', 'Betelgeuse'])
-	.get('star_systems',callback);
+    .where({'planet_count >=': 4, star: ['Sun', 'Betelgeuse'])
+    .get('star_systems',callback);
 ```
 
 <a name="or_where"></a>
-#### .or_where(field[,value[,escape]])
 
+#### .or_where(field[,value[,escape]])
 This method functions identically to [.where()](#where) except that it joins clauses with 'OR' instead of 'AND'.
 
 ```javascript
 // SELECT `star_system` FROM `star_systems`
 // WHERE `star` = 'Sun' OR `star` = 'Betelgeuse'
 qb.select('star_system').where('star', 'Sun')
-	.or_where('star', 'Betelgeuse')
-	.get('star_systems',callback);
+    .or_where('star', 'Betelgeuse')
+    .get('star_systems',callback);
 ```
 
 <a name="where_in"></a>
-#### .where_in(field,values[,escape])
 
+#### .where_in(field,values[,escape])
 This will create a "WHERE IN" statement in traditional SQL which is useful when you're trying to find rows with fields matching many different values... It will be joined with existing "WHERE" statements with 'AND'.
 
 ```javascript
@@ -626,8 +585,8 @@ qb.select('star_system').where_in('star',stars).get('star_systems',callback);
 ```
 
 <a name="or_where_in"></a>
-#### .or_where_in(field,values[,escape])
 
+#### .or_where_in(field,values[,escape])
 Same as `.where_in()` except the clauses are joined by 'OR'.
 
 ```javascript
@@ -635,13 +594,13 @@ Same as `.where_in()` except the clauses are joined by 'OR'.
 // WHERE `planet_count` = 4 OR `star` IN('Sun', 'Betelgeuse')
 var stars = ['Sun', 'Betelgeuse'];
 qb.select('star_system').where('planet_count',4)
-	.or_where_in('star',stars)
-	.get('star_systems',callback);
+    .or_where_in('star',stars)
+    .get('star_systems',callback);
 ```
 
 <a name="where_not_in"></a>
-#### .where_not_in(field,values[,escape])
 
+#### .where_not_in(field,values[,escape])
 Same as `.where_in()` except this generates a "WHERE NOT IN" statement. All clauses are joined with 'AND'.
 
 ```javascript
@@ -652,8 +611,8 @@ qb.select('star_system').where_not_in('star',stars).get('star_systems',callback)
 ```
 
 <a name="or_where_not_in"></a>
-#### .or_where_not_in(field,values[,escape])
 
+#### .or_where_not_in(field,values[,escape])
 Same as `.where_not_in()` except that clauses are joined with 'OR'.
 
 ```javascript
@@ -663,27 +622,25 @@ Same as `.where_not_in()` except that clauses are joined with 'OR'.
 var stars = ['Sun', 'Betelgeuse'];
 var planet_sizes = [2,4,6,8];
 qb.select('star_system')
-	.where_not_in('star',stars)
-	.or_where_not_in('planet_size',planet_sizes)
-	.get('star_systems',callback);
+    .where_not_in('star',stars)
+    .or_where_not_in('planet_size',planet_sizes)
+    .get('star_systems',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### LIKE
-
 This SQL command is used to find close matches where as the "WHERE" command is for precise matches. This is useful for doing searches.
 
-| Parameter		| Type			| Default 	| Description 										|
-| :------------	| :------------	| :--------	| :------------------------------------------------	|
-| field/filters | String/Object	| Required	| Field name or object of field/match pairs			|
-| value			| String/Number	| Required	| The value you want the field to closely match		|
-| side			| String		| 'both'	| before: '%value'; after: 'value%', both: '%value%'|
+Parameter     | Type          | Default  | Description
+:------------ | :------------ | :------- | :-------------------------------------------------
+field/filters | String/Object | Required | Field name or object of field/match pairs
+value         | String/Number | Required | The value you want the field to closely match
+side          | String        | 'both'   | before: '%value'; after: 'value%', both: '%value%'
 
 **NOTE:** You can, alternatively, use `'right'` and `'left'` in place of `'before'` and '`after`' if you prefer.
 
 #### .like(field,match[,side])
-
 All fields are escaped automatically, no exceptions. Multiple calls will be joined together with 'AND'. You can also pass an object of field/match pairs. Wildcard sides are interchangeable between before/left and after/right--choose the one that makes the most sense to you (there are examples of each below).
 
 **Examples**
@@ -724,10 +681,10 @@ If you'd like to have multiple like clauses, you can do that by calling like mul
 // AND `middle_name` LIKE '%lyt%'
 // AND `last_name` LIKE '%arris'
 qb.select('first_name')
-	.like('first_name', 'Kim', 'right')
-	.like('middle_name', 'lyt')
-	.like('last_name', 'arris', 'left')
-	.get('users',callback);
+    .like('first_name', 'Kim', 'right')
+    .like('middle_name', 'lyt')
+    .like('last_name', 'arris', 'left')
+    .get('users',callback);
 ```
 
 Or you can do it with an object of field/match pairs. If you want to pass a wildcard side, provide `null` as the second paramter and the side as the third. **Note**: All `match` values in an object will share the same wildcard side.
@@ -738,13 +695,13 @@ Or you can do it with an object of field/match pairs. If you want to pass a wild
 // AND `middle_name` LIKE '%the'
 // AND `last_name` LIKE '%is'
 qb.select('first_name')
-	.like({first_name: 'ly', middle_name: 'the', last_name: 'is'}, null, 'before')
-	.get('users',callback);
+    .like({first_name: 'ly', middle_name: 'the', last_name: 'is'}, null, 'before')
+    .get('users',callback);
 ```
 
 <a name="or_like"></a>
-#### .or_like(field,match[,side])
 
+#### .or_like(field,match[,side])
 This is exactly the same as the `.like()` method except that the clauses are joined by 'OR' not 'AND'.
 
 **Example**
@@ -755,15 +712,15 @@ This is exactly the same as the `.like()` method except that the clauses are joi
 // OR `middle_name` LIKE '%lyt%'
 // OR `last_name` LIKE '%arris'
 qb.select('first_name')
-	.or_like('first_name', 'Kim', 'right')
-	.or_like('middle_name', 'lyt')
-	.or_like('last_name', 'arris', 'left')
-	.get('users',callback);
+    .or_like('first_name', 'Kim', 'right')
+    .or_like('middle_name', 'lyt')
+    .or_like('last_name', 'arris', 'left')
+    .get('users',callback);
 ```
 
 <a name="not_like"></a>
-#### .not_like(field,match[,side])
 
+#### .not_like(field,match[,side])
 This is exactly the same as the `.like()` method except that it creates "NOT LIKE" statements.
 
 **Example**
@@ -774,13 +731,13 @@ This is exactly the same as the `.like()` method except that it creates "NOT LIK
 // AND `middle_name` NOT LIKE 'B%'
 // AND `last_name` NOT LIKE 'C%'
 qb.select('first_name')
-	.not_like({first_name: 'A', middle_name: 'B', last_name: 'C'}, null, 'after')
-	.get('users',callback);
+    .not_like({first_name: 'A', middle_name: 'B', last_name: 'C'}, null, 'after')
+    .get('users',callback);
 ```
 
 <a name="or_not_like"></a>
-#### .or_not_like(field,match[,side])
 
+#### .or_not_like(field,match[,side])
 This is exactly the same as the `.not_like()` method except that the clauses are joined by 'OR' not 'AND'.
 
 **Example**
@@ -791,20 +748,19 @@ This is exactly the same as the `.not_like()` method except that the clauses are
 // OR `middle_name` NOT LIKE 'B%'
 // OR `last_name` NOT LIKE 'C%'
 qb.select('first_name')
-	.or_not_like({first_name: 'A', middle_name: 'B', last_name: 'C'}, null, 'after')
-	.get('users',callback);
+    .or_not_like({first_name: 'A', middle_name: 'B', last_name: 'C'}, null, 'after')
+    .get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### GROUP BY
 #### .group_by(fields)
-
 This SQL command allows you to get the first (depending on ORDER) result of a group of results related by a shared value or values.
 
-| Parameter	| Type			| Default	| Description 							|
-| :--------	| :------------	| :-------	| :------------------------------------	|
-| field(s)	| String/Object	| Required	| Field name or array of field names	|
+Parameter | Type          | Default  | Description
+:-------- | :------------ | :------- | :---------------------------------
+field(s)  | String/Object | Required | Field name or array of field names
 
 **Examples**
 
@@ -822,18 +778,17 @@ Group by multiple fields:
 qb.group_by(['department_id', 'position_id']).get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### HAVING
 #### .having(field,value)
-
 This SQL command is similar to the 'WHERE' command but is used when aggregate functions are used in the "SELECT" portion of the query.
 
-| Parameter		| Type			| Default	| Description 												|
-| :--------		| :------------	| :--------	| :-----------------------------------------------------	|
-| field/filters	| String/Object	| Required	| Field name or object of field/value pairs to filter on	|
-| value			| Mixed			| NULL		| Value to filter by										|
-| escape		| Boolean		| true		| TRUE: Escape fields and values; FALSE: Don't escape.		|
+Parameter     | Type          | Default  | Description
+:------------ | :------------ | :------- | :-----------------------------------------------------
+field/filters | String/Object | Required | Field name or object of field/value pairs to filter on
+value         | Mixed         | NULL     | Value to filter by
+escape        | Boolean       | true     | TRUE: Escape fields and values; FALSE: Don't escape.
 
 This method works exactly the same way as the `.where()` method works with the exception of the fact that there is no 'HAVING' equivalent to 'WHERE IN'. See the [.where()](#where) documentation if you need additional information.
 
@@ -866,7 +821,7 @@ You can conveniently pass an object of key:value pairs (which can also contain c
 qb.group_by('id').having({'num_planets >': 5}).count('star_systems',callback);
 ```
 
-You can construct complex WHERE clauses manually and they will be escaped properly. *Please, for custom clauses containing subqueries, make sure you escape everything properly!* ***ALSO NOTE:*** with this method, there may be conflicts between database drivers!
+You can construct complex WHERE clauses manually and they will be escaped properly. _Please, for custom clauses containing subqueries, make sure you escape everything properly!_ **_ALSO NOTE:_** with this method, there may be conflicts between database drivers!
 
 ```javascript
 // SELECT COUNT(*) AS `num_planets` FROM `star_systems`
@@ -876,8 +831,8 @@ qb.group_by('id').having("`num_planets` > (5+2)",null,false).count('star_systems
 ```
 
 <a name="or_having"></a>
-#### .or_having(field[,value[,escape]])
 
+#### .or_having(field[,value[,escape]])
 This method functions identically to [.having()](#having) except that it joins clauses with 'OR' instead of 'AND'.
 
 ```javascript
@@ -885,31 +840,29 @@ This method functions identically to [.having()](#having) except that it joins c
 // GROUP BY `id`
 // HAVING `num_planets` >= 5 OR `num_moons` <= 10
 qb.group_by('id')
-	.having('num_planets >=',5)
-	.or_having('num_moons <=', 10)
-	.count('star_systems',callback);
+    .having('num_planets >=',5)
+    .or_having('num_moons <=', 10)
+    .count('star_systems',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### ORDER BY
 #### .order_by(field[,direction])
-
 This SQL command is used to order the resultset by a field or fields in descending, ascending, or random order(s).
 
-| Parameter	| Type			| Default 	| Description 																|
-| :--------	| :------------	| :--------	| :------------------------------------------------------------------------ |
-| fields	| String/Array	| Required	| Field name or an array of field names, possibly with directions as well	|
-| direction	| String		| 'asc'		| 'asc': Ascending; 'desc': Descending; 'rand'/'random'/'rand()': Random.	|
+Parameter | Type         | Default  | Description
+:-------- | :----------- | :------- | :----------------------------------------------------------------------
+fields    | String/Array | Required | Field name or an array of field names, possibly with directions as well
+direction | String       | 'asc'    | 'asc': Ascending; 'desc': Descending; 'rand'/'random'/'rand()': Random.
 
 This is a very flexible method, offerring a wide variety of ways you can call it. Variations include:
-
-* Pass the field name and ommit the direction
-* Pass the field name and the direction as the first and second parameters, respectively (most common)
-* Pass an array of fields to first paramter, direction to second parameter.
-* Pass an array of fields + directions in first parameter and ommit the second one.
-* Pass an array of fields (+ directions for some to override second parameter) to first paramter, direction to second parameter.
-* Pass a raw comma-seperated string of field + directions in first parameter and ommit the second one.
+- Pass the field name and ommit the direction
+- Pass the field name and the direction as the first and second parameters, respectively (most common)
+- Pass an array of fields to first paramter, direction to second parameter.
+- Pass an array of fields + directions in first parameter and ommit the second one.
+- Pass an array of fields (+ directions for some to override second parameter) to first paramter, direction to second parameter.
+- Pass a raw comma-seperated string of field + directions in first parameter and ommit the second one.
 
 **Examples**
 
@@ -955,17 +908,16 @@ Pass a raw comma-seperated string of field + directions in first parameter and o
 qb.order_by('galaxy_name asc, galaxy_size desc').get('galaxies',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### LIMIT
 #### .limit(limit_to,offset)
-
 This SQL command is used to limit a result set to a maximum number of results, regardless of the actual number of results that might be returned by a non-limited query.
 
-| Parameter	| Type		| Default 	| Description 											|
-| :--------	| :--------	| :--------	| :----------------------------------------------------	|
-| limit_to	| Integer	| Required	| The maximum number of results you want from the query	|
-| offset	| Integer	| NULL		| Optional offset value (where to start before limiting)|
+Parameter | Type    | Default  | Description
+:-------- | :------ | :------- | :-----------------------------------------------------
+limit_to  | Integer | Required | The maximum number of results you want from the query
+offset    | Integer | NULL     | Optional offset value (where to start before limiting)
 
 **Example**
 
@@ -981,16 +933,15 @@ You can provide an option offset value instead of calling [.offset()](#offset) s
 qb.limit(5,5).get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### OFFSET
 #### .offset(offset)
-
 This SQL command is tell the "LIMIT" where to start grabbing data. If cannot be used without a limit having been set first.
 
-| Parameter	| Type		| Default	| Description 						|
-| :--------	| :--------	| :-----	| :-----------------------------	|
-| offset	| Integer	| NULL		| where to start before limiting	|
+Parameter | Type    | Default | Description
+:-------- | :------ | :------ | :-----------------------------
+offset    | Integer | NULL    | where to start before limiting
 
 The practical uses of this method are probably miniscule since the `.limit()` method must be called in order to use it and the limit method provides a means by which to set the offset. In any case, the method is very simple: pass the result row index that you want to start from when limiting. This is most useful for pagination of search results and similar scenarios.
 
@@ -1001,18 +952,17 @@ The practical uses of this method are probably miniscule since the `.limit()` me
 qb.limit(5).offset(25).get('users',callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 ### SET
 #### .set(key[, value[, escape]])
-
 This SQL is used to set values to fields when utilizing the `update`, and `insert` methods. More than likely, you will choose use the shorthand notation provided by the aforementioned methods, but, this can be handy in some cases.
 
-| Parameter	| Type			| Default	| Description 																								|
-| :--------	| :------------	| :-----	| :--------------------------------------------------------------------------------------------------------	|
-| key		| String/Object	| Required	| The key of field to be set or an object of key:value pairs												|
-| value		| Mixed			| NULL		| Required if `key` is a string. Pass NULL if `key` is an object and you'd like to use the 3rd parameter	|
-| escape	| String/Object	| true		| If false, keys and values will not be escaped. 															|
+Parameter | Type          | Default  | Description
+:-------- | :------------ | :------- | :-----------------------------------------------------------------------------------------------------
+key       | String/Object | Required | The key of field to be set or an object of key:value pairs
+value     | Mixed         | NULL     | Required if `key` is a string. Pass NULL if `key` is an object and you'd like to use the 3rd parameter
+escape    | String/Object | true     | If false, keys and values will not be escaped.
 
 **Examples**
 
@@ -1031,63 +981,59 @@ var birthday = new Date(1986, 7, 5, 8, 15, 23);
 qb.set({birthday: birthday, anniversary: '2010-05-15'}).update('users', callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
-Execution Methods
------------------
+## Execution Methods
 
-| API Method						| SQL Command	| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
-| :--------------------------------	| :------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
-| [query()](#query)					| N/A			| &#x2713;	|		|			|			|			|		|
-| [get()](#get)						| N/A			| &#x2713;	|		|			|			|			|		|
-| [get_where()](#get_where)			| N/A			| &#x2713;	|		|			|			|			|		|
-| [count()](#count)					| COUNT			| &#x2713;	|		|			|			|			|		|
-| [update()](#update)				| UPDATE 		| &#x2713;	|		|			|			|			|		|
-| [update_batch()](#update_batch)	| N/A			| &#x2713;	|		|			|			|			|		|
-| [insert()](#insert)				| INSERT 		| &#x2713;	|		|			|			|			|		|
-| [insert_batch()](#insert_batch)	| N/A			| &#x2713;	|		|			|			|			|		|
-| [insert_ignore()](#insert-ignore)	| INSERT IGNORE	| &#x2713;	|		|			|			|			|		|
-| [delete()](#delete)				| DELETE		| &#x2713;	|		|			|			|			|		|
-| [truncate()](#truncate)			| TRUNCATE		| &#x2713;	|		|			|			|			|		|
-| [empty_table()](#empty_table)		| DELETE		| &#x2713;	|		|			|			|			|		|
+API Method                        | SQL Command   | MySQL    | MSSQL | Oracle | SQLite | Postgres | Mongo
+:-------------------------------- | :------------ | :------: | :---: | :----: | :----: | :------: | :---:
+[query()](#query)                 | N/A           | &#x2713; |       |        |        |          |
+[get()](#get)                     | N/A           | &#x2713; |       |        |        |          |
+[get_where()](#get_where)         | N/A           | &#x2713; |       |        |        |          |
+[count()](#count)                 | COUNT         | &#x2713; |       |        |        |          |
+[update()](#update)               | UPDATE        | &#x2713; |       |        |        |          |
+[update_batch()](#update_batch)   | N/A           | &#x2713; |       |        |        |          |
+[insert()](#insert)               | INSERT        | &#x2713; |       |        |        |          |
+[insert_batch()](#insert_batch)   | N/A           | &#x2713; |       |        |        |          |
+[insert_ignore()](#insert-ignore) | INSERT IGNORE | &#x2713; |       |        |        |          |
+[delete()](#delete)               | DELETE        | &#x2713; |       |        |        |          |
+[truncate()](#truncate)           | TRUNCATE      | &#x2713; |       |        |        |          |
+[empty_table()](#empty_table)     | DELETE        | &#x2713; |       |        |        |          |
 
 ### What are "Execution Methods"??
-
 Execution methods are the end-of-chain methods in the QueryBuilder library. Once these methods are called, all the chainable methods you've called up until this point will be compiled into a query string and sent to the driver's `query()` method. At this point, the QueryBuilder will be reset and ready to build a new query. The database driver will respond with results depending on the type of query being executed or with an error message. Both (if provided) will be supplied to the callback function.
 
 ### Handling Error Messages and Results
-
 The final parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
 
 ### Response Format Examples
 
-| API Method(s)						| Response Format																				|
-| :--------------------------------	| :-------------------------------------------------------------------------------------------- |
-| get(), get_where()				| `[{field:value,field2:value2},{field:value, field2:value2}]`									|
-| count()							| Integer (ex. `578`)																				|
-| insert(), update(), delete()		| Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`	|
-| insert_batch(), update_batch() 	| Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`	|
-
+API Method(s)                  | Response Format
+:----------------------------- | :-----------------------------------------------------------------------------------------
+get(), get_where()             | `[{field:value,field2:value2},{field:value, field2:value2}]`
+count()                        | Integer (ex. `578`)
+insert(), update(), delete()   | Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`
+insert_batch(), update_batch() | Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`
 
 #### Callback Example
 
 ```javascript
 var callback =  function(err, response) {
-	qb.release();
-	if (err) {
-		console.error(err);
-	}
-	else {
-		for (var i in response) {
-			var row = response[i];
-			/*
-				Do something with each row...
-			*/
-		}
-	}
+    qb.release();
+    if (err) {
+        console.error(err);
+    }
+    else {
+        for (var i in response) {
+            var row = response[i];
+            /*
+                Do something with each row...
+            */
+        }
+    }
 };
 pool.get_connection(function(qb) {
-	qb.get('foo',callback);
+    qb.get('foo',callback);
 });
 ```
 
@@ -1098,35 +1044,36 @@ var pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
 var data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
 
 pool.get_connection(function(qb) {
-	qb.insert('employees', data, function(err, res) {
-		if (err) {
-			console.error(err);
-		}
-		else {
-			if (res.affected_rows > 0) {
-				var insert_id = res.insert_id;
-				qb.get_where('employees', {id: insert_id}, function(err, res) {
-					qb.release();
-					console.dir(res);
-				});
-			}
-			else {
-				console.error("New user was not added to database!");
-			}
-		}
-	});
+    qb.insert('employees', data, function(err, res) {
+        if (err) {
+            console.error(err);
+        }
+        else {
+            if (res.affected_rows > 0) {
+                var insert_id = res.insert_id;
+                qb.get_where('employees', {id: insert_id}, function(err, res) {
+                    qb.release();
+                    console.dir(res);
+                });
+            }
+            else {
+                console.error("New user was not added to database!");
+            }
+        }
+    });
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="query"></a>
+
 ### .query(query_string,callback)
 
-| Parameter		| Type		| Default	| Description													|
-| :--------		| :--------	| :-----	| :------------------------------------------------------------	|
-| query_string	| String	| Required	| Query to send directly to your database driver				|
-| callback		| Function	| Required	| What to do when the driver has responded						|
+Parameter    | Type     | Default  | Description
+:----------- | :------- | :------- | :---------------------------------------------
+query_string | String   | Required | Query to send directly to your database driver
+callback     | Function | Required | What to do when the driver has responded
 
 *****This method bypasses the entire QueryBuilder portion of this module***** is simply uses your database driver's native querying method. You should be cautious when using this as none of this module's security and escaping functionality will be utilized.
 
@@ -1136,21 +1083,22 @@ There are scenarios when using this method may be required; for instance, if you
 
 ```javascript
 var sql = qb.select(['f.foo', 'b.bar'])
-	.from('foo f')
-	.join('bar b', 'b.foo_id=f.id', 'left')
-	.get_compiled_select();
+    .from('foo f')
+    .join('bar b', 'b.foo_id=f.id', 'left')
+    .get_compiled_select();
 qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="get"></a>
+
 ### .get([table,]callback)
 
-| Parameter	| Type		| Default	| Description														|
-| :--------	| :--------	| :-----	| :---------------------------------------------------------------- |
-| table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.		|
-| callback	| Function	| Required	| What to do when the driver has responded							|
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :------------------------------------------------------------
+table     | String   | undefined | (optional) Used to avoid having to call `.from()` seperately.
+callback  | Function | Required  | What to do when the driver has responded
 
 This method is used when running queries that might respond with rows of data (namely, "SELECT" statements...). You can pass a table name as the first parameter to avoid having to call [.from()](#from) seperately. If the table name is omitted, and the first paramter is a callback function, there will be no need to pass a callback function into the second parameter.
 
@@ -1179,11 +1127,11 @@ Just a more-complicated example for the sake of it (note: using connection pool)
 ```javascript
 /**
  * SELECT
- * 	`g`.`name`,
- *	`g`.`diameter`,
- *	`g`.`type_id`,
- *	`gt`.`name` AS `type`,
- *	COUNT(`s`.`id`) as `num_stars`
+ *     `g`.`name`,
+ *    `g`.`diameter`,
+ *    `g`.`type_id`,
+ *    `gt`.`name` AS `type`,
+ *    COUNT(`s`.`id`) as `num_stars`
  * FROM `galaxies` `g`
  * LEFT JOIN `galaxy_types` `gt` ON `gt`.`id`=`g`.`type_id`
  * LEFT JOIN `stars` `s` ON `s`.`galaxy_id`=`g`.`id`
@@ -1192,38 +1140,39 @@ Just a more-complicated example for the sake of it (note: using connection pool)
  * LIMIT 10
  **/
 qb.limit(10)
-	.select(['g.name', 'g.diameter', 'gt.name as type'])
-	.select('COUNT(`s`.`id`) as `num_stars`',null,false)
-	.from('galaxies g')
-	.join('galaxy_types gt', 'gt.id=g.type_id', 'left')
-	.join('stars s', 's.galaxy_id=g.id', 'left')
-	.group_by('g.id')
-	.order_by('g.name', 'asc')
-	.get(function(err, response, conn) {
-		conn.release();
-		if (err) return console.error(err);
+    .select(['g.name', 'g.diameter', 'gt.name as type'])
+    .select('COUNT(`s`.`id`) as `num_stars`',null,false)
+    .from('galaxies g')
+    .join('galaxy_types gt', 'gt.id=g.type_id', 'left')
+    .join('stars s', 's.galaxy_id=g.id', 'left')
+    .group_by('g.id')
+    .order_by('g.name', 'asc')
+    .get(function(err, response, conn) {
+        conn.release();
+        if (err) return console.error(err);
 
-		for (var i in response) {
-			var row = response[i];
-			console.log("The " + row.name + " is a " + row.diameter
-				+ " lightyear-wide " + row.type + " galaxy with "
-				+ row.num_stars + " stars.");
-		}
-	});
+        for (var i in response) {
+            var row = response[i];
+            console.log("The " + row.name + " is a " + row.diameter
+                + " lightyear-wide " + row.type + " galaxy with "
+                + row.num_stars + " stars.");
+        }
+    });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="get_where"></a>
+
 ### .get_where(table,where,callback)
 
-| Parameter	| Type				| Default	| Description													|
-| :--------	| :----------------	| :-------- | :------------------------------------------------------------ |
-| table		| String or Array	| Required	| Used to avoid having to call `.from()` seperately.			|
-| where		| Object			| Required	| Used to avoid having to call `.where()` seperately			|
-| callback	| Function			| Required	| What to do when the driver has responded.						|
+Parameter | Type            | Default  | Description
+:-------- | :-------------- | :------- | :-------------------------------------------------
+table     | String or Array | Required | Used to avoid having to call `.from()` seperately.
+where     | Object          | Required | Used to avoid having to call `.where()` seperately
+callback  | Function        | Required | What to do when the driver has responded.
 
-This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` seperately).  The other difference is that *all* parameters are required and they must be in the proper order.
+This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` seperately).  The other difference is that _all_ parameters are required and they must be in the proper order.
 
 **Type of Response Sent to Callback**
 
@@ -1238,22 +1187,23 @@ Basic example:
 qb.get_where('galaxies', {'num_stars >': 100000000}, callback);
 ```
 
-You can still provide other where statements if you want&mdash;they'll all work hapilly together:
+You can still provide other where statements if you want—they'll all work hapilly together:
 
 ```javascript
 // SELECT * FROM `galaxies` WHERE `num_stars` > 100000000 AND `galaxy_type_id` = 3
 qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, callback);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="count"></a>
+
 ### .count([table,]callback)
 
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| undefined	| (optional) Used to avoid having to call `.from()` seperately.	|
-| callback	| Function	| Required	| What to do when the driver has responded.						|
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :------------------------------------------------------------
+table     | String   | undefined | (optional) Used to avoid having to call `.from()` seperately.
+callback  | Function | Required  | What to do when the driver has responded.
 
 This method is used to determine the total number of results that a query would return without actually returning the entire resultset back to this module. Obviously, you could simply execute the same query with `.get()` and then check the `length` property of the response array, but, that would take significantly more time and memory for very large resultsets.
 
@@ -1269,22 +1219,23 @@ Integer
 // SELECT COUNT(*) AS `numrows` FROM `galaxies` WHERE `type` = 3
 var type = 3;
 qb.where('type',type).count('galaxies', function(err, count) {
-	if (err) return console.error(err);
-	console.log("There are " + numrows + " Type " + type + " galaxies in the Universe.");
+    if (err) return console.error(err);
+    console.log("There are " + numrows + " Type " + type + " galaxies in the Universe.");
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="update"></a>
+
 ### .update(table,data[,where],callback)
 
-| Parameter	| Type		| Default	| Description																							|
-| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
-| table		| String	| null		| (suggested) The table/collection you'd like to update													|
-| data		| Object	| null		| (suggested) The data to update (ex. `{field: value}`)													|
-| where		| Object	| null		| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
-| callback	| Function	| Required	| What to do when the driver has responded.																|
+Parameter | Type     | Default  | Description
+:-------- | :------- | :------- | :----------------------------------------------------------------------------------------------------
+table     | String   | null     | (suggested) The table/collection you'd like to update
+data      | Object   | null     | (suggested) The data to update (ex. `{field: value}`)
+where     | Object   | null     | (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.
+callback  | Function | Required | What to do when the driver has responded.
 
 This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
 
@@ -1307,28 +1258,28 @@ var settings = require('db.json');
 var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/update_account', function(req, res) {
-	var user_id = req.session.user_id;
-	var sanitize_name = function(name) { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
-	var sanitize_age = function(age)  { return age.replace(/[^0-9]+$/,'').trim(); };
+    var user_id = req.session.user_id;
+    var sanitize_name = function(name) { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
+    var sanitize_age = function(age)  { return age.replace(/[^0-9]+$/,'').trim(); };
 
-	var data = {
-		first_name: sanitize_name(req.body.first_name),
-		last_name: sanitize_name(req.body.last_name),
-		age: sanitize_age(req.body.last_name),
-		bio: req.body.bio,
-	};
+    var data = {
+        first_name: sanitize_name(req.body.first_name),
+        last_name: sanitize_name(req.body.last_name),
+        age: sanitize_age(req.body.last_name),
+        bio: req.body.bio,
+    };
 
-	pool.get_connection(function(qb) {
-		qb.update('users', data, {id:user_id}, function(err, res) {
-			qb.release();
-			if (err) return console.error(err);
+    pool.get_connection(function(qb) {
+        qb.update('users', data, {id:user_id}, function(err, res) {
+            qb.release();
+            if (err) return console.error(err);
 
-			var page_data = {
-				prefill: data,
-			}
-			return res.render('/account_updated', page_data);
-		});
-	});
+            var page_data = {
+                prefill: data,
+            }
+            return res.render('/account_updated', page_data);
+        });
+    });
 });
 ```
 
@@ -1337,30 +1288,31 @@ Here's another (more-direct) example where one decided to supply the table, data
 ```javascript
 var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
 qb.where('id', 42)
-	.from('users')
-	.set('email', 'email@domain.net')
-	.update(null, null, null, function(err, res) {
-		if (err) return console.error(err);
-		console.log("Updated: " + res.affected_rows + " rows");
-	});
+    .from('users')
+    .set('email', 'email@domain.net')
+    .update(null, null, null, function(err, res) {
+        if (err) return console.error(err);
+        console.log("Updated: " + res.affected_rows + " rows");
+    });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="update_batch"></a>
+
 ### .update_batch(table,dataset,index[,where],callback)
 
-| Parameter	| Type		| Default	| Description																							|
-| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to insert into														|
-| dataset	| Array		| Required	| An array of data (rows) to update (ex. `[{id: 3, field: value}, {id: 4, field: val}]`)				|
-| index		| String	| Required	| Name of the key in each data object that represents a `where` clause. 								|
-| where		| Object	| NULL		| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
-| callback	| Function	| Required	| What to do when the driver has responded.																|
+Parameter | Type     | Default  | Description
+:-------- | :------- | :------- | :----------------------------------------------------------------------------------------------------
+table     | String   | Required | The table/collection you'd like to insert into
+dataset   | Array    | Required | An array of data (rows) to update (ex. `[{id: 3, field: value}, {id: 4, field: val}]`)
+index     | String   | Required | Name of the key in each data object that represents a `where` clause.
+where     | Object   | NULL     | (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.
+callback  | Function | Required | What to do when the driver has responded.
 
 This method is a somewhat-complex one and, when using transactional databases, a bit pointless. Nevertheless, this will allow you to update a batch of rows with one query which, in theory, should be faster than running multiple update queries.
 
-The important thing to understand is that there are, essentially, *two* `where` clause portions with this method: a local one, and a global one. The `index` you specify in the 3rd parameter represents the name of the key in each data object of the dataset that will act as the local `where` clause for that particular row to be updated. That row, however, will only be updated if the global where clause(s) (4th param) have been satisfied as well.
+The important thing to understand is that there are, essentially, _two_ `where` clause portions with this method: a local one, and a global one. The `index` you specify in the 3rd parameter represents the name of the key in each data object of the dataset that will act as the local `where` clause for that particular row to be updated. That row, however, will only be updated if the global where clause(s) (4th param) have been satisfied as well.
 
 **NOTE:** This method will create batches of up to 100 rows at a time. So, if you have 250 rows to update, this will make 3 queries to your database.
 
@@ -1374,52 +1326,53 @@ var key = 'id';
 
 // All objects in this dataset must have an id key
 var dataset = [
-	{id: 4569, name: 'Cartwheel', constellation: 'Sculptor'},
-	{id: 5631, name: 'Black Eye', constellation: 'Coma Berenices'},
-	{id: 1238, name: 'Sombrero',  constellation: 'Virgo'}
+    {id: 4569, name: 'Cartwheel', constellation: 'Sculptor'},
+    {id: 5631, name: 'Black Eye', constellation: 'Coma Berenices'},
+    {id: 1238, name: 'Sombrero',  constellation: 'Virgo'}
 ];
 
 var where = {'last_updated <' : '2015-01-01'}
 
 qb.update_batch('galaxies', dataset, key, where, function(err, res) {
-	if (err) return console.error(err);
+    if (err) return console.error(err);
 
-	/*
-	 * UPDATE `galaxies`
-	 * SET
-	 * `name` = CASE
-	 * 	 WHEN `id` = 4569 THEN 'Cartwheel'
-	 * 	 WHEN `id` = 5631 THEN 'Black Eye'
-	 * 	 WHEN `id` = 1238 THEN 'Sombrero'
-	 * 	 ELSE `name`
-	 * END,
-	 * `constellation` = CASE
-	 * 	 WHEN `id` = 4569 THEN 'Sculptor'
-	 * 	 WHEN `id` = 5631 THEN 'Coma Berenices'
-	 * 	 WHEN `id` = 1238 THEN 'Virgo'
-	 * 	 ELSE `constellation`
-	 * END
-	 * WHERE `id` IN(4569, 5631, 1238)
-	 * AND `last_updated` < '2015-01-01'
-	 */
-	var last_query = qb.last_query();
+    /*
+     * UPDATE `galaxies`
+     * SET
+     * `name` = CASE
+     *      WHEN `id` = 4569 THEN 'Cartwheel'
+     *      WHEN `id` = 5631 THEN 'Black Eye'
+     *      WHEN `id` = 1238 THEN 'Sombrero'
+     *      ELSE `name`
+     * END,
+     * `constellation` = CASE
+     *      WHEN `id` = 4569 THEN 'Sculptor'
+     *      WHEN `id` = 5631 THEN 'Coma Berenices'
+     *      WHEN `id` = 1238 THEN 'Virgo'
+     *      ELSE `constellation`
+     * END
+     * WHERE `id` IN(4569, 5631, 1238)
+     * AND `last_updated` < '2015-01-01'
+     */
+    var last_query = qb.last_query();
 });
 ```
 
 As you can see, in each `CASE` statement, the `key` and it's value are being used to determine what to set the other items to. It's important to know that the `key` and it's `value` will not be updated in the batch update... they are just there to make sure we set the right values in the right place.
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="insert"></a>
+
 ### .insert(table,data[,ignore[,on_dupe]],callback)
 
-| Parameter	| Type		| Default	| Description																										|
-| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to insert into																	|
-| data		| Object	| Required	| The data to insert (ex. `{field: value}`)																			|
-| ignore	| Boolean	| false		| (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.	|
-| on_dupe	| String	| undefined	| (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).					|
-| callback	| Function	| Required	| What to do when the driver has responded.																			|
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :--------------------------------------------------------------------------------------------------------------
+table     | String   | Required  | The table/collection you'd like to insert into
+data      | Object   | Required  | The data to insert (ex. `{field: value}`)
+ignore    | Boolean  | false     | (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.
+on_dupe   | String   | undefined | (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).
+callback  | Function | Required  | What to do when the driver has responded.
 
 This method is used to insert new data into a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the ID of the newly inserted item, the affected rows (should be 1), etc...
 
@@ -1438,43 +1391,44 @@ var settings = require('db.json');
 var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/add_article', function(req, res) {
-	var user_id = req.session.user_id;
+    var user_id = req.session.user_id;
 
-	var data = {
-		title: req.body.first_name,
-		body: req.body.last_name,
-		author: user_id,
-		publish_date: sanitize_age(req.body.last_name)
-	};
+    var data = {
+        title: req.body.first_name,
+        body: req.body.last_name,
+        author: user_id,
+        publish_date: sanitize_age(req.body.last_name)
+    };
 
-	pool.get_connection(function(qb) {
-		qb.insert('articles', data, function(err, res) {
-			qb.release();
-			if (err) return console.error(err);
+    pool.get_connection(function(qb) {
+        qb.insert('articles', data, function(err, res) {
+            qb.release();
+            if (err) return console.error(err);
 
-			var page_data = {
-				article_id: res.insert_id,
-			}
-			return res.render('/article_manager', page_data);
-		});
-	});
+            var page_data = {
+                article_id: res.insert_id,
+            }
+            return res.render('/article_manager', page_data);
+        });
+    });
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="insert_batch"></a>
+
 ### .insert_batch(table,dataset[,ignore[,on_dupe]],callback)
 
-| Parameter	| Type		| Default	| Description																											|
-| :--------	| :--------	| :-----	| :-------------------------------------------------------------------------------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to delete records from.																|
-| dataset	| Array		| undefined	| An array of objects containing the data you want to insert. Pass *can* pass an empty array if you want to be silly.	|
-| ignore	| Boolean	| false		| (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.		|
-| on_dupe	| String	| undefined	| (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).						|
-| callback	| Function	| Required	| What to do when the driver has responded.																				|
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :------------------------------------------------------------------------------------------------------------------
+table     | String   | Required  | The table/collection you'd like to delete records from.
+dataset   | Array    | undefined | An array of objects containing the data you want to insert. Pass *can* pass an empty array if you want to be silly.
+ignore    | Boolean  | false     | (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.
+on_dupe   | String   | undefined | (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).
+callback  | Function | Required  | What to do when the driver has responded.
 
-The goal of this method is to speed the insertion of many rows. For instance, if you were insert 1,000 rows... Instead of making 1,000 queries to the server, you could just call `insert_batch()` and it would generate a single query to insert 1,000 rows. This is *much* more efficient and less taxing on your app and database server.
+The goal of this method is to speed the insertion of many rows. For instance, if you were insert 1,000 rows... Instead of making 1,000 queries to the server, you could just call `insert_batch()` and it would generate a single query to insert 1,000 rows. This is _much_ more efficient and less taxing on your app and database server.
 
 **Type of Response Sent to Callback**
 
@@ -1486,31 +1440,32 @@ Object containing information about the result of the query.
 var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
 
 var data = [
-	{name: 'MySQL', version: '5.5.40'},
-	{name: 'Mongo', version: '2.6.7' },
-	{name: 'Postgres', version: '8.4'}
+    {name: 'MySQL', version: '5.5.40'},
+    {name: 'Mongo', version: '2.6.7' },
+    {name: 'Postgres', version: '8.4'}
 ];
 
 qb.insert_batch('db_engines', data, function(err, res) {
-	if (err) throw err;
+    if (err) throw err;
 
-	// INSERT INTO `db_engines` (`name`, `version`)
-	// VALUES ('MySQL', '5.5.40'), ('Mongo', '2.6.7'), ('Postgres', '8.4');
-	console.log(qb.last_query());
+    // INSERT INTO `db_engines` (`name`, `version`)
+    // VALUES ('MySQL', '5.5.40'), ('Mongo', '2.6.7'), ('Postgres', '8.4');
+    console.log(qb.last_query());
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="insert_ignore"></a>
+
 ### .insert_ignore(table,data[,on_dupe],callback)
 
-| Parameter	| Type		| Default	| Description																											|
-| :--------	| :--------	| :-----	| :-------------------------------------------------------------------------------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to delete records from.																|
-| data		| Object	| undefined	| An array of objects containing the data you want to insert. Pass *can* pass an empty array if you want to be silly.	|
-| on_dupe	| String	| undefined	| (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).						|
-| callback	| Function	| Required	| What to do when the driver has responded.																				|
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :------------------------------------------------------------------------------------------------------------------
+table     | String   | Required  | The table/collection you'd like to delete records from.
+data      | Object   | undefined | An array of objects containing the data you want to insert. Pass *can* pass an empty array if you want to be silly.
+on_dupe   | String   | undefined | (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).
+callback  | Function | Required  | What to do when the driver has responded.
 
 This method is just a wrapper to the `insert()` method which passes `true` to the ignore parameter. The purpose of using `IGNORE` syntax, for the drivers that support it, is so that a row insertion will be skipped if it's an exact duplicate of another row in the database. Optionally, you can provide a 3rd paramter containing a query that will update specified keys in the case of a duplicate entry (instead of simply ignoring it). With the third parameter, you can create an 'upsert' of sorts. Without the third parameter, it's essentially just "ignoring" errors, or, rather, converting them to simple warnings.
 
@@ -1525,22 +1480,22 @@ Object containing information about the result of the query.
  * Current Table Structure:
  *
  * [
- *		{name: 'MySQL', version: '5.5.40', last_modified: 1423252221 },
- *		{name: 'Mongo', version: '2.6.7',  last_modified: 1423252232 },
- *		{name: 'Postgres', version: '8.4', last_modified: 1423252248 }
- *	]
+ *        {name: 'MySQL', version: '5.5.40', last_modified: 1423252221 },
+ *        {name: 'Mongo', version: '2.6.7',  last_modified: 1423252232 },
+ *        {name: 'Postgres', version: '8.4', last_modified: 1423252248 }
+ *    ]
  */
 
 var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
 var data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, function(err, res) {
-	if (err) throw err;
+    if (err) throw err;
 
-	// INSERT IGNORE INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
-	console.log(qb.last_query());
+    // INSERT IGNORE INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
+    console.log(qb.last_query());
 
-	// 0 (because this data already exists...)
-	console.log(res.affected_rows);
+    // 0 (because this data already exists...)
+    console.log(res.affected_rows);
 });
 ```
 
@@ -1549,36 +1504,37 @@ This time we'll do it with an `on_dupe` string
 ```javascript
 var data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NOW()', function(err, res) {
-	if (err) throw err;
+    if (err) throw err;
 
-	// INSERT IGNORE INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4') ON DUPLICATE KEY UPDATE last_modified = NOW();
-	console.log(qb.last_query());
+    // INSERT IGNORE INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4') ON DUPLICATE KEY UPDATE last_modified = NOW();
+    console.log(qb.last_query());
 
-	// 1 (because we updated the last_modified field)
-	console.log(res.affected_rows);
+    // 1 (because we updated the last_modified field)
+    console.log(res.affected_rows);
 
-	/*
-	 * Resulting Table Structure:
-	 *
-	 * [
-	 *		{name: 'MySQL', version: '5.5.40', last_modified: 1423252221 },
-	 *		{name: 'Mongo', version: '2.6.7',  last_modified: 1423252232 },
-	 *		{name: 'Postgres', version: '8.4', last_modified: 1423264972 }
-	 *	]
-	 */
+    /*
+     * Resulting Table Structure:
+     *
+     * [
+     *        {name: 'MySQL', version: '5.5.40', last_modified: 1423252221 },
+     *        {name: 'Mongo', version: '2.6.7',  last_modified: 1423252232 },
+     *        {name: 'Postgres', version: '8.4', last_modified: 1423264972 }
+     *    ]
+     */
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="delete"></a>
+
 ### .delete(table,where,callback)
 
-| Parameter	| Type		| Default	| Description																							|
-| :--------	| :--------	| :-----	| :---------------------------------------------------------------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to delete records from.												|
-| where		| Object	| undefined	| (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.	|
-| callback	| Function	| Required	| What to do when the driver has responded.																|
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :----------------------------------------------------------------------------------------------------
+table     | String   | Required  | The table/collection you'd like to delete records from.
+where     | Object   | undefined | (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.
+callback  | Function | Required  | What to do when the driver has responded.
 
 This method is used to delete records from a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with the number of affected rows.
 
@@ -1599,36 +1555,37 @@ var settings = require('db.json');
 var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/delete_comment/:id', function(req, res) {
-	var comment_id = req.params.id;
+    var comment_id = req.params.id;
 
-	pool.get_connection(function(qb) {
-		qb.get('comments', {id: id}, function(err, res) {
-			if (err) return console.error(err);
-			var article_id = res.article_id;
+    pool.get_connection(function(qb) {
+        qb.get('comments', {id: id}, function(err, res) {
+            if (err) return console.error(err);
+            var article_id = res.article_id;
 
-			qb.delete('comments', {id: id}, function(err, res) {
-				qb.release();
-				if (err) return console.error(err);
+            qb.delete('comments', {id: id}, function(err, res) {
+                qb.release();
+                if (err) return console.error(err);
 
-				var page_data = {
-					num_removed: res.affected_rows,
-				}
-				return res.render('/article/' + article_id, page_data);
-			});
-		});
-	});
+                var page_data = {
+                    num_removed: res.affected_rows,
+                }
+                return res.render('/article/' + article_id, page_data);
+            });
+        });
+    });
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="truncate"></a>
+
 ### .truncate(table,callback)
 
-| Parameter	| Type		| Default	| Description									|
-| :--------	| :--------	| :-----	| :-------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to truncate.	|
-| callback	| Function	| Required	| What to do when the driver has responded.		|
+Parameter | Type     | Default  | Description
+:-------- | :------- | :------- | :-------------------------------------------
+table     | String   | Required | The table/collection you'd like to truncate.
+callback  | Function | Required | What to do when the driver has responded.
 
 For drivers that support it (MySQL), this method will utilize the `TRUNCATE` directive to empty a table of all it's data. The main difference between the `truncate()` method and the `empty_table()` method is that, when available, and when possible, truncating a table will reset your AUTO_INCREMENT counter back to zero. If you simply delete every row from a table, the next item inserted will just continue with the next highest ID from the deleted records.
 
@@ -1654,30 +1611,31 @@ var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
  */
 
 pool.get_connection(function(qb) {
-	qb.truncate('users', function(err, res) {
-		if (err) throw err;
-		qb.insert('users', {name: 'Bob'}, function(err, res) {
-			if (err) throw err;
-			qb.get_where('users', {id: res.insert_id}, function(err, res) {
-				qb.release();
-				if (err) throw err;
-				// { id: 1, name: 'Bob' } (notice ID is 1)
-				console.dir(res);
-			});
-		});
-	});
+    qb.truncate('users', function(err, res) {
+        if (err) throw err;
+        qb.insert('users', {name: 'Bob'}, function(err, res) {
+            if (err) throw err;
+            qb.get_where('users', {id: res.insert_id}, function(err, res) {
+                qb.release();
+                if (err) throw err;
+                // { id: 1, name: 'Bob' } (notice ID is 1)
+                console.dir(res);
+            });
+        });
+    });
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="empty_table"></a>
+
 ### .empty_table(table,callback)
 
-| Parameter	| Type		| Default	| Description									|
-| :--------	| :--------	| :-----	| :-------------------------------------------- |
-| table		| String	| Required	| The table/collection you'd like to truncate.	|
-| callback	| Function	| Required	| What to do when the driver has responded.		|
+Parameter | Type     | Default  | Description
+:-------- | :------- | :------- | :-------------------------------------------
+table     | String   | Required | The table/collection you'd like to truncate.
+callback  | Function | Required | What to do when the driver has responded.
 
 This method will allow you to delete all records from a table/collection.
 
@@ -1701,47 +1659,46 @@ var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
  */
 
 pool.get_connection(function(qb) {
-	qb.empty_table('users', function(err, res) {
-		if (err) throw err;
-		qb.insert('users', {name: 'Bob'}, function(err, res) {
-			if (err) throw err;
-			qb.get_where('users', {id: res.insert_id}, function(err, res) {
-				qb.release();
-				if (err) throw err;
-				// { id: 4, name: 'Bob' } (notice ID is 4)
-				console.dir(res);
-			});
-		});
-	});
+    qb.empty_table('users', function(err, res) {
+        if (err) throw err;
+        qb.insert('users', {name: 'Bob'}, function(err, res) {
+            if (err) throw err;
+            qb.get_where('users', {id: res.insert_id}, function(err, res) {
+                qb.release();
+                if (err) throw err;
+                // { id: 4, name: 'Bob' } (notice ID is 4)
+                console.dir(res);
+            });
+        });
+    });
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
-Other Library-Specifc Methods
------------------------------
-
+## Other Library-Specifc Methods
 These are methods that aren't part of the query-building chain, but, rather, methods you might call before, after, or during (but not as part of) building a query.
 
-| API Method									| MySQL		| MSSQL	| Oracle	| SQLite	| Postgres	| Mongo	|
-| :--------------------------------------------	| :-------:	| :---:	| :-------:	| :-------:	| :-------:	| :---:	|
-| [get_connection()](#get_connection)			| &#x2713;	| 		|			|			|			|		|
-| [release()](#release)							| &#x2713;	| 		|			|			|			|		|
-| [last_query()](#last_query)					| &#x2713;	| 		|			|			|			|		|
-| [escape()](#escape)							| &#x2713;	| 		|			|			|			|		|
-| [get_compiled_select()](#get_compiled_select)	| &#x2713;	| 		|			|			|			|		|
-| [get_compiled_insert()](#get_compiled_insert)	| &#x2713;	| 		|			|			|			|		|
-| [get_compiled_update()](#get_compiled_update)	| &#x2713;	| 		|			|			|			|		|
-| [get_compiled_delete()](#get_compiled_delete)	| &#x2713;	| 		|			|			|			|		|
+API Method                                    | MySQL    | MSSQL | Oracle | SQLite | Postgres | Mongo
+:-------------------------------------------- | :------: | :---: | :----: | :----: | :------: | :---:
+[get_connection()](#get_connection)           | &#x2713; |       |        |        |          |
+[release()](#release)                         | &#x2713; |       |        |        |          |
+[last_query()](#last_query)                   | &#x2713; |       |        |        |          |
+[escape()](#escape)                           | &#x2713; |       |        |        |          |
+[get_compiled_select()](#get_compiled_select) | &#x2713; |       |        |        |          |
+[get_compiled_insert()](#get_compiled_insert) | &#x2713; |       |        |        |          |
+[get_compiled_update()](#get_compiled_update) | &#x2713; |       |        |        |          |
+[get_compiled_delete()](#get_compiled_delete) | &#x2713; |       |        |        |          |
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="get_connection"></a>
+
 ### .get_connection(callback)
 
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| callback	| Function	| Required	| What to do when the connection is retrieved from the pool.	|
+Parameter | Type     | Default  | Description
+:-------- | :------- | :------- | :---------------------------------------------------------
+callback  | Function | Required | What to do when the connection is retrieved from the pool.
 
 Used to get a new connection from the connection pool or cluster pool. An instances of the QueryBuilder adapter for your specific connection will be passed to the callback. Make sure that your connection is [release](#release)d when you are done with it!
 
@@ -1752,19 +1709,19 @@ var settings = require('db.json');
 var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 pool.get_connection(function(qb) {
-	qb.limit(10).get('users', function(err, res) {
-		qb.release();
-		// Do stuff with results or err
-	});
+    qb.limit(10).get('users', function(err, res) {
+        qb.release();
+        // Do stuff with results or err
+    });
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="release"></a>
-### .release()
 
-Releases a connection back to the pool when you are done with it. Calling this is *super* important!
+### .release()
+Releases a connection back to the pool when you are done with it. Calling this is _super_ important!
 
 **Examples**
 
@@ -1775,21 +1732,21 @@ var settings = require('db.json');
 var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 pool.get_connection(function(qb) {
-	qb.like('username','|','right').get_where('users', {active: true}, function(err, res) {
-		var users = users;
-		(function update_user() {
-			var user = users.shift();
-			user.username = user.username.replace(/\^|/,'');
+    qb.like('username','|','right').get_where('users', {active: true}, function(err, res) {
+        var users = users;
+        (function update_user() {
+            var user = users.shift();
+            user.username = user.username.replace(/\^|/,'');
 
-			qb.update('users', user, {id: user.id}, function(err, res) {
-				if (user.length > 0) {
-					setTimeout(update_user,0);
-				} else {
-					qb.release();
-				}
-			});
-		})();
-	});
+            qb.update('users', user, {id: user.id}, function(err, res) {
+                if (user.length > 0) {
+                    setTimeout(update_user,0);
+                } else {
+                    qb.release();
+                }
+            });
+        })();
+    });
 });
 ```
 
@@ -1800,19 +1757,19 @@ var settings = require('db.json');
 var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 pool.get_connection(function(qb) {
-	qb.get_where('users', {username: 'foobar'}, function(err, res) {
-		qb.release();
-		if (err) throw err;
-		console.dir(res);
-	});
+    qb.get_where('users', {username: 'foobar'}, function(err, res) {
+        qb.release();
+        if (err) throw err;
+        console.dir(res);
+    });
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="last_query"></a>
-### .last_query()
 
+### .last_query()
 This is used to retrieve the query string that was most-recently executed. This MUST be called before closing the connection or releasing a connection back to the pool. This is useful for debugging what the `node-querybuilder` library is executing (or trying to execute).
 
 If you'd rather the engine not execute the query first, you can always use the appropriate [compilation methods](#compilation_methods) detailed below.
@@ -1823,38 +1780,37 @@ If you'd rather the engine not execute the query first, you can always use the a
 var settings = require('db.json');
 var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 pool.get_connection(function(qb) {
-	var id = 4531;
-	qb.get('comments', {id: id}, function(err, res) {
-		// SELECT * FROM `comments` WHERE `id` = 4531
-		console.log(qb.last_query());
-		qb.release();
-	});
+    var id = 4531;
+    qb.get('comments', {id: id}, function(err, res) {
+        // SELECT * FROM `comments` WHERE `id` = 4531
+        console.log(qb.last_query());
+        qb.release();
+    });
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="escape"></a>
+
 ### .escape(value)
 
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| value		| Mixed		| Required	| The value to escape based on your database driver				|
+Parameter | Type  | Default  | Description
+:-------- | :---- | :------- | :------------------------------------------------
+value     | Mixed | Required | The value to escape based on your database driver
 
 This can be used to excape a value using your driver's native escape method. If your driver does not have a native escape method, the value will simply be returned. This is useful for when you want to build a SQL string manually (for instance, you don't want certain items to be escaped).
 
-**What should happen:**
-*Examples given are for MySQL*
+**What should happen:** _Examples given are for MySQL_
 
-| Input Type	| Output Type	| Ex. Input			| Ex. Output					|
-| :------------	| :-----------:	| :---------------:	| :---------------------------:	|
-| String		| String		| "\n\s\x1a"		| "\\n\\s\\x1a"					|
-| Integer		| String		| 76				| '76'							|
-| Array			| String		| [1,2,3]			| '1','2',3'					|
-| Date			| String		| new Date()		| '2015-01-30 16:54:23.1856'	|
-| Buffer		| String		| new Buffer(1)		| 'X\'00\''						|
-| Object		| String		| {foo: 'bar', i: 3}| "`foo` = 'bar', `i` = 3"		|
-
+Input Type | Output Type | Ex. Input          | Ex. Output
+:--------- | :---------: | :----------------: | :------------------------:
+String     | String      | "\n\s\x1a"         | "\\n\\s\\x1a"
+Integer    | String      | 76                 | '76'
+Array      | String      | [1,2,3]            | '1','2',3'
+Date       | String      | new Date()         | '2015-01-30 16:54:23.1856'
+Buffer     | String      | new Buffer(1)      | 'X\'00\''
+Object     | String      | {foo: 'bar', i: 3} | "`foo` = 'bar', `i` = 3"
 
 **Example**
 
@@ -1862,31 +1818,31 @@ This can be used to excape a value using your driver's native escape method. If 
 var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 var sql = 'SELECT count(*) FROM `star_systems` WHERE ' + qb.escape({planet_num: 5}) + ' LIMIT 10';
 qb.query(sql, function(err, res) {
-	console.dir(res);
+    console.dir(res);
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="compilation_methods"></a>
-### SQL Compilation Methods
 
+### SQL Compilation Methods
 These methods can be used to build a query string without having to execute it. This is a fantastic option if you want to use the querybuilder to simply build queries and display the resulting string or to send the compiled query string off to a driver/engine other than the one offered by `node-querybuilder`.
 
 These are excellent educational tools and can be used like a SQL/NoSQL language rosetta stone of sorts.
 
 These methods are not asynchronous and, therefore, just return the compiled query string.
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="get_compiled_select"></a>
+
 #### .get_compiled_select(table)
+**_Alias:_** _compile_select(table)_
 
-***Alias:*** *compile_select(table)*
-
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
+Parameter | Type   | Default   | Description
+:-------- | :----- | :-------- | :----------------------------------------------------------
+table     | String | Undefined | (optional) Used to avoid having to call .from() seperately.
 
 Compiles a SELECT-like query into a properly-escaped string.
 
@@ -1898,25 +1854,25 @@ Get certain details of a user account
 var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 
 var sql = qb
-	.select(['id','username','first_name','last_name'])
-	.from('users')
-	.like('username','k','after')
-	.get_compiled_select();
+    .select(['id','username','first_name','last_name'])
+    .from('users')
+    .like('username','k','after')
+    .get_compiled_select();
 
 // SELECT `id`, `username`, `first_name`, `last_name` FROM `users` WHERE `username` LIKE 'k%'
 console.log(sql);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="get_compiled_insert"></a>
+
 #### .get_compiled_insert(table)
+**_Alias:_** _compile_insert(table)_
 
-***Alias:*** *compile_insert(table)*
-
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
+Parameter | Type   | Default   | Description
+:-------- | :----- | :-------- | :----------------------------------------------------------
+table     | String | Undefined | (optional) Used to avoid having to call .from() seperately.
 
 Compiles a INSERT-like query into a properly-escaped string.
 
@@ -1928,10 +1884,10 @@ Add a new user to a `users` table.
 var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 var crypto = require('crypto');
 var data = {
-	username: 'foobar',
-	password: crypto.createHash('sha1').update('password').digest('hex'),
-	first_name: 'Foo',
-	last_name: 'Bar'
+    username: 'foobar',
+    password: crypto.createHash('sha1').update('password').digest('hex'),
+    first_name: 'Foo',
+    last_name: 'Bar'
 };
 var sql = qb.set(data).get_compiled_insert('users');
 
@@ -1940,16 +1896,16 @@ console.log(sql);
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="get_compiled_update"></a>
+
 #### .get_compiled_update(table)
+**_Alias:_** _compile_update(table)_
 
-***Alias:*** *compile_update(table)*
-
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
+Parameter | Type   | Default   | Description
+:-------- | :----- | :-------- | :----------------------------------------------------------
+table     | String | Undefined | (optional) Used to avoid having to call .from() seperately.
 
 Compiles an UPDATE-like query into a properly-escaped string.
 
@@ -1961,27 +1917,27 @@ Update the password of a user
 var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 var crypto = require('crypto');
 var data = {
-	password: crypto.createHash('sha1').update('P@$$w0rD').digest('hex'),
+    password: crypto.createHash('sha1').update('P@$$w0rD').digest('hex'),
 };
 var sql = qb
-	.where('id',4321)
-	.set(data)
-	.get_compiled_update('users');
+    .where('id',4321)
+    .set(data)
+    .get_compiled_update('users');
 
 // UPDATE `users` SET `password` = '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8' WHERE `id` = 4321
 console.log(sql);
 ```
 
--------------
+--------------------------------------------------------------------------------
 
 <a name="get_compiled_delete"></a>
+
 #### .get_compiled_delete(table)
+**_Alias:_** _compile_delete(table)_
 
-***Alias:*** *compile_delete(table)*
-
-| Parameter	| Type		| Default	| Description													|
-| :--------	| :--------	| :-----	| :------------------------------------------------------------ |
-| table		| String	| Undefined	| (optional) Used to avoid having to call .from() seperately.	|
+Parameter | Type   | Default   | Description
+:-------- | :----- | :-------- | :----------------------------------------------------------
+table     | String | Undefined | (optional) Used to avoid having to call .from() seperately.
 
 Compiles a SELECT-like query into a properly-escaped string.
 
@@ -1998,9 +1954,7 @@ console.log(sql);
 });
 ```
 
--------------
+--------------------------------------------------------------------------------
 
-Contribute
-==========
-
+# Contribute
 Got a missing feature you'd like to use? Found a bug? Go ahead and fork this repo, build the feature and issue a pull request.
