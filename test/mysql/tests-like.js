@@ -19,7 +19,7 @@ describe('like()', function() {
 		expect(function() { qb.like(3.5); 	}, 'float provided').to.throw(Error);
 		expect(function() { qb.like([]); 	}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.like(''); 	}, 'empty string provided').to.throw(Error);
-		
+
 		expect(function() { qb.like('planet_name','ear','after'); }, 'valid string').to.not.throw(Error);
 		expect(function() { qb.like({planet_name: 'ear'}); }, 'valid object').to.not.throw(Error);
 	});
@@ -34,7 +34,7 @@ describe('like()', function() {
 		expect(function() { qb.like('planet_name',[]); 		}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.like('planet_name',NaN);		}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.like('planet_name',Infinity);}, 'empty array provided').to.throw(Error);
-		
+
 		expect(function() { qb.like('planet_name',false); 	}, 'false provided').to.not.throw(Error);
 		expect(function() { qb.like('planet_name',true); 	}, 'true provided').to.not.throw(Error);
 		expect(function() { qb.like('planet_name',3); 		}, 'integer provided').to.not.throw(Error);
@@ -54,7 +54,7 @@ describe('like()', function() {
 		expect(function() { qb.like('galaxy_name','milk',3.5); 		}, 'float provided').to.throw(Error);
 		expect(function() { qb.like('galaxy_name','milk',''); 		}, 'empty string provided').to.throw(Error);
 		expect(function() { qb.like('galaxy_name','milk','foo');	}, 'non-empty string provided').to.throw(Error);
-		
+
 		expect(function() { qb.like('galaxy_name','milk'); 			}, 'no third param provided').to.not.throw(Error);
 		expect(function() { qb.like('galaxy_name','milk','right'); 	}, 'right as third param').to.not.throw(Error);
 		expect(function() { qb.like('galaxy_name','milk','left'); 	}, 'left as third param').to.not.throw(Error);
@@ -66,7 +66,7 @@ describe('like()', function() {
 		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'after');
 		qb.where_array.should.eql(["`galaxy_name` LIKE 'milky%'"]);
-		
+
 		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'right');
 		qb.where_array.should.eql(["`galaxy_name` LIKE 'milky%'"]);
@@ -75,7 +75,7 @@ describe('like()', function() {
 		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'before');
 		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky'"]);
-		
+
 		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'left');
 		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky'"]);
@@ -84,7 +84,7 @@ describe('like()', function() {
 		qb.reset_query();
 		qb.like('galaxy_name', 'milky');
 		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'"]);
-		
+
 		qb.reset_query();
 		qb.like('galaxy_name', 'milky', 'both');
 		qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'"]);
