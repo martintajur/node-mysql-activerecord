@@ -36,3 +36,7 @@ you spot any mistakes.
 * Added public `escape()` method
 * Added funtional `update_batch()` method.
 * Added `truncate()` and `empty_table()` methods.
+
+## v0.15.0 (2017-04-27)
+
+* Fixed and documented the escape property of the `join` method.

@@ -270,7 +270,7 @@ var QueryBuilder = function() {
 
     var has_operator = function (str) {
         if(typeof str === 'string' && str.length > 0) {
-            var match = str.trim().match(/(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sIN\s*\(|\s)/i);
+            var match = str.trim().match(/(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sCASE|\sTHEN|\sWHEN|\sIN\s*\(|\s)/i);
             if(match === null) {
                 return false;
             }
@@ -832,6 +832,9 @@ var QueryBuilder = function() {
             }
             else if (!has_operator(relation)) {
                 relation = ' USING (' + (escape ? escape_identifiers(relation) : relation) + ')';
+            }
+            else if (relation && escape === false) {
+                relation = ' ON ' + relation;
             }
             else {
                 relation = ' ';

@@ -41,7 +41,7 @@ describe('join()', function() {
 	it('should allow a string (and only a string) to be passed as second parameter but only if a valid (or no) third parameter is provided', function() {
 		var invalid_2nd_param = /You must provide a valid condition to join on when providing a join direction/;
 		var invalid_direction = /Invalid join direction provided as third parameter/;
-		
+
 		expect(function() { qb.join('universe',null,'left');		}, 'null 2nd param').to.throw(Error,invalid_2nd_param);
 		expect(function() { qb.join('universe',false,'left');		}, 'false 2nd param').to.throw(Error,invalid_2nd_param);
 		expect(function() { qb.join('universe','','left');			}, 'empty string 2nd param').to.throw(Error,invalid_2nd_param);
@@ -57,7 +57,7 @@ describe('join()', function() {
 	it('should allow valid join direction to be passed in third parameter', function() {
 		// NOTE: A lot of this functionality was already tested when testing second param
 		var invalid_direction = /Invalid join direction provided as third parameter/;
-		
+
 		expect(function() { qb.join('universe','foo = bar','fake');			}, 'invalid 3rd param').to.throw(Error,invalid_direction);
 		expect(function() { qb.join('universe',null,null);					}, 'invalid 2nd and 3rd params').to.not.throw(Error);
 		expect(function() { qb.join('universe','foo = bar','');				}, 'empty third param').to.not.throw(Error);
@@ -104,5 +104,10 @@ describe('join()', function() {
 		qb.reset_query();
 		qb.join('star_system s', "s.type_id = st.id AND st.active = 1 AND st.created_on > '2014-01-01'", 'left');
 		qb.join_array.should.eql(["LEFT JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id` AND `st`.`active` = 1 AND `st`.`created_on` > '2014-01-01'"]);
+	});
+    it('should NOT escape any part of join query when asked not to', function() {
+		qb.reset_query();
+		qb.join('star_system s', "s.type_id = st.id AND st.active = 1 AND st.created_on > '2014-01-01'", 'left', false);
+		qb.join_array.should.eql(["LEFT JOIN star_system s ON s.type_id = st.id AND st.active = 1 AND st.created_on > '2014-01-01'"]);
 	});
 });

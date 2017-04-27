@@ -449,11 +449,12 @@ qb.from('groups g').select('u.id,u.name,u,description,g.name as group_name')
 #### .join(table,relation[,direction])
 This SQL command is used query multiple tables related and connected by keys and get a single resultset.
 
-Parameter | Type   | Default  | Description
-:-------- | :----- | :------- | :--------------------------------------------------
-table     | String | Required | The table or view to join to.
-relation  | String | Required | The "ON" statement that relates two tables together
-direction | String | "left"   | Direction of the join (see join types list below)
+Parameter | Type    | Default  | Description
+:-------- | :------ | :------- | :--------------------------------------------------
+table     | String  | Required | The table or view to join to.
+relation  | String  | Required | The "ON" statement that relates two tables together
+direction | String  | "left"   | Direction of the join (see join types list below)
+escape    | Boolean | true     | TRUE: Escape table name and conditions; FALSE: No escaping
 
 **Join Types/Directions**
 - left
@@ -500,6 +501,23 @@ var select = ['u.id', 'u.name', 't.name as type', 'l.name as location'];
 qb.select(select).from('users u')
     .join('types t', 't.id=u.type_id', 'right outer')
     .join('locations l', 'l.id=u.location_id', 'left')
+    .get(callback);
+```
+
+If you have a very complex condition you can choose to forego escaping (not recommended unless
+you know what you're doing). NOTE: Please make sure to escape values manually.
+
+```javascript
+// SELECT `u`.`id`, `u`.`name`, `t`.`name`  AS `type`
+// FROM `users` `u`
+// LEFT JOIN `user_meta` `um` ON
+//   CASE
+//     WHEN `u`.`id` = 4132 THEN `um`.`id` = `um`.`userId`
+//     WHEN `u`.`name` = 4132 THEN `um`.`name` = `u`.`id`
+var select = ['u.id', 'u.name', 'um.name as user_name'];
+var user_data = req.body;
+qb.select(select).from('users u')
+    .join('`user_meta` `um`', 'CASE WHEN `u`.`id` = ' + user_data.id  + ' THEN `um`.`id` = `um`.`userId` WHEN `u`.`name` = ' + user_data.id + ' THEN `um`.`name` = `u`.`id`', 'right outer', false)
     .get(callback);
 ```
 
