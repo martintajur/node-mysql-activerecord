@@ -15,13 +15,13 @@ var QueryBuilder = function() {
         type = type || 'limit';
         type = type.toLowerCase();
 
-        if ((typeof item).match(/^(string|number)$/) === null) {
+        if (!/^(string|number)$/.test(typeof item)) {
             throw new Error("Only integers or integers in the form of a string are allowed");
         }
 
         if (typeof item === 'string') {
             item = item.trim();
-            if (item.match(/^\d+$/) === null) {
+            if (!/^\d+$/.test(item)) {
                 throw new Error("The string you provided to " + type + " by contains non-integer values--this isn't allowed.");
             }
             // Force to an integer
@@ -160,7 +160,7 @@ var QueryBuilder = function() {
             }
             return item;
         }
-        else if ((typeof item === 'string' && item.match(/^\d+$/)) || item[0] === "'" || item[0] === '"' || item.indexOf('(') !== -1) {
+        else if ((typeof item === 'string' && /^\d+$/.test(item)) || item[0] === "'" || item[0] === '"' || item.indexOf('(') !== -1) {
             return item;
         }
 
@@ -216,7 +216,7 @@ var QueryBuilder = function() {
 
         // If the item has an alias declaration we remove it and set it aside.
         // Basically we remove everything to the right of the first space
-        if (item.match(/\sAS\s/ig)) {
+        if (/\sAS\s/ig.test(item)) {
             var alias_index = item.indexOf(item.match(/\sAS\s/ig)[0]);
             var alias = (protect_identifiers ? item.substr(alias_index,4) + escape_identifiers(item.slice(alias_index + 4)) : item.substr(alias_index));
             item = item.substr(0,alias_index);
@@ -270,8 +270,8 @@ var QueryBuilder = function() {
 
     var has_operator = function (str) {
         if(typeof str === 'string' && str.length > 0) {
-            var match = str.trim().match(/(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sCASE|\sTHEN|\sWHEN|\sIN\s*\(|\s)/i);
-            if(match === null) {
+            var match = /(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sCASE|\sTHEN|\sWHEN|\sIN\s*\(|\s)/i.test(str.trim());
+            if(!match) {
                 return false;
             }
         }
@@ -284,7 +284,7 @@ var QueryBuilder = function() {
 
         if (typeof str === 'boolean') {
             str = (str === false ? 0 : 1);
-        } else if (typeof str === 'number' || (typeof str === 'string' && str.match(/^\d+$/))) {
+        } else if (typeof str === 'number' || (typeof str === 'string' && /^\d+$/.test(str))) {
             str *= 1;
         } else {
             str = do_escape(str);
@@ -539,7 +539,7 @@ var QueryBuilder = function() {
 
                 // If it's a actual where clause string (with no paranthesis),
                 // not just a field name, split it into individual parts to escape it properly
-                if (key.match(/(<=|>=|<>|>|<|!=|=)/) && key.indexOf('(') === -1 && escape === true) {
+                if (/(<=|>=|<>|>|<|!=|=)/.test(key) && key.indexOf('(') === -1 && escape === true) {
                     var filters = key.split(/\s+(AND|OR)\s+/i);
                     if (filters.length > 1) {
                         var that = this;
@@ -548,7 +548,7 @@ var QueryBuilder = function() {
                             if (parsed.length >= 4) {
                                 var key = parsed[1].trim() + (parsed[2].trim() !== '=' ? ' ' + parsed[2].trim() : '');
                                 var value = parsed[3].trim().replace(/^((?:'|"){1})(.*)/, "$2").replace(/'$/,'');
-                                if (joiner === null || joiner.match(/AND/i)) {
+                                if (joiner === null || /AND/i.test(joiner)) {
                                     that.where(key, value, true);
                                 } else {
                                     that.or_where(key, value, true);
@@ -682,11 +682,8 @@ var QueryBuilder = function() {
             return this._like(field, match, 'OR ', side, ' NOT');
         },
 
-        _like: function(field, match, type, side, not) {
-            match = ((typeof match).match(/^(string|number|boolean)$/) !== null ? match : null);
-            type = type || 'AND ';
-            side = (typeof side === 'undefined' ? 'both' : side);
-            not = not || '';
+        _like: function(field, match, type='AND ', side='both', not='') {
+            match = (/^(string|number|boolean)$/.test(typeof match) ? match : null);
 
             if (typeof field === 'string' && field.length == 0) {
                 throw new Error("like(): The field you provided is empty.");
@@ -694,7 +691,7 @@ var QueryBuilder = function() {
             else if (typeof field === 'object' && (field.length == 0 || Object.keys(field).length === 0)) {
                 throw new Error("like(): The object you provided is empty.");
             }
-            else if ((typeof field).match(/^(string|object)$/) === null) {
+            else if (!/^(string|object)$/.test(typeof field)) {
                 throw new Error("like(): You have provided an invalid value as the first parameter. Only valid strings and objects are allowed.");
             }
 
@@ -714,7 +711,7 @@ var QueryBuilder = function() {
                 var k = protect_identifiers(this,k.trim());
 
                 // Make sure value is only string, number, or boolean
-                if ((typeof v).match(/^(string|number|boolean)$/) === null) {
+                if (!/^(string|number|boolean)$/.test(typeof v)) {
                     throw new Error("like(): You have provided an invalid value as the second parameter. Only valid strings, numbers, and booleans are allowed.");
                 }
                 // If number, don't allow Infinity or NaN
@@ -826,7 +823,7 @@ var QueryBuilder = function() {
             }
 
             // Split apart the condition and protect the identifiers
-            else if (escape === true && relation.match(/([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i)) {
+            else if (escape === true && /([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i.test(relation)) {
                 match = relation.match(/([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i)
                 relation = ' ON ' + protect_identifiers(this,match[1],true) + match[2] + protect_identifiers(this,match[3],true);
             }
@@ -1011,8 +1008,8 @@ var QueryBuilder = function() {
             var key_is_object = Object.prototype.toString.call(key) === Object.prototype.toString.call({});
             var key_is_array = Object.prototype.toString.call(key) === Object.prototype.toString.call([]);
 
-            if ((typeof value).match(/^(string|number|boolean)$/) !== null) { // if the value is a string, number, or boolean...
-                if (typeof key !== 'string' || key.match(/^\W+$/i)) { // if the key is not a string...
+            if (/^(string|number|boolean)$/.test(typeof value)) { // if the value is a string, number, or boolean...
+                if (typeof key !== 'string' || /^\W+$/i.test(key)) { // if the key is not a string...
                     throw new Error("having(): The value you provided when calling having() will be ignored since the first parameter is not a single field provided in string form.");
                 }
                 key_array[key] = value;
@@ -1092,7 +1089,7 @@ var QueryBuilder = function() {
                         throw new Error("You haven't provided any fields to order by!!");
                     }
                     orderby = orderby.split(',');
-                } else if (!orderby && direction.match(/(random|RAND|RAND\(\))/i)) {
+                } else if (!orderby && /(random|RAND|RAND\(\))/i.test(direction)) {
                     this.order_by_array.push(rand_word);
                     return this;
                 }
@@ -1115,7 +1112,7 @@ var QueryBuilder = function() {
                     }
                     orderby[i] = {field: protect_identifiers(this,m[1].trim()), direction: m[2].trim().toUpperCase()};
                 } else {
-                    if (direction.match(/^(ASC|DESC)$/i) || direction === '') {
+                    if (/^(ASC|DESC)$/i.test(direction) || direction === '') {
                         orderby[i] = {field: protect_identifiers(this,orderby[i].trim()), direction: (direction !== '' ? direction.toUpperCase() : 'ASC')};
                     } else {
                         throw new Error("Invalid direction provided in order_by method! Only 'ASC', 'DESC', and 'RAND' are allowed!");
@@ -1183,7 +1180,7 @@ var QueryBuilder = function() {
 
                 if (v instanceof Date) v = v.toString();
 
-                if ((typeof v).match(/^(number|string|boolean)$/) === null && v !== null) {
+                if (!/^(number|string|boolean)$/.test(typeof v) && v !== null) {
                     throw new Error("set(): Invalid value provided! (provided: " + v + " (type: " + (typeof v) + ")");
                 }
                 else if (typeof v === 'number' && (v === Infinity || v !== +v)) {
@@ -1228,7 +1225,7 @@ var QueryBuilder = function() {
             ignore = (typeof ignore !== 'boolean' ? false : ignore);
             suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
 
-            if ((typeof set).match(/^(number|boolean)$/) || (typeof set == 'string' && set !== '') || Object.prototype.toString.call(set) === Object.prototype.toString.call(/test/)) {
+            if (/^(number|boolean)$/.test(typeof set) || (typeof set == 'string' && set !== '') || Object.prototype.toString.call(set) === Object.prototype.toString.call(/test/)) {
                 throw new Error("insert(): Invalid data provided to insert into database!");
             }
 
@@ -1248,7 +1245,7 @@ var QueryBuilder = function() {
 
             table = table.trim();
 
-            if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/)) {
+            if (table !== '' && !(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/).test(table)) {
                 throw new Error("insert(): Invalid table name ('" + table + "') provided!");
             }
 
@@ -1282,7 +1279,7 @@ var QueryBuilder = function() {
 
             table = table.trim();
 
-            if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/)) {
+            if (table !== '' && !/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/.test(table)) {
                 throw new Error("insert(): Invalid table name ('" + table + "') provided!");
             }
 
@@ -1309,7 +1306,7 @@ var QueryBuilder = function() {
                     for (var i in row) {
                         var v = row[i];
 
-                        if ((typeof v).match(/^(number|string|boolean)$/) === null && v !== null) {
+                        if (!/^(number|string|boolean)$/.test(typeof v) && v !== null) {
                             throw new Error("set(): Invalid value provided!");
                         }
                         else if (typeof v === 'number' && (v === Infinity || v !== +v)) {
@@ -1432,7 +1429,7 @@ var QueryBuilder = function() {
             }
 
             // If set is a number, boolean, a non-empty string, or regex, fail
-            if ((typeof set).match(/^(number|boolean)$/) || (typeof set == 'string' && set !== '') || Object.prototype.toString.call(set) === Object.prototype.toString.call(/test/)) {
+            if (/^(number|boolean)$/.test(typeof set) || (typeof set == 'string' && set !== '') || Object.prototype.toString.call(set) === Object.prototype.toString.call(/test/)) {
                 throw new Error("update(): Invalid data provided to update database!");
             }
 
@@ -1458,7 +1455,7 @@ var QueryBuilder = function() {
             table = table.trim();
 
             // Table name must be in a legitimate format
-            if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/)) {
+            if (table !== '' && !/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/.test(table)) {
                 throw new Error("update(): You have not set any tables to update!");
             }
 
@@ -1533,7 +1530,7 @@ var QueryBuilder = function() {
             table = table.trim();
 
             // Table name must be in a legitimate format
-            if (table !== '' && !table.match(/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/)) {
+            if (table !== '' && !/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/.test(table)) {
                 throw new Error("update(): You have not set any tables to update!");
             }
 
