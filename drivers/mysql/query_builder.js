@@ -11,8 +11,8 @@ var QueryBuilder = function() {
         return values;
     };
 
-    var prepare_for_limit_and_offset = function(item,type) {
-        type = type || 'limit';
+    var prepare_for_limit_and_offset = function(item, type = 'limit') {
+
         type = type.toLowerCase();
 
         if (!/^(string|number)$/.test(typeof item)) {
@@ -149,8 +149,8 @@ var QueryBuilder = function() {
         return item;
     };
 
-    var escape_identifiers = function(item) {
-        if (!item || item === '*') {
+    var escape_identifiers = function(item = '*') {
+        if (item === '*') {
             return item;
         }
 
@@ -427,10 +427,9 @@ var QueryBuilder = function() {
         return build_limit_clause(sql, limit_to, offset_val);
     };
 
-    var compile_insert = function(qb, ignore, suffix) {
+    var compile_insert = function(qb, ignore, suffix='') {
         var keys = [];
         var values = [];
-        suffix = suffix || '';
 
         for (var i in qb.set_array) {
             var key = Object.keys(qb.set_array[i])[0];
@@ -496,12 +495,11 @@ var QueryBuilder = function() {
             }
         },
 
-        where: function(key, value, escape) {
+        where: function(key, value = null, escape) {
             if (Object.prototype.toString.call(key) === Object.prototype.toString.call({}) && typeof value === 'boolean') {
                 escape = (typeof escape === 'boolean' ? escape : value);
             }
 
-            value = (typeof value === 'undefined' ? null : value);
             escape = (typeof escape === 'boolean' ? escape : true);
 
             if (typeof key === 'string' && typeof value === 'object' && Object.prototype.toString.call(value) === Object.prototype.toString.call([]) && value.length > 0) {
@@ -510,9 +508,8 @@ var QueryBuilder = function() {
             return this._where(key, value, 'AND ', escape);
         },
 
-        or_where: function(key, value, escape) {
+        or_where: function(key, value=null, escape) {
             escape = (typeof escape === 'boolean' ? escape : true);
-            value = value || null;
 
             if (typeof key === 'string' && typeof value === 'object' && Object.prototype.toString.call(value) === Object.prototype.toString.call([]) && value.length > 0) {
                 return this._where_in(key, value, false, 'OR ');
@@ -520,9 +517,7 @@ var QueryBuilder = function() {
             return this._where(key, value, 'OR ', escape);
         },
 
-        _where: function(key, value, type, escape) {
-            value = (typeof value === 'undefined' ? null : value);
-            type = type || 'AND ';
+        _where: function(key, value=null, type='AND ', escape) {
             escape = (typeof escape === 'boolean' ? escape : true);
 
             // Must be an object or a string
@@ -632,10 +627,7 @@ var QueryBuilder = function() {
             return this._where_in(key,values,true,'OR ', escape);
         },
 
-        _where_in: function(key, values, not, type, escape) {
-            key = key || '';
-            values = values || [];
-            type = type || 'AND ';
+        _where_in: function(key='', values=[], not, type='AND ', escape) {
             not = (not ? ' NOT' : '');
             escape = (typeof escape === 'boolean' ? escape : true);
 
@@ -918,10 +910,7 @@ var QueryBuilder = function() {
             return this._min_max_avg_sum(select,alias,'SUM');
         },
 
-        _min_max_avg_sum: function(select,alias,type) {
-            select = select || '';
-            alias = alias || '';
-            type = type || 'MAX';
+        _min_max_avg_sum: function(select='',alias='',type='MAX') {
 
             if (typeof select !== 'string' || select === '') {
                 throw Error("Invalid query!");
@@ -1000,8 +989,7 @@ var QueryBuilder = function() {
             return this._having(key, value, 'OR ', escape);
         },
 
-        _having: function(key, value, type, escape) {
-            type = type || 'AND ';
+        _having: function(key, value, type='AND ', escape) {
 
             var m;
             var key_array = {};
@@ -1221,7 +1209,7 @@ var QueryBuilder = function() {
         },
 
         insert: function(table, set, ignore, suffix) {
-            table = table || '';
+            table = table || ''
             ignore = (typeof ignore !== 'boolean' ? false : ignore);
             suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
 
@@ -1265,10 +1253,9 @@ var QueryBuilder = function() {
             return this.insert(table, set, true, suffix);
         },
 
-        insert_batch: function(table,set,ignore,suffix) {
+        insert_batch: function(table,set=null,ignore,suffix) {
             var self = this;
             var orig_table = table = table || '';
-            set = set || null;
             ignore = (typeof ignore !== 'boolean' ? false : ignore);
             suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
             if (suffix == ' ') suffix = '';
@@ -1363,9 +1350,7 @@ var QueryBuilder = function() {
             return compile_select(this);
         },
 
-        get_where: function(table, where) {
-            table = table || null;
-            where = where || null;
+        get_where: function(table=null, where=null) {
 
 			// Check if table is either a string or array
             if (typeof table !== 'string' && !Array.isArray(table))
@@ -1408,10 +1393,10 @@ var QueryBuilder = function() {
             return sql;
         },
 
-        update: function(table, set, where) {
+        update: function(table, set, where=null) {
+
             table = table || '';
             set = set || null;
-            where = where || null;
 
             // Send to batch_update if the data param is an array
             if (Object.prototype.toString.call(set) === Object.prototype.toString.call([])) {
@@ -1478,11 +1463,8 @@ var QueryBuilder = function() {
             return compile_update(this);
         },
 
-        update_batch: function(table, set, index, where) {
-            table = table || '';
-            set = set || null;
-            index = index || null;
-            where = where || null;
+        update_batch: function(table='', set=null, index=null, where=null) {
+
 
             // Make sure an index has been provided!
             if (typeof index !== 'string' || (typeof index === 'string' && index.length === 0)) {
