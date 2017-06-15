@@ -1,11 +1,11 @@
-var settings = {
+const settings = {
     host: 'localhost',
     database: 'mydatabase',
     user: 'myuser',
     password: 'MyP@ssw0rd'
 };
 const nqb = require('node-querybuilder');
-var qb = new QueryBuilder(settings, 'mysql', 'single');
+const qb = new QueryBuilder(settings, 'mysql', 'single');
 
 qb.select('name', 'position')
 	.where({type: 'rocky', 'diameter <': 12000})

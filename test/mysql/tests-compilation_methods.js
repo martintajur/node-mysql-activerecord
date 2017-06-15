@@ -21,7 +21,7 @@ describe('get_compiled_select()', function() {
 	});
 	it('should return a SQL string', function() {
 		qb.reset_query();
-		var sql = qb.get_compiled_select('galaxies');
+		const sql = qb.get_compiled_select('galaxies');
 		sql.should.eql('SELECT * FROM `galaxies`');
 	});
 });
@@ -35,7 +35,7 @@ describe('get_compiled_insert()', function() {
 	});
 	it('should return a SQL string', function() {
 		qb.reset_query();
-		var sql = qb.set({foo:'bar'}).get_compiled_insert('galaxies');
+		const sql = qb.set({foo:'bar'}).get_compiled_insert('galaxies');
 		sql.should.eql("INSERT INTO `galaxies` (`foo`) VALUES ('bar')");
 	});
 });
@@ -49,7 +49,7 @@ describe('get_compiled_update()', function() {
 	});
 	it('should return a SQL string', function() {
 		qb.reset_query();
-		var sql = qb.set({foo:'bar'}).where('id',45).get_compiled_update('galaxies');
+		const sql = qb.set({foo:'bar'}).where('id',45).get_compiled_update('galaxies');
 		sql.should.eql("UPDATE (`galaxies`) SET `foo` = 'bar' WHERE `id` = 45");
 	});
 });
@@ -63,7 +63,7 @@ describe('get_compiled_delete()', function() {
 	});
 	it('should return a SQL string', function() {
 		qb.reset_query();
-		var sql = qb.where('id',45).get_compiled_delete('galaxies');
+		const sql = qb.where('id',45).get_compiled_delete('galaxies');
 		sql.should.eql("DELETE FROM `galaxies` WHERE `id` = 45");
 	});
 });

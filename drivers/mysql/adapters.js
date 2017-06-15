@@ -21,7 +21,7 @@ const Adapters = function(nqb) {
     //if (!nqb.settings.hasOwnProperty('password')) throw new Error("No connection password provided. Hint: It can be NULL");
 
     this.connection_settings = {};
-    var that = this;
+    const that = this;
 
     // ****************************************************************************
     // Map generic NQB connection settings to node-mysql's format
@@ -92,7 +92,7 @@ const Adapters = function(nqb) {
     // @return    Object        Adapter object
     // ****************************************************************************
     const Adapter = function(settings) {
-        var pool, connection;
+        let pool, connection;
 
         // If the Pool object is instatiating this Adapter, use it's connection
         if (settings && settings.pool) {
@@ -104,10 +104,10 @@ const Adapters = function(nqb) {
             connection = new mysql.createConnection(that.connection_settings);
         }
 
-        var qb = get_query_builder();
-        var qe = get_query_exec(qb, connection);
+        const qb = get_query_builder();
+        const qe = get_query_exec(qb, connection);
 
-        var adapter = Object.assign({
+        const adapter = Object.assign({
             connection_settings: function() {
                 return that.connection_settings;
             },
@@ -155,14 +155,14 @@ const Adapters = function(nqb) {
                 },
                 get_connection: function(callback) {
                     if (null === nqb.pool) {
-                        var error_msg = "Connection pool not available!";
+                        const error_msg = "Connection pool not available!";
                         if (console && console.hasOwnProperty('error')) console.error(error_msg);
                         throw new Error(error_msg);
                     }
 
                     nqb.pool.getConnection(function (err, connection) {
                         if (err) throw err;
-                        var adapter = new Adapter({
+                        const adapter = new Adapter({
                             pool: {
                                 pool: nqb.pool,
                                 connection: connection

@@ -13,7 +13,7 @@
  *
 **/
 
-var connect, Standard, Pool, PoolCluster;
+let connect, Standard, Pool, PoolCluster;
 
 // ****************************************************************************
 // Sets up a standard one-time connection (no pooling). This one is used by the
@@ -23,7 +23,7 @@ var connect, Standard, Pool, PoolCluster;
 // @return	Object				Connection handle
 // ****************************************************************************
 Standard = function(settings) {
-	
+
 };
 
 // ****************************************************************************
@@ -33,7 +33,7 @@ Standard = function(settings) {
 // @return	Object				Connection handle
 // ****************************************************************************
 Pool = function(settings) {
-	
+
 };
 
 // ****************************************************************************
@@ -44,7 +44,7 @@ Pool = function(settings) {
 // @return	Object				Connection handle
 // ****************************************************************************
 PoolCluster = function(settings) {
-	
+
 };
 
 // ****************************************************************************
@@ -55,9 +55,9 @@ PoolCluster = function(settings) {
 // ****************************************************************************
 connect = function(settings,type) {
 	type = type || 'single';
-	
-	var connection = null;
-	
+
+	let connection = null;
+
 	switch(type) {
 		case 'single':
 			connection = Standard(settings);
@@ -72,7 +72,7 @@ connect = function(settings,type) {
 			throw new Error("Invalid connection type specified!");
 			break;
 	}
-	
+
 	if (connection === null) {
 		throw new Error("A connection could not be established!");
 	}

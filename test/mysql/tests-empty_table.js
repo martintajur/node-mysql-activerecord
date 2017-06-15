@@ -11,14 +11,14 @@ describe('emtpy_table()', function() {
 	});
 	it('should return a string', function() {
 		qb.reset_query();
-		var sql = qb.empty_table('galaxies');
+		const sql = qb.empty_table('galaxies');
 		expect(sql).to.be.a('string');
 		expect(sql).to.exist;
 		expect(sql).to.not.eql('');
 	});
 	it('should build a proper DELETE statement', function() {
 		qb.reset_query();
-		var sql = qb.empty_table('galaxies');
+		const sql = qb.empty_table('galaxies');
 		sql.should.eql('DELETE FROM `galaxies`');
 	});
 	it('should only accept nothing or a non-empty-string for the table (first) parameter', function() {
@@ -44,7 +44,7 @@ describe('emtpy_table()', function() {
 	});
 	it('should only use the first table supplied in a list if an array of table is supplied with the from() method.', function() {
 		qb.reset_query();
-		var sql = qb.from(['galaxies','star_systems','planets']).empty_table();
+		const sql = qb.from(['galaxies','star_systems','planets']).empty_table();
 		sql.should.eql("DELETE FROM `galaxies`");
 	});
 });

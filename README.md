@@ -64,7 +64,7 @@ Licensed under the GPL license and MIT:
 This quick example shows how to connect to and asynchronously query a MySQL database using a single connection.
 
 ```javascript
-var settings = {
+const settings = {
     host: 'localhost',
     database: 'mydatabase',
     user: 'myuser',
@@ -497,7 +497,7 @@ Multiple function calls can be made if you need several joins in one query:
 // FROM `users` `u`
 // LEFT JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
 // LEFT JOIN `locations` `l` ON `l`.`id`=`u`.`location_id`
-var select = ['u.id', 'u.name', 't.name as type', 'l.name as location'];
+const select = ['u.id', 'u.name', 't.name as type', 'l.name as location'];
 qb.select(select).from('users u')
     .join('types t', 't.id=u.type_id', 'right outer')
     .join('locations l', 'l.id=u.location_id', 'left')
@@ -514,7 +514,7 @@ you know what you're doing). NOTE: Please make sure to escape values manually.
 //   CASE
 //     WHEN `u`.`id` = 4132 THEN `um`.`id` = `um`.`userId`
 //     WHEN `u`.`name` = 4132 THEN `um`.`name` = `u`.`id`
-var select = ['u.id', 'u.name', 'um.name as user_name'];
+const select = ['u.id', 'u.name', 'um.name as user_name'];
 const user_data = req.body;
 qb.select(select).from('users u')
     .join('`user_meta` `um`', 'CASE WHEN `u`.`id` = ' + user_data.id  + ' THEN `um`.`id` = `um`.`userId` WHEN `u`.`name` = ' + user_data.id + ' THEN `um`.`name` = `u`.`id`', 'right outer', false)
@@ -598,7 +598,7 @@ This will create a "WHERE IN" statement in traditional SQL which is useful when 
 ```javascript
 // SELECT `star_system` FROM `star_systems`
 // WHERE `star` IN('Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri')
-var stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
+const stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
 qb.select('star_system').where_in('star',stars).get('star_systems',callback);
 ```
 
@@ -610,7 +610,7 @@ Same as `.where_in()` except the clauses are joined by 'OR'.
 ```javascript
 // SELECT `star_system` FROM `star_systems`
 // WHERE `planet_count` = 4 OR `star` IN('Sun', 'Betelgeuse')
-var stars = ['Sun', 'Betelgeuse'];
+const stars = ['Sun', 'Betelgeuse'];
 qb.select('star_system').where('planet_count',4)
     .or_where_in('star',stars)
     .get('star_systems',callback);
@@ -624,7 +624,7 @@ Same as `.where_in()` except this generates a "WHERE NOT IN" statement. All clau
 ```javascript
 // SELECT `star_system` FROM `star_systems`
 // WHERE `star` NOT IN('Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri')
-var stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
+const stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
 qb.select('star_system').where_not_in('star',stars).get('star_systems',callback);
 ```
 
@@ -637,8 +637,8 @@ Same as `.where_not_in()` except that clauses are joined with 'OR'.
 // SELECT `star_system` FROM `star_systems`
 // WHERE `star` NOT IN('Sun', 'Betelgeuse')
 // OR `planet_count` NOT IN [2,4,6,8]
-var stars = ['Sun', 'Betelgeuse'];
-var planet_sizes = [2,4,6,8];
+const stars = ['Sun', 'Betelgeuse'];
+const planet_sizes = [2,4,6,8];
 qb.select('star_system')
     .where_not_in('star',stars)
     .or_where_not_in('planet_size',planet_sizes)
@@ -874,7 +874,7 @@ Parameter | Type         | Default  | Description
 fields    | String/Array | Required | Field name or an array of field names, possibly with directions as well
 direction | String       | 'asc'    | 'asc': Ascending; 'desc': Descending; 'rand'/'random'/'rand()': Random.
 
-This is a very flexible method, offerring a wide variety of ways you can call it. Variations include:
+This is a very flexible method, offerring a wide constiety of ways you can call it. constiations include:
 - Pass the field name and ommit the direction
 - Pass the field name and the direction as the first and second parameters, respectively (most common)
 - Pass an array of fields to first paramter, direction to second parameter.
@@ -994,7 +994,7 @@ qb.set('birthday','2015-02-04').update('users', callback);
 Set multiple keys and values at once
 
 ```javascript
-var birthday = new Date(1986, 7, 5, 8, 15, 23);
+const birthday = new Date(1986, 7, 5, 8, 15, 23);
 // UPDATE `users` SET `birthday` = '2015-02-04', `anniversary` = '2010-05-15'
 qb.set({birthday: birthday, anniversary: '2010-05-15'}).update('users', callback);
 ```
@@ -1036,14 +1036,14 @@ insert_batch(), update_batch() | Example: `{insert_id: 579, affected_rows: 1, ch
 #### Callback Example
 
 ```javascript
-var callback =  function(err, response) {
+const callback =  function(err, response) {
     qb.release();
     if (err) {
         console.error(err);
     }
     else {
-        for (var i in response) {
-            var row = response[i];
+        for (const i in response) {
+            const row = response[i];
             /*
                 Do something with each row...
             */
@@ -1059,7 +1059,7 @@ pool.get_connection(function(qb) {
 
 ```javascript
 const pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
-var data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
+const data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
 
 pool.get_connection(function(qb) {
     qb.insert('employees', data, function(err, res) {
@@ -1068,7 +1068,7 @@ pool.get_connection(function(qb) {
         }
         else {
             if (res.affected_rows > 0) {
-                var insert_id = res.insert_id;
+                const insert_id = res.insert_id;
                 qb.get_where('employees', {id: insert_id}, function(err, res) {
                     qb.release();
                     console.dir(res);
@@ -1100,7 +1100,7 @@ There are scenarios when using this method may be required; for instance, if you
 **Example**
 
 ```javascript
-var sql = qb.select(['f.foo', 'b.bar'])
+const sql = qb.select(['f.foo', 'b.bar'])
     .from('foo f')
     .join('bar b', 'b.foo_id=f.id', 'left')
     .get_compiled_select();
@@ -1169,8 +1169,8 @@ qb.limit(10)
         conn.release();
         if (err) return console.error(err);
 
-        for (var i in response) {
-            var row = response[i];
+        for (const i in response) {
+            const row = response[i];
             console.log("The " + row.name + " is a " + row.diameter
                 + " lightyear-wide " + row.type + " galaxy with "
                 + row.num_stars + " stars.");
@@ -1235,7 +1235,7 @@ Integer
 
 ```javascript
 // SELECT COUNT(*) AS `numrows` FROM `galaxies` WHERE `type` = 3
-var type = 3;
+const type = 3;
 qb.where('type',type).count('galaxies', function(err, count) {
     if (err) return console.error(err);
     console.log("There are " + numrows + " Type " + type + " galaxies in the Universe.");
@@ -1271,7 +1271,7 @@ Here's a contrived example of how it might be used in an app made with the Expre
 
 ```javascript
 const express = require('express');
-var app = express();
+const app = express();
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
@@ -1280,7 +1280,7 @@ app.post('/update_account', function(req, res) {
     const sanitize_name = function(name) { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
     const sanitize_age = function(age)  { return age.replace(/[^0-9]+$/,'').trim(); };
 
-    var data = {
+    const data = {
         first_name: sanitize_name(req.body.first_name),
         last_name: sanitize_name(req.body.last_name),
         age: sanitize_age(req.body.last_name),
@@ -1292,7 +1292,7 @@ app.post('/update_account', function(req, res) {
             qb.release();
             if (err) return console.error(err);
 
-            var page_data = {
+            const page_data = {
                 prefill: data,
             }
             return res.render('/account_updated', page_data);
@@ -1337,19 +1337,19 @@ The important thing to understand is that there are, essentially, _two_ `where` 
 **Example:**
 
 ```javascript
-var qb =  require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
+const qb =  require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
 
 // The key to use as the local where clause
-var key = 'id';
+const key = 'id';
 
 // All objects in this dataset must have an id key
-var dataset = [
+const dataset = [
     {id: 4569, name: 'Cartwheel', constellation: 'Sculptor'},
     {id: 5631, name: 'Black Eye', constellation: 'Coma Berenices'},
     {id: 1238, name: 'Sombrero',  constellation: 'Virgo'}
 ];
 
-var where = {'last_updated <' : '2015-01-01'}
+const where = {'last_updated <' : '2015-01-01'}
 
 qb.update_batch('galaxies', dataset, key, where, function(err, res) {
     if (err) return console.error(err);
@@ -1372,7 +1372,7 @@ qb.update_batch('galaxies', dataset, key, where, function(err, res) {
      * WHERE `id` IN(4569, 5631, 1238)
      * AND `last_updated` < '2015-01-01'
      */
-    var last_query = qb.last_query();
+    const last_query = qb.last_query();
 });
 ```
 
@@ -1404,14 +1404,14 @@ Here's a contrived example of how it might be used in an app made with the Expre
 
 ```javascript
 const express = require('express');
-var app = express();
+const app = express();
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/add_article', function(req, res) {
     const user_id = req.session.user_id;
 
-    var data = {
+    const data = {
         title: req.body.first_name,
         body: req.body.last_name,
         author: user_id,
@@ -1423,7 +1423,7 @@ app.post('/add_article', function(req, res) {
             qb.release();
             if (err) return console.error(err);
 
-            var page_data = {
+            const page_data = {
                 article_id: res.insert_id,
             }
             return res.render('/article_manager', page_data);
@@ -1457,7 +1457,7 @@ Object containing information about the result of the query.
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
 
-var data = [
+const data = [
     {name: 'MySQL', version: '5.5.40'},
     {name: 'Mongo', version: '2.6.7' },
     {name: 'Postgres', version: '8.4'}
@@ -1505,7 +1505,7 @@ Object containing information about the result of the query.
  */
 
 const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
-var data = {name: 'Postgres', version: '8.4'};
+const data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, function(err, res) {
     if (err) throw err;
 
@@ -1520,7 +1520,7 @@ qb.insert_ignore('db_engines', data, function(err, res) {
 This time we'll do it with an `on_dupe` string
 
 ```javascript
-var data = {name: 'Postgres', version: '8.4'};
+const data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NOW()', function(err, res) {
     if (err) throw err;
 
@@ -1568,7 +1568,7 @@ Here's a contrived example of how it might be used in an app made with the Expre
 
 ```javascript
 const express = require('express');
-var app = express();
+const app = express();
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
@@ -1578,13 +1578,13 @@ app.post('/delete_comment/:id', function(req, res) {
     pool.get_connection(function(qb) {
         qb.get('comments', {id: id}, function(err, res) {
             if (err) return console.error(err);
-            var article_id = res.article_id;
+            const article_id = res.article_id;
 
             qb.delete('comments', {id: id}, function(err, res) {
                 qb.release();
                 if (err) return console.error(err);
 
-                var page_data = {
+                const page_data = {
                     num_removed: res.affected_rows,
                 }
                 return res.render('/article/' + article_id, page_data);
@@ -1751,9 +1751,9 @@ const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool'
 
 pool.get_connection(function(qb) {
     qb.like('username','|','right').get_where('users', {active: true}, function(err, res) {
-        var users = users;
+        const users = users;
         (function update_user() {
-            var user = users.shift();
+            const user = users.shift();
             user.username = user.username.replace(/\^|/,'');
 
             qb.update('users', user, {id: user.id}, function(err, res) {
@@ -1798,7 +1798,7 @@ If you'd rather the engine not execute the query first, you can always use the a
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 pool.get_connection(function(qb) {
-    var id = 4531;
+    const id = 4531;
     qb.get('comments', {id: id}, function(err, res) {
         // SELECT * FROM `comments` WHERE `id` = 4531
         console.log(qb.last_query());
@@ -1834,7 +1834,7 @@ Object     | String      | {foo: 'bar', i: 3} | "`foo` = 'bar', `i` = 3"
 
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
-var sql = 'SELECT count(*) FROM `star_systems` WHERE ' + qb.escape({planet_num: 5}) + ' LIMIT 10';
+const sql = 'SELECT count(*) FROM `star_systems` WHERE ' + qb.escape({planet_num: 5}) + ' LIMIT 10';
 qb.query(sql, function(err, res) {
     console.dir(res);
 });
@@ -1871,7 +1871,7 @@ Get certain details of a user account
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 
-var sql = qb
+const sql = qb
     .select(['id','username','first_name','last_name'])
     .from('users')
     .like('username','k','after')
@@ -1901,13 +1901,13 @@ Add a new user to a `users` table.
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 const crypto = require('crypto');
-var data = {
+const data = {
     username: 'foobar',
     password: crypto.createHash('sha1').update('password').digest('hex'),
     first_name: 'Foo',
     last_name: 'Bar'
 };
-var sql = qb.set(data).get_compiled_insert('users');
+const sql = qb.set(data).get_compiled_insert('users');
 
 // INSERT INTO `users` (`username`, `password`, `first_name`, `last_name`) VALUES ('foobar', '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8', 'Foo', 'Bar')
 console.log(sql);
@@ -1934,10 +1934,10 @@ Update the password of a user
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 const crypto = require('crypto');
-var data = {
+const data = {
     password: crypto.createHash('sha1').update('P@$$w0rD').digest('hex'),
 };
-var sql = qb
+const sql = qb
     .where('id',4321)
     .set(data)
     .get_compiled_update('users');
@@ -1965,7 +1965,7 @@ Delete a user
 
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
-var sql = qb.where('id',4321).get_compiled_delete('users');
+const sql = qb.where('id',4321).get_compiled_delete('users');
 
 // DELETE FROM `users` WHERE `id` = 4321
 console.log(sql);

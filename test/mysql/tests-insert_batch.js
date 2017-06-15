@@ -2,8 +2,8 @@ const should = require('chai').should();
 const expect = require('chai').expect;
 const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
-var test_where = {id:3};
-var test_data = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'Andromeda', type: 'spiral'}];
+const test_where = {id:3};
+const test_data = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'Andromeda', type: 'spiral'}];
 
 describe('insert_batch()', function() {
 	it('should exist', function() {
@@ -41,7 +41,7 @@ describe('insert_batch()', function() {
 	});
 	it('should build a proper batch INSERT string', function() {
 		qb.reset_query();
-		var sql = qb.insert_batch('galaxies', test_data);
+		const sql = qb.insert_batch('galaxies', test_data);
 		sql.should.eql("INSERT INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral'), (4, 'Andromeda', 'spiral')");
 	});
 	it('should only accept an array as the second parameter', function() {
@@ -71,21 +71,21 @@ describe('insert_batch()', function() {
 	});
 	it('should allow for an empty data parameter', function() {
 		qb.reset_query();
-		var sql = qb.insert_batch('galaxies',[]);
+		const sql = qb.insert_batch('galaxies',[]);
 		sql.should.eql("INSERT INTO `galaxies` () VALUES ()");
 	});
 	it('should utilize pre-existing tables set in from_array', function() {
 		qb.reset_query();
 		qb.from('galaxies');
-		var sql = qb.insert_batch(null,[]);
+		const sql = qb.insert_batch(null,[]);
 		sql.should.eql("INSERT INTO `galaxies` () VALUES ()");
 	});
 	it('should fail if any invalid values are passed into one of the data objects in the dataset', function() {
 		qb.reset_query();
 		const func = function() { console.log("foo"); };
-		var regex = /foobar/;
-		var arr = [1,2,3];
-		var obj = {foo: 'bar'};
+		const regex = /foobar/;
+		const arr = [1,2,3];
+		const obj = {foo: 'bar'};
 
 		expect(function() { qb.insert_batch('galaxies',[{id: func}]); 		}, 'function in data').to.throw(Error);
 		expect(function() { qb.insert_batch('galaxies',[{id: regex}]); 		}, 'regex in data').to.throw(Error);
@@ -97,7 +97,7 @@ describe('insert_batch()', function() {
 	});
 	it('should support insert ignore statements', function() {
 		qb.reset_query();
-		var sql = qb.insert_batch('galaxies', test_data, true, 'ON DUPLICATE KEY UPDATE last_update = NOW()');
+		const sql = qb.insert_batch('galaxies', test_data, true, 'ON DUPLICATE KEY UPDATE last_update = NOW()');
 		sql.should.eql("INSERT IGNORE INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral'), (4, 'Andromeda', 'spiral') ON DUPLICATE KEY UPDATE last_update = NOW()");
 	});
 });

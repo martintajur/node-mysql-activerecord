@@ -46,7 +46,7 @@ const QueryExec = function(qb, conn) {
                 callback = table;
             }
 
-            var sql = qb.count(table);
+            const sql = qb.count(table);
             qb.reset_query(sql);
             exec(sql, function(err, row) {
                 if (!err) {
@@ -68,7 +68,7 @@ const QueryExec = function(qb, conn) {
                 throw new Error("No callback function has been provided in your 'get' call!");
             }
 
-            var sql = qb.get(table);
+            const sql = qb.get(table);
             qb.reset_query(sql);
             exec(sql,callback);
         },
@@ -80,13 +80,13 @@ const QueryExec = function(qb, conn) {
             if (Object.prototype.toString.call(where) !== Object.prototype.toString.call({})) {
                 throw new Error("Second parameter of get_where() must be an object with key:value pairs.");
             }
-            var sql = qb.get_where(table,where);
+            const sql = qb.get_where(table,where);
             qb.reset_query(sql);
             exec(sql,callback);
         },
 
         insert: function(table,set,callback,ignore,suffix) {
-            var sql = qb.insert(table,set,ignore,suffix);
+            const sql = qb.insert(table,set,ignore,suffix);
             qb.reset_query(sql);
             exec(sql,callback);
         },
@@ -96,13 +96,13 @@ const QueryExec = function(qb, conn) {
 				callback = on_dupe;
 				on_dupe = null;
 			}
-			var sql = qb.insert_ignore(table,set,on_dupe);
+			const sql = qb.insert_ignore(table,set,on_dupe);
             qb.reset_query(sql);
             exec(sql,callback);
         },
 
         insert_batch: function(table,set,callback) {
-            var sql = qb.insert_batch(table,set);
+            const sql = qb.insert_batch(table,set);
             qb.reset_query(sql);
             exec(sql,callback);
         },
@@ -120,7 +120,7 @@ const QueryExec = function(qb, conn) {
                 where = null;
             }
 
-            var sql = qb.update(table,set,where);
+            const sql = qb.update(table,set,where);
             qb.reset_query(sql);
             exec(sql,callback);
         },
@@ -139,13 +139,13 @@ const QueryExec = function(qb, conn) {
                 where = null;
             }
 
-            var sqls = qb.update_batch(table,set,index,where);
-            var results = null;
-            var errors = [];
+            const sqls = qb.update_batch(table,set,index,where);
+            const results = null;
+            const errors = [];
 
             // Execute each batch of (at least) 100
             (function next_batch() {
-                var sql = sqls.shift();
+                const sql = sqls.shift();
                 qb.reset_query(sql);
 
                 exec(sql, function(err, res) {
@@ -185,20 +185,20 @@ const QueryExec = function(qb, conn) {
                 throw new Error("delete(): No callback function has been provided!");
             }
 
-            var sql = qb.delete(table, where);
+            const sql = qb.delete(table, where);
 
             qb.reset_query(sql);
             exec(sql,callback);
         },
 
         empty_table: function(table, callback) {
-            var sql = qb.empty_table(table,callback);
+            const sql = qb.empty_table(table,callback);
             qb.reset_query(sql);
             exec(sql,callback);
         },
 
         truncate: function(table, callback) {
-            var sql = qb.truncate(table,callback);
+            const sql = qb.truncate(table,callback);
             qb.reset_query(sql);
             exec(sql,callback);
         },

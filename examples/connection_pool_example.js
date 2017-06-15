@@ -1,11 +1,11 @@
-var settings = {
+const settings = {
     host: 'localhost',
     database: 'mydatabase',
     user: 'myuser',
     password: 'MyP@ssw0rd'
 };
 const nqb = require('node-querybuilder');
-var pool = new QueryBuilder(settings, 'mysql', 'pool');
+const pool = new QueryBuilder(settings, 'mysql', 'pool');
 
 pool.get_connection(function(qb) {
 	qb.select('name', 'position')

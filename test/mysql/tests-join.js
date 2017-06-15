@@ -16,7 +16,7 @@ describe('join()', function() {
 		qb.join_array.should.be.empty;
 	});
 	it('should require a string to be passed as first parameter', function() {
-		var invalid_match = /must provide a table/;
+		const invalid_match = /must provide a table/;
 		expect(function() { qb.join(); 		}, 'nothing provided').to.throw(Error, invalid_match);
 		expect(function() { qb.join(true); 	}, 'true provided').to.throw(Error, invalid_match);
 		expect(function() { qb.join(null); 	}, 'null provided').to.throw(Error, invalid_match);
@@ -39,8 +39,8 @@ describe('join()', function() {
 		qb.join_array.should.eql(['JOIN `universe` `u` ']);
 	});
 	it('should allow a string (and only a string) to be passed as second parameter but only if a valid (or no) third parameter is provided', function() {
-		var invalid_2nd_param = /You must provide a valid condition to join on when providing a join direction/;
-		var invalid_direction = /Invalid join direction provided as third parameter/;
+		const invalid_2nd_param = /You must provide a valid condition to join on when providing a join direction/;
+		const invalid_direction = /Invalid join direction provided as third parameter/;
 
 		expect(function() { qb.join('universe',null,'left');		}, 'null 2nd param').to.throw(Error,invalid_2nd_param);
 		expect(function() { qb.join('universe',false,'left');		}, 'false 2nd param').to.throw(Error,invalid_2nd_param);
@@ -56,7 +56,7 @@ describe('join()', function() {
 	});
 	it('should allow valid join direction to be passed in third parameter', function() {
 		// NOTE: A lot of this functionality was already tested when testing second param
-		var invalid_direction = /Invalid join direction provided as third parameter/;
+		const invalid_direction = /Invalid join direction provided as third parameter/;
 
 		expect(function() { qb.join('universe','foo = bar','fake');			}, 'invalid 3rd param').to.throw(Error,invalid_direction);
 		expect(function() { qb.join('universe',null,null);					}, 'invalid 2nd and 3rd params').to.not.throw(Error);

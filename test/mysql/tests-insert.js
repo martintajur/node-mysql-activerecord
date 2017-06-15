@@ -2,8 +2,8 @@ const should = require('chai').should();
 const expect = require('chai').expect;
 const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
-var test_data = {id:3, name:'Milky Way', type: 'spiral'};
-var test_data_set = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'Andromeda', type: 'spiral'}];
+const test_data = {id:3, name:'Milky Way', type: 'spiral'};
+const test_data_set = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'Andromeda', type: 'spiral'}];
 
 // table, data, callback, ignore, suffix
 
@@ -67,44 +67,44 @@ describe('insert()', function() {
     });
     it('should allow for an empty data parameter', function() {
         qb.reset_query();
-        var sql = qb.insert('galaxies');
+        const sql = qb.insert('galaxies');
         sql.should.eql("INSERT INTO `galaxies` () VALUES ()");
     });
     it('should utilize pre-existing tables set in from_array', function() {
         qb.reset_query();
         qb.from('galaxies');
-        var sql = qb.insert();
+        const sql = qb.insert();
         sql.should.eql("INSERT INTO `galaxies` () VALUES ()");
     });
     it('should utilize pre-existing values set in in set_array', function() {
         qb.reset_query();
         qb.set(test_data);
-        var sql = qb.insert('galaxies');
+        const sql = qb.insert('galaxies');
         sql.should.eql("INSERT INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral')");
     });
     it('should utilize pre-existing tables and values from from_aray and set_array, respectively', function() {
         qb.reset_query();
         qb.from('galaxies').set(test_data);
-        var sql = qb.insert();
+        const sql = qb.insert();
         sql.should.eql("INSERT INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral')");
     });
     it('should accept a non-empty object for the data parameter', function() {
         qb.reset_query();
-        var sql = qb.insert('galaxies', test_data);
+        const sql = qb.insert('galaxies', test_data);
         sql.should.eql("INSERT INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral')");
     });
     it('should convert call to insert_batch() if an array of non-emtpy objects is passed in the data parameter', function() {
         qb.reset_query();
-        var sql = qb.insert('galaxies', test_data_set);
-        var sql_b = qb.insert_batch('galaxies', test_data_set);
+        const sql = qb.insert('galaxies', test_data_set);
+        const sql_b = qb.insert_batch('galaxies', test_data_set);
         sql.should.eql(sql_b);
     });
     it('should fail if any invalid values are passed in the data object.', function() {
         qb.reset_query();
         const func = function() { console.log("foo"); };
-        var regex = /foobar/;
-        var arr = [1,2,3];
-        var obj = {foo: 'bar'};
+        const regex = /foobar/;
+        const arr = [1,2,3];
+        const obj = {foo: 'bar'};
 
         expect(function() { qb.insert('galaxies',{id: 1});          }, 'number in data').to.not.throw(Error);
         expect(function() { qb.insert('galaxies',{id: 'foo'});      }, 'string in data').to.not.throw(Error);
@@ -130,23 +130,23 @@ describe('insert_ignore()', function() {
     });
     it('should create an INSERT IGNORE statement', function() {
         qb.reset_query();
-        var sql = qb.insert_ignore('galaxies', test_data);
+        const sql = qb.insert_ignore('galaxies', test_data);
         sql.should.eql("INSERT IGNORE INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral')");
     });
     it('should be just a wrapper of insert() that passes true to the 3rd parameter', function() {
         qb.reset_query();
-        var sql = qb.insert_ignore('galaxies', test_data);
-        var sql_b = qb.insert('galaxies', test_data, true);
+        const sql = qb.insert_ignore('galaxies', test_data);
+        const sql_b = qb.insert('galaxies', test_data, true);
         sql.should.eql(sql_b);
     });
     it('should convert to insert_batch() if an array of data is supplied to second parameter', function() {
         qb.reset_query();
-        var sql = qb.insert_ignore('galaxies', test_data_set);
+        const sql = qb.insert_ignore('galaxies', test_data_set);
         sql.should.eql("INSERT IGNORE INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral'), (4, 'Andromeda', 'spiral')");
     });
     it('should support the "on_dupe" suffix parameter... effectively appending to the query anything supplied in this parameter', function() {
         qb.reset_query();
-        var sql = qb.insert_ignore('galaxies', test_data, 'ON DUPLICATE KEY UPDATE last_update = NOW()');
+        const sql = qb.insert_ignore('galaxies', test_data, 'ON DUPLICATE KEY UPDATE last_update = NOW()');
         sql.should.eql("INSERT IGNORE INTO `galaxies` (`id`, `name`, `type`) VALUES (3, 'Milky Way', 'spiral') ON DUPLICATE KEY UPDATE last_update = NOW()");
     });
 });

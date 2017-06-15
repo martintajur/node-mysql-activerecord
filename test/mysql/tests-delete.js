@@ -37,7 +37,7 @@ describe('delete()', function() {
 	});
 	it('should only use the first table supplied in a list if an array of table is supplied with the from() method.', function() {
 		qb.reset_query();
-		var sql = qb.from(['galaxies','star_systems','planets']).delete();
+		const sql = qb.from(['galaxies','star_systems','planets']).delete();
 		sql.should.eql("DELETE FROM `galaxies`");
 	});
 	it('should add where conditions to where_array when conditions are supplied', function() {
@@ -47,44 +47,44 @@ describe('delete()', function() {
 	});
 	it('should return a string', function() {
 		qb.reset_query();
-		var sql = qb.delete('galaxies', {continents: 7, star_system: 'Solar'});
+		const sql = qb.delete('galaxies', {continents: 7, star_system: 'Solar'});
 		expect(sql).to.be.a('string');
 		expect(sql).to.exist;
 		expect(sql).to.not.eql('');
 	});
 	it('should build a properly-escaped delete statement that deletes all records in a table if only a table is given', function() {
 		qb.reset_query();
-		var sql = qb.delete('galaxies');
+		const sql = qb.delete('galaxies');
 		sql.should.eql('DELETE FROM `galaxies`');
 	});
 	it('should build a properly-escaped delete statement that deletes all records in a table that matched passed conditions', function() {
 		qb.reset_query();
-		var sql = qb.delete('galaxies', {class: 'M'});
+		const sql = qb.delete('galaxies', {class: 'M'});
 		sql.should.eql("DELETE FROM `galaxies` WHERE `class` = 'M'");
 	});
 	it('should use ONLY the FIRST table added previously via the from() method', function() {
 		qb.reset_query();
 		qb.from('galaxies');
-		var sql = qb.delete();
+		let sql = qb.delete();
 		sql.should.eql('DELETE FROM `galaxies`');
 
 		qb.reset_query();
-		var sql = qb.from(['galaxies','star_systems','planets']).delete();
+		sql = qb.from(['galaxies','star_systems','planets']).delete();
 		sql.should.eql('DELETE FROM `galaxies`');
 	});
 	it('should accept where conditions added previously via the where() method', function() {
 		qb.reset_query();
-		var sql = qb.where('created >=',4.6E9).where({class: 'M'}).delete('galaxies');
+		const sql = qb.where('created >=',4.6E9).where({class: 'M'}).delete('galaxies');
 		sql.should.eql("DELETE FROM `galaxies` WHERE `created` >= 4600000000 AND `class` = 'M'");
 	});
 	it('should accept a limit on the number of rows deleted', function() {
 		qb.reset_query();
-		var sql = qb.limit(20).delete('galaxies');
+		const sql = qb.limit(20).delete('galaxies');
 		sql.should.eql("DELETE FROM `galaxies` LIMIT 20");
 	});
 	it('should accept a LIMIT on the number of rows to delete and an OFFSET at which to start deleting the rows', function() {
 		qb.reset_query();
-		var sql = qb.limit(20,10).delete('galaxies');
+		const sql = qb.limit(20,10).delete('galaxies');
 		sql.should.eql("DELETE FROM `galaxies` LIMIT 10, 20");
 	});
 });

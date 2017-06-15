@@ -11,14 +11,14 @@ describe('truncate()', function() {
 	});
 	it('should return a string', function() {
 		qb.reset_query();
-		var sql = qb.truncate('galaxies');
+		const sql = qb.truncate('galaxies');
 		expect(sql).to.be.a('string');
 		expect(sql).to.exist;
 		expect(sql).to.not.eql('');
 	});
 	it('should build a proper truncate statement', function() {
 		qb.reset_query();
-		var sql = qb.truncate('galaxies');
+		const sql = qb.truncate('galaxies');
 		sql.should.eql('TRUNCATE `galaxies`');
 	});
 });

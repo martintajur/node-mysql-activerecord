@@ -87,7 +87,7 @@ const QueryBuilder = function(settings,driver,type) {
 
 		// Fail if specified driver is inactive
 		if (qb.driver_info.active === false) {
-			var err = (qb.driver_version == 'default' ? 'The default version' : "Version " + qb.driver_version)
+			const err = (qb.driver_version == 'default' ? 'The default version' : "Version " + qb.driver_version)
 					+ " of the " + qb.driver + " driver you are attempting to load is not currently available!";
 			throw new Error(err);
 		}

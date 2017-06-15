@@ -6,7 +6,7 @@ mocha --timeout 5000 --reporter markdown test/*.js
    - [select()](#select)
    - [where()](#where)
 <a name=""></a>
- 
+
 <a name="from"></a>
 # from()
 should exist.
@@ -184,7 +184,7 @@ qb.fromArray.should.eql(['`universe`.`galaxy`.`star_system` as `planet`']);
 actually exists and can be initialized.
 
 ```js
-var qb = new QueryBuilder();
+const qb = new QueryBuilder();
 qb.should.be.instanceOf(Object);
 ```
 
@@ -217,7 +217,7 @@ qb.joinArray.should.be.empty;
 should require a string to be passed as first parameter.
 
 ```js
-var invalid_match = /must provide a table/;
+const invalid_match = /must provide a table/;
 expect(function() { qb.join(); 		}, 'nothing provided').to.throw(Error, invalid_match);
 expect(function() { qb.join(true); 	}, 'true provided').to.throw(Error, invalid_match);
 expect(function() { qb.join(null); 	}, 'null provided').to.throw(Error, invalid_match);
@@ -249,8 +249,8 @@ qb.joinArray.should.eql(['JOIN `universe` `u` ']);
 should allow a string (and only a string) to be passed as second parameter but only if a valid (or no) third parameter is provided.
 
 ```js
-var invalid_2nd_param = /You must provide a valid condition to join on when providing a join direction/;
-var invalid_direction = /Invalid join direction provided as third parameter/;
+const invalid_2nd_param = /You must provide a valid condition to join on when providing a join direction/;
+const invalid_direction = /Invalid join direction provided as third parameter/;
 
 expect(function() { qb.join('universe',null,'left');		}, 'null 2nd param').to.throw(Error,invalid_2nd_param);
 expect(function() { qb.join('universe',false,'left');		}, 'false 2nd param').to.throw(Error,invalid_2nd_param);
@@ -269,7 +269,7 @@ should allow valid join direction to be passed in third parameter.
 
 ```js
 // NOTE: A lot of this functionality was already tested when testing second param
-var invalid_direction = /Invalid join direction provided as third parameter/;
+const invalid_direction = /Invalid join direction provided as third parameter/;
 
 expect(function() { qb.join('universe','foo = bar','fake');			}, 'invalid 3rd param').to.throw(Error,invalid_direction);
 expect(function() { qb.join('universe',null,null);					}, 'invalid 2nd and 3rd params').to.not.throw(Error);
@@ -366,9 +366,9 @@ qb.selectArray.should.be.empty;
 should require an array or string to be passed as first parameter.
 
 ```js
-var invalid_match = /requires a string or array/;
-var empty_str_match = /string is empty/;
-var empty_arr_match = /array is empty/;
+const invalid_match = /requires a string or array/;
+const empty_str_match = /string is empty/;
+const empty_arr_match = /array is empty/;
 expect(function() { qb.select(); 	 	}, 'nothing provided').to.throw(Error, invalid_match);
 expect(function() { qb.select(true); 	}, 'true provided').to.throw(Error, invalid_match);
 expect(function() { qb.select(null); 	}, 'null provided').to.throw(Error, invalid_match);
@@ -551,11 +551,11 @@ should not allow subqueries or functions with commas in them without the second 
 
 ```js
 qb.resetQuery();
-expect(function() { 
+expect(function() {
 	qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets');
 }).to.throw(Error);
 
-expect(function() { 
+expect(function() {
 	qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets',false);
 }).to.not.throw(Error);
 ```

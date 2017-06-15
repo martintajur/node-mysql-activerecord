@@ -16,9 +16,9 @@ describe('select()', function() {
 		qb.select_array.should.be.empty;
 	});
 	it('should require an array or string to be passed as first parameter', function() {
-		var invalid_match = /requires a string or array/;
-		var empty_str_match = /string is empty/;
-		var empty_arr_match = /array is empty/;
+		const invalid_match = /requires a string or array/;
+		const empty_str_match = /string is empty/;
+		const empty_arr_match = /array is empty/;
 		expect(function() { qb.select(); 	 	}, 'nothing provided').to.throw(Error, invalid_match);
 		expect(function() { qb.select(true); 	}, 'true provided').to.throw(Error, invalid_match);
 		expect(function() { qb.select(null); 	}, 'null provided').to.throw(Error, invalid_match);
@@ -165,9 +165,9 @@ describe('select()', function() {
 
 	});
 });
-var prefixes = ['min','max','avg','sum'];
-for (var i in prefixes) {
-	var type = prefixes[i];
+const prefixes = ['min','max','avg','sum'];
+for (const i in prefixes) {
+	const type = prefixes[i];
 	describe('select_' + type+'()', function() {
 		it('should exist', function() {
 			should.exist(qb['select_' + type]);

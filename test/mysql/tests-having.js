@@ -52,7 +52,7 @@ describe('having()', function() {
 	});
 	it('should accept an object of conditions and prepend AND to each condition following the first one', function() {
 		qb.reset_query();
-		var object = {planet_class: 'M', sentient_life: 1};
+		const object = {planet_class: 'M', sentient_life: 1};
 		object['planet_order <='] = 3;
 		qb.having(object);
 		qb.having_array.should.eql(["`planet_class` = 'M'", 'AND `sentient_life` = 1','AND `planet_order` <= 3']);
