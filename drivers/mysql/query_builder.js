@@ -1,17 +1,17 @@
-var QueryBuilder = function() {
+const QueryBuilder = function() {
 
     // ------------------------------ GENERIC FUNCTIONS ------------------------------//
-    var array_values = function(item) {
-        var keys = Object.keys(item);
-        var length = keys.length;
-        var values = Array(length);
-        for (var i = 0; i < length; i++) {
+    const array_values = function(item) {
+        const keys = Object.keys(item);
+        const length = keys.length;
+        const values = Array(length);
+        for (const i = 0; i < length; i++) {
           values[i] = item[keys[i]];
         }
         return values;
     };
 
-    var prepare_for_limit_and_offset = function(item, type = 'limit') {
+    const prepare_for_limit_and_offset = function(item, type = 'limit') {
 
         type = type.toLowerCase();
 
@@ -52,13 +52,13 @@ var QueryBuilder = function() {
         return item;
     }
 
-    var extract_having_parts = function(key,key_array) {
-        var m;
+    const extract_having_parts = function(key,key_array) {
+        let m;
         key = key.trim().replace(/\s+/g,' ');
-        var str_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s"([^"]+)"$/;  //"// had to do this for syntax highlighting
-        var sstr_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s'([^']+)'$/;  //'// had to do this for syntax highlighting
-        var num_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((?=.)([+-]?([0-9]*)(\.([0-9]+))?))$/;
-        var bool_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((true|false)+)$/;
+        const str_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s"([^"]+)"$/;  //"// had to do this for syntax highlighting
+        const sstr_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s'([^']+)'$/;  //'// had to do this for syntax highlighting
+        const num_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((?=.)([+-]?([0-9]*)(\.([0-9]+))?))$/;
+        const bool_condition = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s((true|false)+)$/;
 
         if (m = str_condition.exec(key)) {
             key_array[m[1]] = m[3];
@@ -87,13 +87,13 @@ var QueryBuilder = function() {
     }
 
     // Simply setting all properties to [] causes reference issues in the parent class.
-    var clear_array = function(a,debug) {
+    const clear_array = function(a,debug) {
         if (debug === true) {
             console.log("DEBUG before (" + Object.prototype.toString.call(a) + "):");
             console.dir(a);
         }
         if (Object.prototype.toString.call(a) === Object.prototype.toString.call({})) {
-            for (var key in a) {
+            for (const key in a) {
                 if (a.hasOwnProperty(key)) {
                     delete a[key];
                 }
@@ -111,10 +111,10 @@ var QueryBuilder = function() {
     };
 
     // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
-    var track_aliases = function(qb,table) {
+    const track_aliases = function(qb,table) {
         if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
-            for (var i in table) {
-                var t = table[i];
+            for (const i in table) {
+                const t = table[i];
                 track_aliases(qb,t);
             }
             return;
@@ -132,7 +132,7 @@ var QueryBuilder = function() {
             table = table.replace(/\s+AS\s+/gi, ' ');
 
             // Grab the alias
-            var alias = table.slice(table.lastIndexOf(' ')).trim().replace(/`/g,'');
+            const alias = table.slice(table.lastIndexOf(' ')).trim().replace(/`/g,'');
 
             // Store the alias, if it doesn't already exist
             if(qb.aliased_tables.indexOf(alias) == -1) {
@@ -141,7 +141,7 @@ var QueryBuilder = function() {
         }
     };
 
-    var create_aliases_from_table = function(item) {
+    const create_aliases_from_table = function(item) {
         if (item.indexOf('.') !== -1) {
             return item.split('.').reverse()[0];
         }
@@ -149,13 +149,13 @@ var QueryBuilder = function() {
         return item;
     };
 
-    var escape_identifiers = function(item = '*') {
+    const escape_identifiers = function(item = '*') {
         if (item === '*') {
             return item;
         }
 
         if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
-            for (var i in item) {
+            for (const i in item) {
                 item[i] = escape_identifiers(item[i]);
             }
             return item;
@@ -164,7 +164,7 @@ var QueryBuilder = function() {
             return item;
         }
 
-        var str;
+        let str;
         if (item.indexOf('.' + '*') !== -1) {
             str = item.replace(/`?([^`\.]+)`?\./ig, "`$1`.");
         }
@@ -176,16 +176,16 @@ var QueryBuilder = function() {
         return str.replace(/[`]+/g,'`');
     };
 
-    var protect_identifiers = function(qb,item,protect_identifiers) {
+    const protect_identifiers = function(qb,item,protect_identifiers) {
         if (item === '') return item;
 
         protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
 
         if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
-            var escaped_array = {};
+            const escaped_array = {};
 
             for (k in item) {
-                var v = item[k];
+                const v = item[k];
                 escaped_array[protect_identifiers(qb,k)] = protect_identifiers(qb,v);
             }
 
@@ -199,8 +199,8 @@ var QueryBuilder = function() {
         // If a parenthesis is found we know that we do not need to
         // escape the data or add a prefix.
         if (item.indexOf('(') !== -1 || item.indexOf("'") !== -1) {
-            var has_alias = item.lastIndexOf(')');
-            var alias;
+            const has_alias = item.lastIndexOf(')');
+            let alias;
             if (has_alias >= 0) {
                 alias = item.substr(has_alias + 1).replace(/\sAS\s/i,'').trim();
                 alias = escape_identifiers(alias);
@@ -214,37 +214,36 @@ var QueryBuilder = function() {
             return item + alias;
         }
 
+        let alias = '';
+
         // If the item has an alias declaration we remove it and set it aside.
         // Basically we remove everything to the right of the first space
         if (/\sAS\s/ig.test(item)) {
-            var alias_index = item.indexOf(item.match(/\sAS\s/ig)[0]);
-            var alias = (protect_identifiers ? item.substr(alias_index,4) + escape_identifiers(item.slice(alias_index + 4)) : item.substr(alias_index));
+            const alias_index = item.indexOf(item.match(/\sAS\s/ig)[0]);
+            alias = (protect_identifiers ? item.substr(alias_index,4) + escape_identifiers(item.slice(alias_index + 4)) : item.substr(alias_index));
             item = item.substr(0,alias_index);
         }
         else if (item.indexOf(' ') !== -1) {
-            var alias_index = item.indexOf(' ');
+            const alias_index = item.indexOf(' ');
 
-            var alias = (protect_identifiers && ! has_operator(item.substr(alias_index + 1)) ? ' ' + escape_identifiers(item.substr(alias_index + 1)) : item.substr(alias_index));
+            alias = (protect_identifiers && ! has_operator(item.substr(alias_index + 1)) ? ' ' + escape_identifiers(item.substr(alias_index + 1)) : item.substr(alias_index));
             item = item.substr(0,alias_index);
-        }
-        else {
-            var alias = '';
         }
 
         // Break the string apart if it contains periods, then insert the table prefix
         // in the correct location, assuming the period doesn't indicate that we're dealing
         // with an alias. While we're at it, we will escape the components
         if (item.indexOf('.') !== -1) {
-            var parts = item.split('.');
-            var first_seg = parts[0].trim().replace(/`/g,'');
+            const parts = item.split('.');
+            const first_seg = parts[0].trim().replace(/`/g,'');
 
             // Does the first segment of the exploded item match
             // one of the aliases previously identified?  If so,
             // we have nothing more to do other than escape the item
             if (qb.aliased_tables.indexOf(first_seg) !== -1) {
                 if (protect_identifiers === true) {
-                    for (var key in parts) {
-                        var val = parts[key];
+                    for (const key in parts) {
+                        const val = parts[key];
                         if (val !== '*') {
                             parts[key] = escape_identifiers(val);
                         }
@@ -268,9 +267,9 @@ var QueryBuilder = function() {
         return item + alias;
     };
 
-    var has_operator = function (str) {
+    const has_operator = function (str) {
         if(typeof str === 'string' && str.length > 0) {
-            var match = /(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sCASE|\sTHEN|\sWHEN|\sIN\s*\(|\s)/i.test(str.trim());
+            const match = /(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sCASE|\sTHEN|\sWHEN|\sIN\s*\(|\s)/i.test(str.trim());
             if(!match) {
                 return false;
             }
@@ -278,9 +277,9 @@ var QueryBuilder = function() {
         return true;
     };
 
-    var qb_escape = function(qb,str) {
-        var SqlString = require('../../node_modules/mysql/lib/protocol/SqlString.js');
-        var do_escape = SqlString.escape;
+    const qb_escape = function(qb,str) {
+        const SqlString = require('../../node_modules/mysql/lib/protocol/SqlString.js');
+        const do_escape = SqlString.escape;
 
         if (typeof str === 'boolean') {
             str = (str === false ? 0 : 1);
@@ -295,8 +294,8 @@ var QueryBuilder = function() {
 
 
     // ---------------------------- SQL BUILD TOOLS ----------------------------//
-    var build_where_clause = function(qb) {
-        var sql = '';
+    const build_where_clause = function(qb) {
+        let sql = '';
         if(qb.where_array.length > 0) {
             sql += " WHERE ";
         }
@@ -304,8 +303,8 @@ var QueryBuilder = function() {
         return sql;
     };
 
-    var build_from_clause = function(qb) {
-        var sql = '';
+    const build_from_clause = function(qb) {
+        let sql = '';
         if(qb.from_array.length > 0) {
             sql += " FROM ";
         } else {
@@ -315,39 +314,39 @@ var QueryBuilder = function() {
         return sql;
     };
 
-    var build_join_string = function(qb) {
-        var sql = '';
+    const build_join_string = function(qb) {
+        let sql = '';
         sql += qb.join_array.join(' ');
         if(sql.length > 0) sql = ' ' + sql;
         return sql;
     };
 
-    var build_group_by_clause = function(qb) {
+    const build_group_by_clause = function(qb) {
         if (qb.group_by_array.length <= 0) return '';
 
-        var sql = ' GROUP BY ';
+        let sql = ' GROUP BY ';
         sql += qb.group_by_array.join(', ');
         return sql;
     };
 
-    var build_having_clause = function(qb) {
+    const build_having_clause = function(qb) {
         if (qb.having_array.length <= 0) return '';
 
-        var sql = ' HAVING ';
+        let sql = ' HAVING ';
         sql += qb.having_array.join(' ');
         return sql;
     };
 
-    var build_order_by_clause = function(qb) {
+    const build_order_by_clause = function(qb) {
         if (qb.order_by_array.length <= 0) return '';
 
-        var sql = ' ORDER BY ';
+        let sql = ' ORDER BY ';
         sql += qb.order_by_array.join(', ');
 
         return sql;
     };
 
-    var build_limit_clause = function(sql, limit, offset) {
+    const build_limit_clause = function(sql, limit, offset) {
         if (!limit) return sql;
 
         sql += ' ';
@@ -361,9 +360,9 @@ var QueryBuilder = function() {
         return sql.replace(/\s+$/, ' ') + 'LIMIT ' + offset + limit;
     };
 
-    var compile_select = function(qb) {
-        var distinct_clause = qb.distinct_clause[0] || '';
-        var sql = 'SELECT ' + distinct_clause;
+    const compile_select = function(qb) {
+        const distinct_clause = qb.distinct_clause[0] || '';
+        let sql = 'SELECT ' + distinct_clause;
         if (qb.select_array.length === 0) {
             sql += '*';
         } else {
@@ -377,14 +376,14 @@ var QueryBuilder = function() {
             + build_having_clause(qb)
             + build_order_by_clause(qb);
 
-        var limit_to = qb.limit_to[0] || false;
-        var offset_val = qb.offset_val[0] || false;
+        const limit_to = qb.limit_to[0] || false;
+        const offset_val = qb.offset_val[0] || false;
 
         sql = build_limit_clause(sql,limit_to,offset_val);
         return sql;
     };
 
-    var compile_delete = function(qb) {
+    const compile_delete = function(qb) {
         if (qb.from_array.length === 0) {
             throw new Error('You have not specified any tables to delete from!');
             return '';
@@ -392,24 +391,22 @@ var QueryBuilder = function() {
 
         qb.from_array = qb.from_array.slice(0,1);
 
-        var limit_to = qb.limit_to[0] || false;
-        var offset_val = qb.offset_val[0] || false;
+        const limit_to = qb.limit_to[0] || false;
+        const offset_val = qb.offset_val[0] || false;
 
-        var sql = 'DELETE' + build_from_clause(qb) + build_where_clause(qb);
+        const sql = 'DELETE' + build_from_clause(qb) + build_where_clause(qb);
         return build_limit_clause(sql,limit_to,offset_val);
     };
 
-    var compile_update = function(qb) {
-        var valstr = [];
-        for (var i in qb.set_array) {
-            var key = Object.keys(qb.set_array[i])[0];
-            var val = qb.set_array[i][key];
+    const compile_update = function(qb) {
+        const valstr = [];
+        for (const i in qb.set_array) {
+            const key = Object.keys(qb.set_array[i])[0];
+            const val = qb.set_array[i][key];
             valstr.push(key + ' = ' + val);
         }
 
-        if (qb.from_array.length === 1) {
-            var table = qb.from_array.toString();
-        } else {
+        if (qb.from_array.length !== 1) {
             if (qb.from_array.length === 0) {
                 throw new Error("You haven't provided any tables to build UPDATE query with!");
                 return '';
@@ -418,31 +415,33 @@ var QueryBuilder = function() {
             return '';
         }
 
-        var limit_to = qb.limit_to[0] || false;
-        var offset_val = qb.offset_val[0] || false;
+        const table = qb.from_array.toString();
 
-        var sql = 'UPDATE (' + table + ") SET " + valstr.join(', ');
+        const limit_to = qb.limit_to[0] || false;
+        const offset_val = qb.offset_val[0] || false;
+
+        let sql = 'UPDATE (' + table + ") SET " + valstr.join(', ');
         sql += build_where_clause(qb);
         sql += build_order_by_clause(qb);
         return build_limit_clause(sql, limit_to, offset_val);
     };
 
-    var compile_insert = function(qb, ignore, suffix='') {
-        var keys = [];
-        var values = [];
+    const compile_insert = function(qb, ignore, suffix='') {
+        const keys = [];
+        const values = [];
 
-        for (var i in qb.set_array) {
-            var key = Object.keys(qb.set_array[i])[0];
-            var val = qb.set_array[i][key];
+        for (const i in qb.set_array) {
+            const key = Object.keys(qb.set_array[i])[0];
+            const val = qb.set_array[i][key];
 
             keys.push(key);
             values.push(val);
         }
 
-        var verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
+        const verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
 
         if (qb.from_array.length === 1) {
-            var table = qb.from_array.toString();
+            const table = qb.from_array.toString();
         } else {
             if (qb.from_array.length === 0) {
                 throw new Error("You haven't provided any tables to build INSERT querty with!");
@@ -535,14 +534,14 @@ var QueryBuilder = function() {
                 // If it's a actual where clause string (with no paranthesis),
                 // not just a field name, split it into individual parts to escape it properly
                 if (/(<=|>=|<>|>|<|!=|=)/.test(key) && key.indexOf('(') === -1 && escape === true) {
-                    var filters = key.split(/\s+(AND|OR)\s+/i);
+                    const filters = key.split(/\s+(AND|OR)\s+/i);
                     if (filters.length > 1) {
-                        var that = this;
-                        var parse_statement = function(statement,joiner) {
-                            var parsed = statement.match(/^([^<>=!]+)(<=|>=|<>|>|<|!=|=)(.*)$/);
+                        const that = this;
+                        const parse_statement = function(statement,joiner) {
+                            const parsed = statement.match(/^([^<>=!]+)(<=|>=|<>|>|<|!=|=)(.*)$/);
                             if (parsed.length >= 4) {
-                                var key = parsed[1].trim() + (parsed[2].trim() !== '=' ? ' ' + parsed[2].trim() : '');
-                                var value = parsed[3].trim().replace(/^((?:'|"){1})(.*)/, "$2").replace(/'$/,'');
+                                const key = parsed[1].trim() + (parsed[2].trim() !== '=' ? ' ' + parsed[2].trim() : '');
+                                const value = parsed[3].trim().replace(/^((?:'|"){1})(.*)/, "$2").replace(/'$/,'');
                                 if (joiner === null || /AND/i.test(joiner)) {
                                     that.where(key, value, true);
                                 } else {
@@ -552,15 +551,15 @@ var QueryBuilder = function() {
                         };
                         parse_statement(filters.shift(),null);
                         while (filters.length > 0) {
-                            var joiner = filters.shift();
-                            var statement = filters.shift();
+                            const joiner = filters.shift();
+                            const statement = filters.shift();
                             parse_statement(statement, joiner);
                         }
                         return this;
                     }
                 }
 
-                var key_array = {};
+                const key_array = {};
                 key_array[key] = value;
                 key = key_array;
             }
@@ -569,14 +568,14 @@ var QueryBuilder = function() {
                 throw new Error("where(): You haven't provided any key value pairs to limit the resultset by.");
             }
 
-            for (var k in key) {
-                var v = key[k];
+            for (let k in key) {
+                let v = key[k];
 
                 if (typeof v === 'object' && Object.prototype.toString.call(v) === Object.prototype.toString.call([]) && v.length > 0) {
                     return this._where_in(k,v,false,type,escape);
                 }
 
-                var prefix = (this.where_array.length == 0 ? '' : type);
+                const prefix = (this.where_array.length == 0 ? '' : type);
 
                 if (v === null && !has_operator(k)) {
                     k += ' IS NULL';
@@ -645,12 +644,12 @@ var QueryBuilder = function() {
                 }
             }
 
-            for (var i in values) {
+            for (const i in values) {
                 this.where_in_array.push(qb_escape(this,values[i]));
             }
 
-            var prefix = (this.where_array.length == 0 ? '' : type);
-            var where_in = prefix + protect_identifiers(this,key,escape) + not + " IN (" + this.where_in_array.join(', ') + ")";
+            const prefix = (this.where_array.length == 0 ? '' : type);
+            const where_in = prefix + protect_identifiers(this,key,escape) + not + " IN (" + this.where_in_array.join(', ') + ")";
             this.where_array.push(where_in);
 
             // reset the array for multiple calls
@@ -692,15 +691,15 @@ var QueryBuilder = function() {
                     throw new Error("like(): Since your first parameter is a string, your second param must a valid number, boolean, or string.");
                 }
 
-                var field_array = {};
+                const field_array = {};
                 field_array[field] = match;
                 field = field_array;
             }
 
-            for(k in field) {
-                var like_statement;
-                var v = field[k];
-                var k = protect_identifiers(this,k.trim());
+            for(let k in field) {
+                let like_statement;
+                const v = field[k];
+                k = protect_identifiers(this,k.trim());
 
                 // Make sure value is only string, number, or boolean
                 if (!/^(string|number|boolean)$/.test(typeof v)) {
@@ -737,15 +736,15 @@ var QueryBuilder = function() {
             if(Object.prototype.toString.call(from) !== Object.prototype.toString.call([])) {
                 from = [from];
             }
-            for (var i in from) {
-                var val = from[i];
+            for (const i in from) {
+                let val = from[i];
 
                 if (val.trim() === '') continue;
 
                 if (val.indexOf(',') !== -1) {
-                    var objects = val.split(',');
-                    for (var j in objects) {
-                        var v = objects[j].trim();
+                    const objects = val.split(',');
+                    for (const j in objects) {
+                        const v = objects[j].trim();
 
                         track_aliases(this,v);
 
@@ -775,7 +774,7 @@ var QueryBuilder = function() {
             direction = (typeof direction === 'string' && direction.trim().length != 0 ? direction.trim() : '');
             escape = (typeof escape === 'boolean' ? escape : true);
 
-            var valid_directions = ['LEFT','RIGHT','OUTER','INNER','LEFT OUTER','RIGHT OUTER'];
+            const valid_directions = ['LEFT','RIGHT','OUTER','INNER','LEFT OUTER','RIGHT OUTER'];
 
             if (direction != '') {
                 direction = direction.toUpperCase().trim();
@@ -792,19 +791,19 @@ var QueryBuilder = function() {
             track_aliases(this,table);
 
             // Split multiple conditions
-            var regex = /\sAND\s|\sOR\s/ig;
-            var m = relation.match(regex);
-            var matches = [];
-            var k, temp, temp_match, match;
+            const regex = /\sAND\s|\sOR\s/ig;
+            const m = relation.match(regex);
+            const matches = [];
+            let k, temp, temp_match, match;
             if (escape === true && m) {
                 while(k = regex.exec(relation)) {
                     matches.push(k);
                 }
 
-                var new_relation = '';
+                let new_relation = '';
                 matches.push(['']);
                 matches[(matches.length - 1)].index = relation.length;
-                for (var j = 0, c = matches.length, s = 0; j < c; s = matches[j].index + matches[j][0].length, j++) {
+                for (let j = 0, c = matches.length, s = 0; j < c; s = matches[j].index + matches[j][0].length, j++) {
                     temp = relation.substr(s, matches[j].index - s);
                     temp_match = temp.match(/([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i);
                     new_relation += (temp_match ? protect_identifiers(this,temp_match[1],escape) + temp_match[2] + protect_identifiers(this,temp_match[3],escape) : temp);
@@ -834,7 +833,7 @@ var QueryBuilder = function() {
                 table = protect_identifiers(this,table,true);
             }
 
-            var join = direction + 'JOIN ' + table + relation;
+            const join = direction + 'JOIN ' + table + relation;
 
             this.join_array.push(join);
             return this;
@@ -865,8 +864,8 @@ var QueryBuilder = function() {
                     select = select.split(',');
                 } else {
                     if (escape === true) {
-                        var m, open_paren_index, inner_parenthesis;
-                        var reg = /\)/g;
+                        let m, open_paren_index, inner_parenthesis;
+                        const reg = /\)/g;
                         while ((m = reg.exec(select) !== null)) {
                             open_paren_index = m.input.substring(0,m.index).lastIndexOf('(');
                             if (open_paren_index !== -1) {
@@ -884,8 +883,8 @@ var QueryBuilder = function() {
                 }
             }
 
-            for (var i in select) {
-                var val = select[i].trim();
+            for (const i in select) {
+                const val = select[i].trim();
 
                 if(val !== '') {
                     this.select_array.push(protect_identifiers(this,val,escape));
@@ -928,7 +927,7 @@ var QueryBuilder = function() {
                 alias = create_aliases_from_table(select.trim());
             }
 
-            var sql = type + '(' + protect_identifiers(this,select.trim()) + ') AS ' + alias;
+            const sql = type + '(' + protect_identifiers(this,select.trim()) + ') AS ' + alias;
 
             this.select_array.push(sql);
 
@@ -965,12 +964,12 @@ var QueryBuilder = function() {
                 throw new Error("You haven't provided any fields to group by!");
             }
 
-            for (var key in by) {
+            for (const key in by) {
                 if (typeof by[key] !== 'string') {
                     throw new Error("You have provided an invalid value to the group_by() method. Only strings and arrays of strings are allowed!");
                 }
 
-                var val = by[key].trim();
+                const val = by[key].trim();
 
                 if (val !== '') {
                     this.group_by_array.push(protect_identifiers(this,val));
@@ -991,10 +990,10 @@ var QueryBuilder = function() {
 
         _having: function(key, value, type='AND ', escape) {
 
-            var m;
-            var key_array = {};
-            var key_is_object = Object.prototype.toString.call(key) === Object.prototype.toString.call({});
-            var key_is_array = Object.prototype.toString.call(key) === Object.prototype.toString.call([]);
+            let m;
+            let key_array = {};
+            const key_is_object = Object.prototype.toString.call(key) === Object.prototype.toString.call({});
+            const key_is_array = Object.prototype.toString.call(key) === Object.prototype.toString.call([]);
 
             if (/^(string|number|boolean)$/.test(typeof value)) { // if the value is a string, number, or boolean...
                 if (typeof key !== 'string' || /^\W+$/i.test(key)) { // if the key is not a string...
@@ -1016,7 +1015,7 @@ var QueryBuilder = function() {
                     }
                     else if (key_is_array === true) {
                         //console.log("Key is NOT a string");
-                        for (var i in key) {
+                        for (const i in key) {
                             if (typeof key[i] !== 'string') {
                                 throw new Error("having(): You've provided an unparseable format to the having() method..");
                             }
@@ -1033,9 +1032,9 @@ var QueryBuilder = function() {
             }
 
 
-            for (var k in key) {
-                var v = key[k];
-                var prefix = (this.having_array.length == 0 ? '' : type);
+            for (let k in key) {
+                let v = key[k];
+                const prefix = (this.having_array.length == 0 ? '' : type);
 
                 if (escape === true) {
                     k = protect_identifiers(this,k);
@@ -1059,8 +1058,8 @@ var QueryBuilder = function() {
         },
 
         order_by: function(orderby, direction) {
-            var m;
-            var rand_word = 'RAND()';
+            let m;
+            const rand_word = 'RAND()';
             direction = (typeof direction === 'string' ? direction.toLowerCase().trim() : '');
 
             // Don't need to do anything below if the direction provided is random
@@ -1077,7 +1076,7 @@ var QueryBuilder = function() {
                         throw new Error("You haven't provided any fields to order by!!");
                     }
                     orderby = orderby.split(',');
-                } else if (!orderby && /(random|RAND|RAND\(\))/i.test(direction)) {
+                } else if (!orderby && (/(random|RAND|RAND\(\))/i.test(direction))) {
                     this.order_by_array.push(rand_word);
                     return this;
                 }
@@ -1090,7 +1089,7 @@ var QueryBuilder = function() {
                 throw new Error("You haven't provided any fields to order by!");
             }
 
-            for (var i in orderby) {
+            for (const i in orderby) {
                 orderby[i] = orderby[i].replace(/\s+/g, ' ');
 
                 if (m = orderby[i].match(/([^\s]+)\s+(ASC|DESC|RAND\(\))/i)) {
@@ -1143,7 +1142,7 @@ var QueryBuilder = function() {
                 if (typeof value === 'undefined')
                     throw new Error("set(): First param was string but no value (second param) provided to set!");
 
-                var key_array = {};
+                const key_array = {};
                 key_array[key] = value;
                 key = key_array;
             }
@@ -1162,8 +1161,8 @@ var QueryBuilder = function() {
 
 
             // Add each key:value pair to the set_array
-            for (var i in key) {
-                var v = key[i];
+            for (const i in key) {
+                let v = key[i];
                 if (typeof v === 'undefined') continue;
 
                 if (v instanceof Date) v = v.toString();
@@ -1176,10 +1175,10 @@ var QueryBuilder = function() {
                 }
 
                 // Escape the key to be DRY
-                var escaped_key = protect_identifiers(this,i,escape);
+                const escaped_key = protect_identifiers(this,i,escape);
 
                 // Build a temporary object with escaped key and val
-                var temp = {};
+                const temp = {};
                 if (escape === false) {
                     temp[escaped_key] = v;
                 } else {
@@ -1187,8 +1186,8 @@ var QueryBuilder = function() {
                 }
 
                 // Determine if this key has already been set
-                var found_index = null;
-                for (var j in this.set_array) {
+                let found_index = null;
+                for (const j in this.set_array) {
                     if (this.set_array[j].hasOwnProperty(escaped_key)) {
                         found_index = j;
                         break;
@@ -1254,8 +1253,8 @@ var QueryBuilder = function() {
         },
 
         insert_batch: function(table,set=null,ignore,suffix) {
-            var self = this;
-            var orig_table = table = table || '';
+            const self = this;
+            const orig_table = table = table || '';
             ignore = (typeof ignore !== 'boolean' ? false : ignore);
             suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
             if (suffix == ' ') suffix = '';
@@ -1284,14 +1283,14 @@ var QueryBuilder = function() {
                 throw new Error('insert_batch(): Array of objects must be provided for batch insert!');
             }
 
-            for (var key in set) {
-                var row = set[key];
-                var is_object = Object.prototype.toString.call(row) == Object.prototype.toString.call({});
+            for (const key in set) {
+                const row = set[key];
+                const is_object = Object.prototype.toString.call(row) == Object.prototype.toString.call({});
                 if (!is_object || (is_object && Object.keys(row).length === 0)) {
                     throw new Error('insert_batch(): An invalid item was found in the data array!');
                 } else {
-                    for (var i in row) {
-                        var v = row[i];
+                    for (const i in row) {
+                        const v = row[i];
 
                         if (!/^(number|string|boolean)$/.test(typeof v) && v !== null) {
                             throw new Error("set(): Invalid value provided!");
@@ -1307,11 +1306,11 @@ var QueryBuilder = function() {
                 return this.insert(orig_table, {}, ignore, (suffix === '' ? null : suffix));
             }
 
-            var map = [];
-            var columns = [];
+            const map = [];
+            const columns = [];
 
             // Obtain all the column names
-            for (var key in set[0]) {
+            for (const key in set[0]) {
                 if (set[0].hasOwnProperty(key)) {
                     if (columns.indexOf(key) == -1) {
                         columns.push(protect_identifiers(this,key));
@@ -1319,10 +1318,10 @@ var QueryBuilder = function() {
                 }
             }
 
-            for (var i = 0; i < set.length; i++) {
+            for (let i = 0; i < set.length; i++) {
                 (function(i,qb) {
-                    var row = [];
-                    for (var key in set[i]) {
+                    const row = [];
+                    for (const key in set[i]) {
                         if (set[i].hasOwnProperty(key)) {
                             row.push(qb_escape(qb,set[i][key]));
                         }
@@ -1334,7 +1333,7 @@ var QueryBuilder = function() {
                 })(i,self);
             }
 
-            var verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
+            const verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
             return verb + 'INTO ' + this.from_array[0] + ' (' + columns.join(', ') + ') VALUES ' + map.join(', ') + suffix;
         },
 
@@ -1362,7 +1361,7 @@ var QueryBuilder = function() {
 
 			// If table is array, make sure there are only strings in there and that they are non-empty strings
 			if (Array.isArray(table)) {
-				for (var v in table) {
+				for (const v in table) {
 					if (typeof v !== 'string' || (typeof v === 'string' && v.trim().length <= 0)) {
 						throw new Error("Invalid table string specified in array of tables!");
 						break;
@@ -1385,7 +1384,7 @@ var QueryBuilder = function() {
                 this.from(table);
             }
 
-            var sql = 'SELECT COUNT(*) AS ' + protect_identifiers(this,'numrows')
+            const sql = 'SELECT COUNT(*) AS ' + protect_identifiers(this,'numrows')
                 + build_from_clause(this)
                 + build_join_string(this)
                 + build_where_clause(this);
@@ -1400,7 +1399,7 @@ var QueryBuilder = function() {
 
             // Send to batch_update if the data param is an array
             if (Object.prototype.toString.call(set) === Object.prototype.toString.call([])) {
-                var index = null;
+                let index = null;
                 if (set.length > 0) {
                     if (Object.prototype.toString.call(set[0]) === Object.prototype.toString.call({})) {
                         index = Object.keys(set[0])[0];
@@ -1483,13 +1482,13 @@ var QueryBuilder = function() {
 
             // Make sure each item in the dataset has the specified index and then add data to set_array
             //console.dir(set);
-            for (var i in set) {
-                var clean = {};
-                var row = set[i];
+            for (const i in set) {
+                const clean = {};
+                const row = set[i];
                 if (Object.prototype.toString.call(row) === Object.prototype.toString.call({}) && Object.keys(row).length > 0) {
-                    var keys = Object.keys(row);
+                    const keys = Object.keys(row);
                     if (keys.indexOf(index) !== -1) {
-                        for (var j in row) {
+                        for (const j in row) {
                             clean[protect_identifiers(this, j)] = qb_escape(this, row[j]);
                         }
                         this.set_array.push(clean);
@@ -1533,32 +1532,32 @@ var QueryBuilder = function() {
             }
 
             // Verify there is a table in the from_array
-            if (this.from_array.length === 1) {
-                var table = this.from_array.toString();
-            } else {
+            if (this.from_array.length !== 1) {
                 if (this.from_array.length === 0) {
                     throw new Error("You haven't provided any tables to build batch UPDATE query with!");
                 }
                 throw new Error("You have provided too many tables to build batch UPDATE query with!");
             }
 
+            table = this.from_array.toString();
+
 
             // Limit to 100 rows per batch
-            var batches = [];
-            for (var i = 0, total = this.set_array.length; i < total; i += 100) {
-                var when_then = {};
-                var ids = [];
-                var where = (this.where_array.length > 0 ? build_where_clause(this) + ' AND ' : '');
-                var chunk = this.set_array.slice(i,100);
+            const batches = [];
+            for (let i = 0, total = this.set_array.length; i < total; i += 100) {
+                const when_then = {};
+                const ids = [];
+                const where = (this.where_array.length > 0 ? build_where_clause(this) + ' AND ' : '');
+                const chunk = this.set_array.slice(i,100);
 
                 // Escape the index
                 index = protect_identifiers(this, index);
 
-                for (var j in chunk) {
+                for (const j in chunk) {
                     ids.push(chunk[j][index]);
 
-                    var keys = Object.keys(chunk[j]);
-                    for (var k in keys) {
+                    const keys = Object.keys(chunk[j]);
+                    for (const k in keys) {
                         if (keys[k] != index) {
                             if (!when_then.hasOwnProperty(keys[k])) {
                                 when_then[keys[k]] = [];
@@ -1569,13 +1568,13 @@ var QueryBuilder = function() {
                 }
 
                 // Build the actual SQL statement
-                var sql = 'UPDATE (' + table + ') SET ';
-                var cases = '';
+                let sql = 'UPDATE (' + table + ') SET ';
+                let cases = '';
 
-                for (var l in when_then) {
+                for (const l in when_then) {
                     cases += l + ' = CASE ';
 
-                    for (var m in when_then[l]) {
+                    for (const m in when_then[l]) {
                         cases += when_then[l][m];
                     }
 
