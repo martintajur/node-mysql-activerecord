@@ -69,7 +69,7 @@ const QueryBuilder = function(settings,driver,type) {
 		}
 
 		// Determine version of driver to use
-		if (qb.settings.hasOwnProperty('version') && (typeof qb.settings.version).match(/^(string|number)$/i)) {
+		if (qb.settings.hasOwnProperty('version') && /^(string|number)$/i.test(typeof qb.settings.version)) {
 			qb.driver_version = qb.settings.version;
 			delete qb.settings.version;
 		}
