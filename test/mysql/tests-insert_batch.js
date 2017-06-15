@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 var test_where = {id:3};
 var test_data = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'Andromeda', type: 'spiral'}];
@@ -19,10 +19,10 @@ describe('insert_batch()', function() {
 	});
 	it('should only accept nothing or a string for the table (first) parameter', function() {
 		qb.reset_query();
-		
+
 		// Doing these to prevent other errors
-		qb.from('galaxies'); 
-		
+		qb.from('galaxies');
+
 		expect(function() { qb.insert_batch([], test_data); 		}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.insert_batch({}, test_data); 		}, 'empty object provided').to.throw(Error);
 		expect(function() { qb.insert_batch(3, test_data); 			}, 'integer provided').to.throw(Error);
@@ -31,7 +31,7 @@ describe('insert_batch()', function() {
 		expect(function() { qb.insert_batch(Infinity, test_data);	}, 'Infinity provided').to.throw(Error);
 		expect(function() { qb.insert_batch([1,2], test_data); 		}, 'array of numbers provided').to.throw(Error);
 		expect(function() { qb.insert_batch(/foobar/, test_data);	}, 'regex provided').to.throw(Error);
-		
+
 		expect(function() { qb.insert_batch(NaN, test_data); 		}, 'NaN provided').to.not.throw(Error);
 		expect(function() { qb.insert_batch(false, test_data); 		}, 'false provided').to.not.throw(Error);
 		expect(function() { qb.insert_batch('', test_data); 		}, 'empty string provided').to.not.throw(Error);
@@ -46,10 +46,10 @@ describe('insert_batch()', function() {
 	});
 	it('should only accept an array as the second parameter', function() {
 		qb.reset_query();
-		
+
 		expect(function() { qb.insert_batch('galaxies',test_data);	}, 'array of objects provided').to.not.throw(Error);
 		expect(function() { qb.insert_batch('galaxies',[]); 		}, 'empty array provided').to.not.throw(Error);
-		
+
 		expect(function() { qb.insert_batch('galaxies',[{},{}]); 	}, 'array of empty objects provided').to.throw(Error);
 		expect(function() { qb.insert_batch('galaxies',[test_data,test_data]); }, 'array of arrays provided').to.throw(Error);
 		expect(function() { qb.insert_batch('galaxies',{}); 		}, 'empty object provided').to.throw(Error);
@@ -82,11 +82,11 @@ describe('insert_batch()', function() {
 	});
 	it('should fail if any invalid values are passed into one of the data objects in the dataset', function() {
 		qb.reset_query();
-		var func = function() { console.log("foo"); };
+		const func = function() { console.log("foo"); };
 		var regex = /foobar/;
 		var arr = [1,2,3];
 		var obj = {foo: 'bar'};
-		
+
 		expect(function() { qb.insert_batch('galaxies',[{id: func}]); 		}, 'function in data').to.throw(Error);
 		expect(function() { qb.insert_batch('galaxies',[{id: regex}]); 		}, 'regex in data').to.throw(Error);
 		expect(function() { qb.insert_batch('galaxies',[{id: Infinity}]);	}, 'Infinity in data').to.throw(Error);

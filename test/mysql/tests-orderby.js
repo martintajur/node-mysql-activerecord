@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('order_by()', function() {
 	it('should exist', function() {
@@ -72,7 +72,7 @@ describe('order_by()', function() {
 		expect(function() { qb.order_by('planet_position',[]); }).to.not.throw(Error);
 		expect(function() { qb.order_by('planet_position',{}); }).to.not.throw(Error);
 		expect(function() { qb.order_by('planet_position',''); }).to.not.throw(Error);
-		
+
 		// Only an invalid string will throw an error
 		expect(function() { qb.order_by('planet_position','FAKE'); }).to.throw(Error);
 	});
@@ -90,19 +90,19 @@ describe('order_by()', function() {
 		qb.reset_query();
 		qb.order_by('planet_position', 'random');
 		qb.order_by_array.should.eql(['RAND()']);
-		
+
 		qb.reset_query();
 		qb.order_by('planet_size', 'RAND');
 		qb.order_by_array.should.eql(['RAND()']);
-		
+
 		qb.reset_query();
 		qb.order_by('planet_position, planet_size', 'rand');
 		qb.order_by_array.should.eql(['RAND()']);
-		
+
 		qb.reset_query();
 		qb.order_by(null, 'RAND()');
 		qb.order_by_array.should.eql(['RAND()']);
-		
+
 		qb.reset_query();
 		qb.order_by('', 'rand');
 		qb.order_by_array.should.eql(['RAND()']);
@@ -116,7 +116,7 @@ describe('order_by()', function() {
 		qb.reset_query();
 		qb.order_by(['planet_position', 'planet_size'], 'desc');
 		qb.order_by_array.should.eql(['`planet_position` DESC', '`planet_size` DESC']);
-		
+
 		qb.reset_query();
 		qb.order_by(['planet_position DESC', 'planet_size'], 'desc');
 		qb.order_by_array.should.eql(['`planet_position` DESC', '`planet_size` DESC']);

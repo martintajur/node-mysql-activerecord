@@ -4,7 +4,7 @@ var settings = {
     user: 'myuser',
     password: 'MyP@ssw0rd'
 };
-var nqb = require('node-querybuilder');
+const nqb = require('node-querybuilder');
 var pool = new QueryBuilder(settings, 'mysql', 'pool');
 
 pool.get_connection(function(qb) {

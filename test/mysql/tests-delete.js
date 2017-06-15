@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('delete()', function() {
 	it('should exist', function() {
@@ -15,8 +15,8 @@ describe('delete()', function() {
 		qb.from_array.should.eql(['`galaxies`']);
 	});
 	it('should only accept nothing or a non-empty-string for the table (first) parameter', function() {
-		qb.reset_query(); 
-		
+		qb.reset_query();
+
 		expect(function() { qb.delete([]); 		}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.delete({}); 		}, 'empty object provided').to.throw(Error);
 		expect(function() { qb.delete(3); 		}, 'integer provided').to.throw(Error);
@@ -30,7 +30,7 @@ describe('delete()', function() {
 		expect(function() { qb.delete(''); 		}, 'empty string provided').to.throw(Error);
 		expect(function() { qb.delete('  '); 	}, 'string full of spaces provided').to.throw(Error);
 		expect(function() { qb.delete(null); 	}, 'null provided').to.throw(Error);
-		
+
 		// An undefined/nothing option will only work if a table has already been provided
 		qb.from('galaxies'); expect(function() { qb.delete(undefined);	},'undefined provided').to.not.throw(Error);
 		qb.from('galaxies'); expect(function() { qb.delete();			},'nothing provided').to.not.throw(Error);
@@ -67,7 +67,7 @@ describe('delete()', function() {
 		qb.from('galaxies');
 		var sql = qb.delete();
 		sql.should.eql('DELETE FROM `galaxies`');
-		
+
 		qb.reset_query();
 		var sql = qb.from(['galaxies','star_systems','planets']).delete();
 		sql.should.eql('DELETE FROM `galaxies`');

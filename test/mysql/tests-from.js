@@ -1,5 +1,5 @@
-var should = require('chai').should();
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('from()', function() {
 	it('should exist', function() {
@@ -37,17 +37,17 @@ describe('from()', function() {
 		qb.from(['universe','galaxy','star_system','planet']);
 		qb.from_array.should.eql(['`universe`','`galaxy`','`star_system`','`planet`']);
 	});
-	it('should not double-escape an item', function() { 
+	it('should not double-escape an item', function() {
 		qb.reset_query();
 		qb.from('`do`');
 		qb.from_array.should.eql(['`do`']);
 	});
-	it('should not double-escape items when provided with an array of pre-escaped items', function() { 
+	it('should not double-escape items when provided with an array of pre-escaped items', function() {
 		qb.reset_query();
 		qb.from(['`universe`','`galaxy`','`star_system`']);
 		qb.from_array.should.eql(['`universe`','`galaxy`','`star_system`']);
 	});
-	it('should not double-escape items when provided with an array of pre-escaped items but should escpae non-pre-escaped items', function() { 
+	it('should not double-escape items when provided with an array of pre-escaped items but should escpae non-pre-escaped items', function() {
 		qb.reset_query();
 		qb.from(['`universe`','galaxy','`star_system`']);
 		qb.from_array.should.eql(['`universe`','`galaxy`','`star_system`']);
@@ -91,7 +91,7 @@ describe('from()', function() {
 		qb.reset_query();
 		qb.from('star_system.planet');
 		qb.from_array.should.eql(['`star_system`.`planet`']);
-		
+
 		qb.reset_query();
 		qb.from('galaxy.star_system.planet');
 		qb.from_array.should.eql(['`galaxy`.`star_system`.`planet`']);
@@ -110,11 +110,11 @@ describe('from()', function() {
 		qb.reset_query();
 		qb.from('');
 		qb.from_array.should.be.empty;
-		
+
 		qb.reset_query();
 		qb.from(['','']);
 		qb.from_array.should.be.empty;
-		
+
 		qb.reset_query();
 		qb.from(['','foobar']);
 		qb.from_array.should.eql(['`foobar`']);

@@ -1,8 +1,8 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var nqb = require('../../index.js');
+const should = require('chai').should();
+const expect = require('chai').expect;
+const nqb = require('../../index.js');
 
-var check = function(done, f) {
+const check = function(done, f) {
 	try {
 		f();
 		done();
@@ -11,7 +11,7 @@ var check = function(done, f) {
 	}
 };
 
-var connection_released = function(qb) {
+const connection_released = function(qb) {
 	var connection = qb.connection();
 	expect(connection._pool._freeConnections).to.have.length(0);
 	qb.release();
@@ -19,13 +19,13 @@ var connection_released = function(qb) {
 };
 
 describe('QueryBuilder() - MySQL Adapter', function() {
-	var on_connect = function(err) {
+	const on_connect = function(err) {
 		if (err) { console.error("Not connected!"); return; }
 		console.log("connected!");
 	};
 	var driver = 'mysql';
 	var settings = {
-		host: '127.0.0.1',
+	host: '127.0.0.1',
 		database: 'mock_db',
 		user: 'travis',
 		version: '2.5.4',

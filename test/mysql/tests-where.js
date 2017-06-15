@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('where()', function() {
 	it('should exist', function() {
@@ -27,10 +27,10 @@ describe('where()', function() {
 		expect(function() { qb.where([]); 		}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.where([1,2]); 	}, 'array of numbers provided').to.throw(Error);
 		expect(function() { qb.where(''); 		}, 'empty string provided').to.throw(Error);
-		
+
 		expect(function() { qb.where('planet_position',3);	}, 'valid string provided').to.not.throw(Error);
 		expect(function() { qb.where({planet_position: 3}); }, 'valid object provided').to.not.throw(Error);
-		
+
 	});
 	it('should accept a field name in the form of a string as the first parameter', function() {
 		qb.reset_query();
@@ -51,7 +51,7 @@ describe('where()', function() {
 		qb.reset_query();
 		qb.where('planet',true);
 		qb.where_array.should.eql(['`planet` = 1']);
-		
+
 		qb.reset_query();
 		qb.where('planet',false);
 		qb.where_array.should.eql(['`planet` = 0']);
@@ -60,7 +60,7 @@ describe('where()', function() {
 		qb.reset_query();
 		qb.where('planet',5);
 		qb.where_array.should.eql(['`planet` = 5']);
-		
+
 		qb.reset_query();
 		qb.where('planet',123.456);
 		qb.where_array.should.eql(['`planet` = 123.456']);
@@ -69,7 +69,7 @@ describe('where()', function() {
 		qb.reset_query();
 		qb.where('planet','Earth');
 		qb.where_array.should.eql(["`planet` = 'Earth'"]);
-		
+
 		qb.reset_query();
 		qb.where('galaxy','Milky Way');
 		qb.where_array.should.eql(["`galaxy` = 'Milky Way'"]);
@@ -104,23 +104,23 @@ describe('where()', function() {
 		qb.reset_query();
 		qb.where('position >',3);
 		qb.where_array.should.eql(["`position` > 3"]);
-		
+
 		qb.reset_query();
 		qb.where('position <',3);
 		qb.where_array.should.eql(["`position` < 3"]);
-		
+
 		qb.reset_query();
 		qb.where('position >=',3);
 		qb.where_array.should.eql(["`position` >= 3"]);
-		
+
 		qb.reset_query();
 		qb.where('position <=',3);
 		qb.where_array.should.eql(["`position` <= 3"]);
-		
+
 		qb.reset_query();
 		qb.where('position <>',3);
 		qb.where_array.should.eql(["`position` <> 3"]);
-		
+
 		qb.reset_query();
 		qb.where('position !=',3);
 		qb.where_array.should.eql(["`position` != 3"]);

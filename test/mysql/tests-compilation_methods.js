@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('get_compiled_select()', function() {
 	it('should exist', function() {

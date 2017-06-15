@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('get()', function() {
 	it('should exist', function() {
@@ -61,7 +61,7 @@ describe('get()', function() {
 		qb.from('galaxies');
 		var sql = qb.get();
 		sql.should.eql('SELECT * FROM `galaxies`');
-		
+
 		qb.reset_query();
 		var sql = qb.from(['galaxies','star_systems','planets']).get();
 		sql.should.eql('SELECT * FROM `galaxies`, `star_systems`, `planets`');
@@ -88,22 +88,22 @@ describe('get()', function() {
 	});
 	it('should include the MIN, MAX, AVG, or SUM aggregation methods in the select statement if provided', function() {
 		qb.reset_query();
-		
+
 		// MIN
 		var sql = qb.select_min('size','min_size').get('galaxies');
 		sql.should.eql("SELECT MIN(`size`) AS min_size FROM `galaxies`");
 		qb.reset_query();
-		
+
 		// MAX
 		var sql = qb.select_max('size','max_size').get('galaxies');
 		sql.should.eql("SELECT MAX(`size`) AS max_size FROM `galaxies`");
 		qb.reset_query();
-		
+
 		// AVG
 		var sql = qb.select_avg('size','avg_size').get('galaxies');
 		sql.should.eql("SELECT AVG(`size`) AS avg_size FROM `galaxies`");
 		qb.reset_query();
-		
+
 		// SUM
 		var sql = qb.select_sum('size','total_size').get('galaxies');
 		sql.should.eql("SELECT SUM(`size`) AS total_size FROM `galaxies`");
@@ -118,7 +118,7 @@ describe('get()', function() {
 	it('should include any GROUP BY statements added using the group_by() method.', function() {
 		qb.reset_query();
 		var sql = qb.select('size').select('COUNT(id) as `num_of_size`',false).group_by('size').get('galaxies');
-		sql.should.eql("SELECT `size`, COUNT(id) AS `num_of_size` FROM `galaxies` GROUP BY `size`"); 
+		sql.should.eql("SELECT `size`, COUNT(id) AS `num_of_size` FROM `galaxies` GROUP BY `size`");
 	});
 	it('should add the ORDER BY clause of the order_by() method was called in the chain', function() {
 		qb.reset_query();
@@ -128,7 +128,7 @@ describe('get()', function() {
 	it('should include any HAVING clauses added using the having() method', function() {
 		qb.reset_query();
 		var sql = qb.select('size').select('COUNT(id) as `num_of_size`',false).group_by('size').having('num_of_size >=',456034960).get('galaxies');
-		sql.should.eql("SELECT `size`, COUNT(id) AS `num_of_size` FROM `galaxies` GROUP BY `size` HAVING `num_of_size` >= 456034960"); 
+		sql.should.eql("SELECT `size`, COUNT(id) AS `num_of_size` FROM `galaxies` GROUP BY `size` HAVING `num_of_size` >= 456034960");
 	});
 });
 
@@ -176,6 +176,6 @@ describe('get_where()', function() {
 		var sql = qb.get_where('galaxies', {type: 'spiral'});
 		qb.from_array.should.eql(['`galaxies`']);
 		qb.where_array.should.eql(["`type` = 'spiral'"]);
-		sql.should.eql("SELECT * FROM `galaxies` WHERE `type` = 'spiral'"); 
+		sql.should.eql("SELECT * FROM `galaxies` WHERE `type` = 'spiral'");
 	});
 });

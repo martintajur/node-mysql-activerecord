@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 var test_where = {id:3};
 var test_data = {name:'Milky Way', type: 'spiral'};
@@ -22,10 +22,10 @@ describe('update()', function() {
 	});
 	it('should accept a string or falsy value for the table (first) parameter', function() {
 		qb.reset_query();
-		
+
 		// One could choose to pass a falsy value to the first param because they have or will
 		// supply it with the from() method instead.
-		
+
 		qb.reset_query(); expect(function() { qb.from('galaxies').update([], test_data); 		}, 'empty array provided').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.from('galaxies').update({}, test_data); 		}, 'empty object provided').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.from('galaxies').update(3, test_data); 		}, 'integer provided').to.throw(Error);
@@ -34,7 +34,7 @@ describe('update()', function() {
 		qb.reset_query(); expect(function() { qb.from('galaxies').update(Infinity, test_data);	}, 'Infinity provided').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.from('galaxies').update([1,2], test_data); 	}, 'array of numbers provided').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.from('galaxies').update(/foobar/, test_data);	}, 'regex provided').to.throw(Error);
-		 
+
 		qb.reset_query(); expect(function() { qb.from('galaxies').update(NaN, test_data); 		}, 'NaN provided').to.not.throw(Error);
 		qb.reset_query(); expect(function() { qb.from('galaxies').update(false, test_data); 	}, 'false provided').to.not.throw(Error);
 		qb.reset_query(); expect(function() { qb.from('galaxies').update('', test_data); 		}, 'empty string provided').to.not.throw(Error);
@@ -45,17 +45,17 @@ describe('update()', function() {
 	it('should fail if a number, non-standard object, regex, boolean, array of non-objects, or non-empty string is provided in data parameter', function() {
 		// One could choose to pass a falsy value to the second param because they have or will
 		// supply data with the set() method instead.
-		
+
 		qb.reset_query(); expect(function() { qb.update('galaxies',test_data);					}, 'non-empty array provided').to.not.throw(Error);
 		qb.reset_query(); expect(function() { qb.update('galaxies',test_data_set); 				}, 'array of non-empty standard objects provided').to.not.throw(Error);
-		
+
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies',NaN); 			}, 'NaN provided').to.not.throw(Error);
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies',false); 			}, 'false provided').to.not.throw(Error);
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies',''); 			}, 'empty string provided').to.not.throw(Error);
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies',null); 			}, 'null provided').to.not.throw(Error);
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies',undefined);		}, 'undefined provided').to.not.throw(Error);
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies');				}, 'nothing provided').to.not.throw(Error);
-		
+
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies',3); 				}, 'integer provided').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies',3.5); 			}, 'float provided').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.set({id:2}).update('galaxies',true); 			}, 'true provided').to.throw(Error);
@@ -103,11 +103,11 @@ describe('update()', function() {
 	});
 	it('should fail if any invalid values are passed in the data object.', function() {
 		qb.reset_query();
-		var func = function() { console.log("foo"); };
+		const func = function() { console.log("foo"); };
 		var regex = /foobar/;
 		var arr = [1,2,3];
 		var obj = {foo: 'bar'};
-		
+
 		qb.reset_query(); expect(function() { qb.update('galaxies',{id: func}); 		}, 'function in data').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.update('galaxies',{id: regex}); 		}, 'regex in data').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.update('galaxies',{id: Infinity});		}, 'Infinity in data').to.throw(Error);
@@ -115,7 +115,7 @@ describe('update()', function() {
 		qb.reset_query(); expect(function() { qb.update('galaxies',{id: NaN});			}, 'NaN in data').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.update('galaxies',{id: arr});			}, 'array in data').to.throw(Error);
 		qb.reset_query(); expect(function() { qb.update('galaxies',{id: obj});			}, 'object in data').to.throw(Error);
-		
+
 	});
 	/*
 	it('should support insert ignore statements', function() {

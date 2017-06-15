@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('having()', function() {
 	it('should exist', function() {
@@ -16,27 +16,27 @@ describe('having()', function() {
 		qb.reset_query();
 		qb.having('planet_class > "M"');
 		qb.having_array.should.eql(["`planet_class` > 'M'"]);
-		
+
 		qb.reset_query();
 		qb.having('planet_class < "M"');
 		qb.having_array.should.eql(["`planet_class` < 'M'"]);
-		
+
 		qb.reset_query();
 		qb.having('planet_class <> "M"');
 		qb.having_array.should.eql(["`planet_class` <> 'M'"]);
-		
+
 		qb.reset_query();
 		qb.having('planet_class >= "M"');
 		qb.having_array.should.eql(["`planet_class` >= 'M'"]);
-		
+
 		qb.reset_query();
 		qb.having('planet_class <= "M"');
 		qb.having_array.should.eql(["`planet_class` <= 'M'"]);
-		
+
 		qb.reset_query();
 		qb.having('planet_class = "M"');
 		qb.having_array.should.eql(["`planet_class` = 'M'"]);
-		
+
 		qb.reset_query();
 		qb.having('planet_class != "M"');
 		qb.having_array.should.eql(["`planet_class` != 'M'"]);
@@ -69,7 +69,7 @@ describe('having()', function() {
 		expect(function() { qb.group_by([]); 	}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.group_by([1,2]); }, 'array of numbers provided').to.throw(Error);
 		expect(function() { qb.group_by(''); 	}, 'empty string provided').to.throw(Error);
-		
+
 		// valid string
 		expect(function() { qb.group_by('planet_type = "M"');	}, 'valid string provided').to.not.throw(Error);
 		expect(function() { qb.group_by(['planet_type = "M"']); }, 'array of string(s) provided').to.not.throw(Error);

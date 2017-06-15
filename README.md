@@ -70,7 +70,7 @@ var settings = {
     user: 'myuser',
     password: 'MyP@ssw0rd'
 };
-var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
+const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
 
 qb.select('name', 'position')
     .where({type: 'rocky', 'diameter <': 12000})
@@ -131,9 +131,9 @@ We'll call this `db.json`.
 **Example App**
 
 ```javascript
-var settings = require('db.json');
+const settings = require('db.json');
 // Second and third parameters of the QueryBuilder method default to 'mysql' and 'standard', respectively
-var qb = require('node-querybuilder').QueryBuilder(settings);
+const qb = require('node-querybuilder').QueryBuilder(settings);
 ```
 
 Of course you can also just have a normal javascript object directly within your code somwhere if you're honing your inner Chuck Norris:
@@ -141,7 +141,7 @@ Of course you can also just have a normal javascript object directly within your
 **Chuck Norris App**
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder({
+const qb = require('node-querybuilder').QueryBuilder({
     host: 'db.myserver.com',
     user: 'myusername',
     password: 'P@s$w0rD',
@@ -156,7 +156,7 @@ This part is super simple. Just pass which one you'd like to use as the second p
 **_Example:_**
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(settings, 'postgres');
+const qb = require('node-querybuilder').QueryBuilder(settings, 'postgres');
 ```
 
 ## Choosing the Connection Type
@@ -176,7 +176,7 @@ This library currently supports 3 connection methods:
 **Example:**
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 ```
 
 # API Methods
@@ -515,7 +515,7 @@ you know what you're doing). NOTE: Please make sure to escape values manually.
 //     WHEN `u`.`id` = 4132 THEN `um`.`id` = `um`.`userId`
 //     WHEN `u`.`name` = 4132 THEN `um`.`name` = `u`.`id`
 var select = ['u.id', 'u.name', 'um.name as user_name'];
-var user_data = req.body;
+const user_data = req.body;
 qb.select(select).from('users u')
     .join('`user_meta` `um`', 'CASE WHEN `u`.`id` = ' + user_data.id  + ' THEN `um`.`id` = `um`.`userId` WHEN `u`.`name` = ' + user_data.id + ' THEN `um`.`name` = `u`.`id`', 'right outer', false)
     .get(callback);
@@ -1058,7 +1058,7 @@ pool.get_connection(function(qb) {
 #### Using the Same Connection Pool Connection for Successive Calls
 
 ```javascript
-var pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
+const pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
 var data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
 
 pool.get_connection(function(qb) {
@@ -1270,15 +1270,15 @@ Object containing information about the results of the query.
 Here's a contrived example of how it might be used in an app made with the Express framework:
 
 ```javascript
-var express = require('express');
+const express = require('express');
 var app = express();
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/update_account', function(req, res) {
-    var user_id = req.session.user_id;
-    var sanitize_name = function(name) { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
-    var sanitize_age = function(age)  { return age.replace(/[^0-9]+$/,'').trim(); };
+    const user_id = req.session.user_id;
+    const sanitize_name = function(name) { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
+    const sanitize_age = function(age)  { return age.replace(/[^0-9]+$/,'').trim(); };
 
     var data = {
         first_name: sanitize_name(req.body.first_name),
@@ -1304,7 +1304,7 @@ app.post('/update_account', function(req, res) {
 Here's another (more-direct) example where one decided to supply the table, data, and filters through alternative methods:
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
+const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
 qb.where('id', 42)
     .from('users')
     .set('email', 'email@domain.net')
@@ -1403,13 +1403,13 @@ Object containing information about the result of the query.
 Here's a contrived example of how it might be used in an app made with the Express framework:
 
 ```javascript
-var express = require('express');
+const express = require('express');
 var app = express();
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/add_article', function(req, res) {
-    var user_id = req.session.user_id;
+    const user_id = req.session.user_id;
 
     var data = {
         title: req.body.first_name,
@@ -1455,7 +1455,7 @@ Object containing information about the result of the query.
 **Example**
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
 
 var data = [
     {name: 'MySQL', version: '5.5.40'},
@@ -1504,7 +1504,7 @@ Object containing information about the result of the query.
  *    ]
  */
 
-var qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
 var data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, function(err, res) {
     if (err) throw err;
@@ -1567,13 +1567,13 @@ Object containing information about the result of the query.
 Here's a contrived example of how it might be used in an app made with the Express framework (NOTE: you should do better with error handling):
 
 ```javascript
-var express = require('express');
+const express = require('express');
 var app = express();
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 app.post('/delete_comment/:id', function(req, res) {
-    var comment_id = req.params.id;
+    const comment_id = req.params.id;
 
     pool.get_connection(function(qb) {
         qb.get('comments', {id: id}, function(err, res) {
@@ -1616,8 +1616,8 @@ Object containing information about the result of the query.
 **Examples**
 
 ```javascript
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 /*
  * Assume we have a table like this to start with...
@@ -1664,8 +1664,8 @@ Object containing information about the result of the query.
 **Examples**
 
 ```javascript
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 /*
  * Assume we have a table like this to start with...
@@ -1723,8 +1723,8 @@ Used to get a new connection from the connection pool or cluster pool. An instan
 **Example**
 
 ```javascript
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 pool.get_connection(function(qb) {
     qb.limit(10).get('users', function(err, res) {
@@ -1746,8 +1746,8 @@ Releases a connection back to the pool when you are done with it. Calling this i
 Below is a contrived example (with no error handling--for brevity) that gets a list of all users in a users table where their username starts with a `|` character. It then loops over each one and removes the `|` from the username and re-inserts it. Notice that the connection is not released until all the queries that needed to be executed have been executed.
 
 ```javascript
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 pool.get_connection(function(qb) {
     qb.like('username','|','right').get_where('users', {active: true}, function(err, res) {
@@ -1771,8 +1771,8 @@ pool.get_connection(function(qb) {
 Here's a simpler example so you can better see how it will most often be used
 
 ```javascript
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
 pool.get_connection(function(qb) {
     qb.get_where('users', {username: 'foobar'}, function(err, res) {
@@ -1795,8 +1795,8 @@ If you'd rather the engine not execute the query first, you can always use the a
 **Examples**
 
 ```javascript
-var settings = require('db.json');
-var pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const settings = require('db.json');
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 pool.get_connection(function(qb) {
     var id = 4531;
     qb.get('comments', {id: id}, function(err, res) {
@@ -1833,7 +1833,7 @@ Object     | String      | {foo: 'bar', i: 3} | "`foo` = 'bar', `i` = 3"
 **Example**
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 var sql = 'SELECT count(*) FROM `star_systems` WHERE ' + qb.escape({planet_num: 5}) + ' LIMIT 10';
 qb.query(sql, function(err, res) {
     console.dir(res);
@@ -1869,7 +1869,7 @@ Compiles a SELECT-like query into a properly-escaped string.
 Get certain details of a user account
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 
 var sql = qb
     .select(['id','username','first_name','last_name'])
@@ -1899,8 +1899,8 @@ Compiles a INSERT-like query into a properly-escaped string.
 Add a new user to a `users` table.
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
-var crypto = require('crypto');
+const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const crypto = require('crypto');
 var data = {
     username: 'foobar',
     password: crypto.createHash('sha1').update('password').digest('hex'),
@@ -1932,8 +1932,8 @@ Compiles an UPDATE-like query into a properly-escaped string.
 Update the password of a user
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
-var crypto = require('crypto');
+const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const crypto = require('crypto');
 var data = {
     password: crypto.createHash('sha1').update('P@$$w0rD').digest('hex'),
 };
@@ -1964,7 +1964,7 @@ Compiles a SELECT-like query into a properly-escaped string.
 Delete a user
 
 ```javascript
-var qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 var sql = qb.where('id',4321).get_compiled_delete('users');
 
 // DELETE FROM `users` WHERE `id` = 4321

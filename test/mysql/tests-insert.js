@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 var test_data = {id:3, name:'Milky Way', type: 'spiral'};
 var test_data_set = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'Andromeda', type: 'spiral'}];
@@ -101,7 +101,7 @@ describe('insert()', function() {
     });
     it('should fail if any invalid values are passed in the data object.', function() {
         qb.reset_query();
-        var func = function() { console.log("foo"); };
+        const func = function() { console.log("foo"); };
         var regex = /foobar/;
         var arr = [1,2,3];
         var obj = {foo: 'bar'};

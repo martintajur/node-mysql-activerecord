@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('select()', function() {
 	it('should exist', function() {
@@ -78,17 +78,17 @@ describe('select()', function() {
 		qb.select(['`sol`','la','ti','`do`'],false);
 		qb.select_array.should.eql(['`sol`','la','ti','`do`']);
 	});
-	it('should not double-escape a field', function() { 
+	it('should not double-escape a field', function() {
 		qb.reset_query();
 		qb.select('`do`');
 		qb.select_array.should.eql(['`do`']);
 	});
-	it('should not double-escape fields when provided with an array of pre-escaped fields', function() { 
+	it('should not double-escape fields when provided with an array of pre-escaped fields', function() {
 		qb.reset_query();
 		qb.select(['`do`','`re`','`mi`']);
 		qb.select_array.should.eql(['`do`','`re`','`mi`']);
 	});
-	it('should not double-escape fields when provided with an array of pre-escaped fields but should escpae non-pre-escaped fields', function() { 
+	it('should not double-escape fields when provided with an array of pre-escaped fields but should escpae non-pre-escaped fields', function() {
 		qb.reset_query();
 		qb.select(['`do`','re','`mi`']);
 		qb.select_array.should.eql(['`do`','`re`','`mi`']);
@@ -122,11 +122,11 @@ describe('select()', function() {
 		qb.reset_query();
 		qb.select('star_system.planet');
 		qb.select_array.should.eql(['`star_system`.`planet`']);
-		
+
 		qb.reset_query();
 		qb.select('galaxy.star_system.planet');
 		qb.select_array.should.eql(['`galaxy`.`star_system`.`planet`']);
-		
+
 		qb.reset_query();
 		qb.select('universe.galaxy.star_system.planet');
 		qb.select_array.should.eql(['`universe`.`galaxy`.`star_system`.`planet`']);
@@ -138,11 +138,11 @@ describe('select()', function() {
 	});
 	it('should not allow subqueries or functions with commas in them without the second parameter being false', function() {
 		qb.reset_query();
-		expect(function() { 
+		expect(function() {
 			qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets');
 		}).to.throw(Error);
-		
-		expect(function() { 
+
+		expect(function() {
 			qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets',false);
 		}).to.not.throw(Error);
 	});
@@ -150,19 +150,19 @@ describe('select()', function() {
 		qb.reset_query();
 		qb.select('count(*) as count', false);
 		qb.select_array.should.eql(['count(*) AS `count`']);
-		
+
 		qb.reset_query();
 		qb.select('count(*) as count, m.*, MIN(id) as min', false);
 		qb.select_array.should.eql(['count(*) as count, m.*, MIN(id) AS `min`']);
-		
+
 		qb.reset_query();
 		qb.select('(select count(p.*) as count from planets p) as num_planets', false);
 		qb.select_array.should.eql(['(select count(p.*) as count from planets p) AS `num_planets`']);
-		
+
 		qb.reset_query();
 		qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id = s.id) as num_planets', false);
 		qb.select_array.should.eql(['s.star_systems, (select count(p.*) as count from planets p where p.star_system_id = s.id) AS `num_planets`']);
-		
+
 	});
 });
 var prefixes = ['min','max','avg','sum'];

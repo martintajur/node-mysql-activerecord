@@ -1,6 +1,6 @@
-var Adapters = function(nqb) {
+const Adapters = function(nqb) {
     // Load MySQL Driver
-    var mysql = require('mysql');
+    const mysql = require('mysql');
 
     // Verify setting property exists
     if (!nqb.hasOwnProperty('settings')) {
@@ -29,7 +29,7 @@ var Adapters = function(nqb) {
     // NOTE: MySQL connection settings names are the same as Node Querybuilder,
     // it's just good practice to go ahead and do this in case things change.
     // ****************************************************************************
-    var map_connection_settings = function() {
+    const map_connection_settings = function() {
         that.connection_settings = {
             host: nqb.settings.host,
             user: nqb.settings.user,
@@ -62,7 +62,7 @@ var Adapters = function(nqb) {
     // @param    Object    qb    The QueryBuilder object
     // @return    Object        QueryBuilder object
     // ****************************************************************************
-    var get_query_builder = function() {
+    const get_query_builder = function() {
         try {
             return require('./query_builder.js').QueryBuilder();
         } catch(e) {
@@ -78,7 +78,7 @@ var Adapters = function(nqb) {
     // @param    Object    conn    The Connnection object
     // @return    Object            QueryExec Object
     // ****************************************************************************
-    var get_query_exec = function(qb, conn) {
+    const get_query_exec = function(qb, conn) {
         try {
             return require('./query_exec.js').QueryExec(qb, conn);
         } catch(e) {
@@ -91,7 +91,7 @@ var Adapters = function(nqb) {
     // -----
     // @return    Object        Adapter object
     // ****************************************************************************
-    var Adapter = function(settings) {
+    const Adapter = function(settings) {
         var pool, connection;
 
         // If the Pool object is instatiating this Adapter, use it's connection
@@ -146,9 +146,9 @@ var Adapters = function(nqb) {
     // -----
     // @return    Object        Adapter object
     // ****************************************************************************
-    var Pool = function() {
+    const Pool = function() {
         // Return Pool Object
-        var return_pool = function() {
+        const return_pool = function() {
             return {
                 pool: function() {
                     return nqb.pool;
@@ -205,7 +205,7 @@ var Adapters = function(nqb) {
     // -----
     // @return    Object        Adapter object
     // ****************************************************************************
-    var Cluster = function() {
+    const Cluster = function() {
 
     };
 
@@ -215,7 +215,7 @@ var Adapters = function(nqb) {
     // @param
     // @return
     // ****************************************************************************
-    var determine_adapter = function() {
+    const determine_adapter = function() {
         switch(nqb.connection_type) {
             case 'cluster':
                 return new Cluster();

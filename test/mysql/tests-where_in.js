@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('where_in()', function() {
 	it('should exist', function() {
@@ -31,7 +31,7 @@ describe('where_in()', function() {
 		expect(function() { qb.where_in([1,2]); 		}, 'array of numbers provided').to.throw(Error);
 		expect(function() { qb.where_in(''); 			}, 'empty string provided').to.throw(Error);
 		expect(function() { qb.where_in(/foobar/);		}, 'regex provided').to.throw(Error);
-		
+
 		expect(function() { qb.where_in('planet_position',[1,2,3]); }, 'valid string provided').to.not.throw(Error);
 	});
 	it('should not accept anything but a non-empty array of values as second parameter', function() {
@@ -49,7 +49,7 @@ describe('where_in()', function() {
 		expect(function() { qb.where_in('planet',[]); 			}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.where_in('planet',''); 			}, 'empty string provided').to.throw(Error);
 		expect(function() { qb.where_in('planet',/foobar/);		}, 'regex provided').to.throw(Error);
-		
+
 		expect(function() { qb.where_in('planet',['Mars','Earth','Venus','Mercury']); }, 'non-empty array provided').to.not.throw(Error);
 	});
 	it('should require both a field name an array of values as first and second parameters, respectively', function() {

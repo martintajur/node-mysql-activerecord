@@ -1,6 +1,6 @@
-var should = require('chai').should();
-var expect = require('chai').expect;
-var qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const should = require('chai').should();
+const expect = require('chai').expect;
+const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
 
 describe('group_by()', function() {
 	it('should exist', function() {
@@ -42,10 +42,10 @@ describe('group_by()', function() {
 		expect(function() { qb.group_by([]); 	}, 'empty array provided').to.throw(Error);
 		expect(function() { qb.group_by([1,2]); }, 'array of numbers provided').to.throw(Error);
 		expect(function() { qb.group_by(''); 	}, 'empty string provided').to.throw(Error);
-		
+
 		// valid string
 		expect(function() { qb.group_by('planet_type');	  }, 'valid string provided').to.not.throw(Error);
 		expect(function() { qb.group_by(['planet_type']); }, 'array of string(s) provided').to.not.throw(Error);
-		
+
 	});
 });
