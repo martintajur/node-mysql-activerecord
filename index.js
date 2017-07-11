@@ -39,7 +39,7 @@
  *
 **/
 const lo_assign = require('lodash.assign');
-const QueryBuilder = function(settings,driver,type) {
+const QueryBuilder = (settings,driver,type) => {
 
 	this.settings = (settings ? lo_assign({}, settings) : {});
 	this.driver = driver || 'mysql';
@@ -55,7 +55,7 @@ const QueryBuilder = function(settings,driver,type) {
 	// @param	Object	qb	The QueryBuilder object
 	// @return	Object		Modified QueryBuilder object
 	// ****************************************************************************
-	const get_driver_info = function(qb) {
+	const get_driver_info = qb => {
 		// A driver must be specified
 		if (typeof driver !== 'string') {
 			throw new Error("No database driver specified!");
@@ -100,7 +100,7 @@ const QueryBuilder = function(settings,driver,type) {
 	// @param	Object	qb	The QueryBuilder object
 	// @return	Object		Modified QueryBuilder object
 	// ****************************************************************************
-	const get_connection_type = function(qb) {
+	const get_connection_type = qb => {
 		if (Object.keys(qb.drivers[qb.driver].connection_types).indexOf(qb.connection_type) === -1) {
 			throw new Error("You have specified a invalid database connection method: " + qb.connection_type);
 		}
@@ -116,7 +116,7 @@ const QueryBuilder = function(settings,driver,type) {
 	// -----
 	// @return	VOID	This method responds asychronously via a callback
 	// ****************************************************************************
-	const get_adapter = function(qb) {
+	const get_adapter = qb => {
 		try {
 			const adapter = require(qb.driver_info.path + 'adapters.js').Adapters(qb);
 			return adapter;

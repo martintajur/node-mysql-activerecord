@@ -4,9 +4,9 @@
 // @param    Object    qb            The QueryBuilder object
 // @param    Object    adapter        The connection adapter object
 // ****************************************************************************
-const QueryExec = function(qb, conn) {
+const QueryExec = function (qb, conn) {
 
-    const exec = function(sql, callback) {
+    const exec = (sql, callback) => {
         if (Object.prototype.toString.call(conn) == Object.prototype.toString.call({})) {
             conn.query(sql, function(err, results) {
                 // Standardize some important properties

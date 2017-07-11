@@ -22,7 +22,7 @@ let connect, Standard, Pool, PoolCluster;
 // @param	Object	settings	Connection settings
 // @return	Object				Connection handle
 // ****************************************************************************
-Standard = function(settings) {
+Standard = settings => {
 
 };
 
@@ -32,7 +32,7 @@ Standard = function(settings) {
 // @param	Object	settings	Connection settings
 // @return	Object				Connection handle
 // ****************************************************************************
-Pool = function(settings) {
+Pool = settings => {
 
 };
 
@@ -43,7 +43,7 @@ Pool = function(settings) {
 // @param	Object	settings	Connection settings
 // @return	Object				Connection handle
 // ****************************************************************************
-PoolCluster = function(settings) {
+PoolCluster = settings => {
 
 };
 
@@ -53,7 +53,7 @@ PoolCluster = function(settings) {
 // @param	Object	settings	Connection settings (including the type)
 // @return	Object				Connection handle
 // ****************************************************************************
-connect = function(settings,type) {
+connect = function (settings,type) {
 	type = type || 'single';
 
 	let connection = null;

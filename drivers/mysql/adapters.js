@@ -1,4 +1,4 @@
-const Adapters = function(nqb) {
+const Adapters = nqb => {
     // Load MySQL Driver
     const mysql = require('mysql');
 
@@ -29,7 +29,7 @@ const Adapters = function(nqb) {
     // NOTE: MySQL connection settings names are the same as Node Querybuilder,
     // it's just good practice to go ahead and do this in case things change.
     // ****************************************************************************
-    const map_connection_settings = function() {
+    const map_connection_settings = () => {
         that.connection_settings = {
             host: nqb.settings.host,
             user: nqb.settings.user,
@@ -62,7 +62,7 @@ const Adapters = function(nqb) {
     // @param    Object    qb    The QueryBuilder object
     // @return    Object        QueryBuilder object
     // ****************************************************************************
-    const get_query_builder = function() {
+    const get_query_builder = () => {
         try {
             return require('./query_builder.js').QueryBuilder();
         } catch(e) {
@@ -78,7 +78,7 @@ const Adapters = function(nqb) {
     // @param    Object    conn    The Connnection object
     // @return    Object            QueryExec Object
     // ****************************************************************************
-    const get_query_exec = function(qb, conn) {
+    const get_query_exec = (qb, conn) => {
         try {
             return require('./query_exec.js').QueryExec(qb, conn);
         } catch(e) {
@@ -148,7 +148,7 @@ const Adapters = function(nqb) {
     // ****************************************************************************
     const Pool = function() {
         // Return Pool Object
-        const return_pool = function() {
+        const return_pool = () => {
             return {
                 pool: function() {
                     return nqb.pool;
@@ -205,7 +205,7 @@ const Adapters = function(nqb) {
     // -----
     // @return    Object        Adapter object
     // ****************************************************************************
-    const Cluster = function() {
+    const Cluster = () => {
 
     };
 
@@ -215,7 +215,7 @@ const Adapters = function(nqb) {
     // @param
     // @return
     // ****************************************************************************
-    const determine_adapter = function() {
+    const determine_adapter = () => {
         switch(nqb.connection_type) {
             case 'cluster':
                 return new Cluster();

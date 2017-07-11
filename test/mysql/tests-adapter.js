@@ -11,7 +11,7 @@ const check = function(done, f) {
 	}
 };
 
-const connection_released = function(qb) {
+const connection_released = qb => {
 	const connection = qb.connection();
 	expect(connection._pool._freeConnections).to.have.length(0);
 	qb.release();
@@ -19,7 +19,7 @@ const connection_released = function(qb) {
 };
 
 describe('QueryBuilder() - MySQL Adapter', function() {
-	const on_connect = function(err) {
+	const on_connect = err => {
 		if (err) { console.error("Not connected!"); return; }
 		console.log("connected!");
 	};

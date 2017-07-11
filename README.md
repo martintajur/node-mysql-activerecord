@@ -1277,8 +1277,8 @@ const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool'
 
 app.post('/update_account', function(req, res) {
     const user_id = req.session.user_id;
-    const sanitize_name = function(name) { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
-    const sanitize_age = function(age)  { return age.replace(/[^0-9]+$/,'').trim(); };
+    const sanitize_name = name => { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
+    const sanitize_age = age =>  { return age.replace(/[^0-9]+$/,'').trim(); };
 
     const data = {
         first_name: sanitize_name(req.body.first_name),
