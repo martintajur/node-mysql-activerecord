@@ -1,7 +1,7 @@
 const QueryBuilder = function() {
 
     // ------------------------------ GENERIC FUNCTIONS ------------------------------//
-    const array_values = function(item) {
+    const array_values = item => {
         const keys = Object.keys(item);
         const length = keys.length;
         const values = Array(length);
@@ -11,7 +11,7 @@ const QueryBuilder = function() {
         return values;
     };
 
-    const prepare_for_limit_and_offset = function(item, type = 'limit') {
+    const prepare_for_limit_and_offset = (item, type = 'limit') => {
 
         type = type.toLowerCase();
 
@@ -52,7 +52,7 @@ const QueryBuilder = function() {
         return item;
     }
 
-    const extract_having_parts = function(key,key_array) {
+    const extract_having_parts = (key,key_array) => {
         let m;
         key = key.trim().replace(/\s+/g,' ');
         const str_condition  = /^([^\s]+\s(<=|>=|<>|>|<|!=|=))+\s"([^"]+)"$/;  //"// had to do this for syntax highlighting
@@ -87,7 +87,7 @@ const QueryBuilder = function() {
     }
 
     // Simply setting all properties to [] causes reference issues in the parent class.
-    const clear_array = function(a,debug) {
+    const clear_array = (a,debug) => {
         if (debug === true) {
             console.log("DEBUG before (" + Object.prototype.toString.call(a) + "):");
             console.dir(a);
@@ -111,7 +111,7 @@ const QueryBuilder = function() {
     };
 
     // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
-    const track_aliases = function(qb,table) {
+    const track_aliases = (qb,table) => {
         if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
             for (const i in table) {
                 const t = table[i];
@@ -141,7 +141,7 @@ const QueryBuilder = function() {
         }
     };
 
-    const create_aliases_from_table = function(item) {
+    const create_aliases_from_table = item => {
         if (item.indexOf('.') !== -1) {
             return item.split('.').reverse()[0];
         }
@@ -149,7 +149,7 @@ const QueryBuilder = function() {
         return item;
     };
 
-    const escape_identifiers = function(item = '*') {
+    const escape_identifiers = (item = '*') => {
         if (item === '*') {
             return item;
         }
@@ -176,7 +176,7 @@ const QueryBuilder = function() {
         return str.replace(/[`]+/g,'`');
     };
 
-    const protect_identifiers = function(qb,item,protect_identifiers) {
+    const protect_identifiers = (qb,item,protect_identifiers) => {
         if (item === '') return item;
 
         protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
@@ -277,7 +277,7 @@ const QueryBuilder = function() {
         return true;
     };
 
-    const qb_escape = function(qb,str) {
+    const qb_escape = (qb,str) => {
         const SqlString = require('../../node_modules/mysql/lib/protocol/SqlString.js');
         const do_escape = SqlString.escape;
 
@@ -294,7 +294,7 @@ const QueryBuilder = function() {
 
 
     // ---------------------------- SQL BUILD TOOLS ----------------------------//
-    const build_where_clause = function(qb) {
+    const build_where_clause = qb => {
         let sql = '';
         if(qb.where_array.length > 0) {
             sql += " WHERE ";
@@ -303,7 +303,7 @@ const QueryBuilder = function() {
         return sql;
     };
 
-    const build_from_clause = function(qb) {
+    const build_from_clause = qb => {
         let sql = '';
         if(qb.from_array.length > 0) {
             sql += " FROM ";
@@ -314,14 +314,14 @@ const QueryBuilder = function() {
         return sql;
     };
 
-    const build_join_string = function(qb) {
+    const build_join_string = qb => {
         let sql = '';
         sql += qb.join_array.join(' ');
         if(sql.length > 0) sql = ' ' + sql;
         return sql;
     };
 
-    const build_group_by_clause = function(qb) {
+    const build_group_by_clause = qb => {
         if (qb.group_by_array.length <= 0) return '';
 
         let sql = ' GROUP BY ';
@@ -329,7 +329,7 @@ const QueryBuilder = function() {
         return sql;
     };
 
-    const build_having_clause = function(qb) {
+    const build_having_clause = qb => {
         if (qb.having_array.length <= 0) return '';
 
         let sql = ' HAVING ';
@@ -337,7 +337,7 @@ const QueryBuilder = function() {
         return sql;
     };
 
-    const build_order_by_clause = function(qb) {
+    const build_order_by_clause = qb => {
         if (qb.order_by_array.length <= 0) return '';
 
         let sql = ' ORDER BY ';
@@ -346,7 +346,7 @@ const QueryBuilder = function() {
         return sql;
     };
 
-    const build_limit_clause = function(sql, limit, offset) {
+    const build_limit_clause = (sql, limit, offset) => {
         if (!limit) return sql;
 
         sql += ' ';
@@ -360,7 +360,7 @@ const QueryBuilder = function() {
         return sql.replace(/\s+$/, ' ') + 'LIMIT ' + offset + limit;
     };
 
-    const compile_select = function(qb) {
+    const compile_select = qb => {
         const distinct_clause = qb.distinct_clause[0] || '';
         let sql = 'SELECT ' + distinct_clause;
         if (qb.select_array.length === 0) {
@@ -383,7 +383,7 @@ const QueryBuilder = function() {
         return sql;
     };
 
-    const compile_delete = function(qb) {
+    const compile_delete = qb => {
         if (qb.from_array.length === 0) {
             throw new Error('You have not specified any tables to delete from!');
             return '';
@@ -398,7 +398,7 @@ const QueryBuilder = function() {
         return build_limit_clause(sql,limit_to,offset_val);
     };
 
-    const compile_update = function(qb) {
+    const compile_update = qb => {
         const valstr = [];
         for (const i in qb.set_array) {
             const key = Object.keys(qb.set_array[i])[0];
@@ -426,7 +426,7 @@ const QueryBuilder = function() {
         return build_limit_clause(sql, limit_to, offset_val);
     };
 
-    const compile_insert = function(qb, ignore, suffix='') {
+    const compile_insert = (qb, ignore, suffix='') => {
         const keys = [];
         const values = [];
 
@@ -537,7 +537,7 @@ const QueryBuilder = function() {
                     const filters = key.split(/\s+(AND|OR)\s+/i);
                     if (filters.length > 1) {
                         const that = this;
-                        const parse_statement = function(statement,joiner) {
+                        const parse_statement = (statement,joiner) => {
                             const parsed = statement.match(/^([^<>=!]+)(<=|>=|<>|>|<|!=|=)(.*)$/);
                             if (parsed.length >= 4) {
                                 const key = parsed[1].trim() + (parsed[2].trim() !== '=' ? ' ' + parsed[2].trim() : '');
