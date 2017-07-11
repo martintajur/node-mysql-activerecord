@@ -74,7 +74,7 @@ const QueryExec = function (qb, conn) {
         },
 
         get_where: function(table,where,callback) {
-            if (typeof table !== 'string' && Object.prototype.toString.call(table) !== Object.prototype.toString.call([])) {
+            if (typeof table !== 'string' && !Array.isArray(table)) {
                 throw new Error("First parameter of get_where() must be a string or an array of strings.");
             }
             if (Object.prototype.toString.call(where) !== Object.prototype.toString.call({})) {

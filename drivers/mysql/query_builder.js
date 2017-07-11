@@ -635,7 +635,7 @@ const QueryBuilder = function() {
             }
 
             // Values must be an array...
-            if (Object.prototype.toString.call(values) !== Object.prototype.toString.call([])) {
+            if (!Array.isArray(values)) {
                 throw new Error("where_" + (not === '' ? '' : not.toLowerCase() + '_') + "in(): Invalid second parameter provided--it must be an array of scalar values.");
             }
             else {
@@ -733,7 +733,7 @@ const QueryBuilder = function() {
         },
 
         from: function(from) {
-            if(Object.prototype.toString.call(from) !== Object.prototype.toString.call([])) {
+            if(!Array.isArray(from)) {
                 from = [from];
             }
             for (const i in from) {
@@ -956,7 +956,7 @@ const QueryBuilder = function() {
                 by = by.split(',');
             }
 
-            if (Object.prototype.toString.call(by) !== Object.prototype.toString.call([])) {
+            if (!Array.isArray(by)) {
                 throw new Error("You have provided an invalid value to the group_by() method. Only strings and arrays of strings are allowed.");
             }
 
@@ -1069,7 +1069,7 @@ const QueryBuilder = function() {
             }
 
             // normalize orderby to be an array of items
-            if (Object.prototype.toString.call(orderby) !== Object.prototype.toString.call([])) {
+            if (!Array.isArray(orderby)) {
                 if (typeof orderby === 'string') {
                     orderby = orderby.trim();
                     if (orderby.length == 0) {
@@ -1279,7 +1279,7 @@ const QueryBuilder = function() {
                 this.from(table);
             }
 
-            if (Object.prototype.toString.call(set) !== Object.prototype.toString.call([])) {
+            if (!Array.isArray(set)) {
                 throw new Error('insert_batch(): Array of objects must be provided for batch insert!');
             }
 
@@ -1471,7 +1471,7 @@ const QueryBuilder = function() {
             }
 
             // Check to make sure we have a dataset
-            if (Object.prototype.toString.call(set) !== Object.prototype.toString.call([])) {
+            if (!Array.isArray(set)) {
                 throw new Error("update_batch(): Array of object expected and non-array received.");
             }
 
