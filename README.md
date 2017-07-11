@@ -74,7 +74,7 @@ const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single'
 
 qb.select('name', 'position')
     .where({type: 'rocky', 'diameter <': 12000})
-    .get('planets', function(err,response) {
+    .get('planets', (err,response) => {
         if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
 
         // SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
@@ -1036,7 +1036,7 @@ insert_batch(), update_batch() | Example: `{insert_id: 579, affected_rows: 1, ch
 #### Callback Example
 
 ```javascript
-const callback =  function(err, response) {
+const callback =  (err, response) => {
     qb.release();
     if (err) {
         console.error(err);
@@ -1050,7 +1050,7 @@ const callback =  function(err, response) {
         }
     }
 };
-pool.get_connection(function(qb) {
+pool.get_connection(qb => {
     qb.get('foo',callback);
 });
 ```
@@ -1061,15 +1061,15 @@ pool.get_connection(function(qb) {
 const pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
 const data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
 
-pool.get_connection(function(qb) {
-    qb.insert('employees', data, function(err, res) {
+pool.get_connection(qb => {
+    qb.insert('employees', data, (err, res) => {
         if (err) {
             console.error(err);
         }
         else {
             if (res.affected_rows > 0) {
                 const insert_id = res.insert_id;
-                qb.get_where('employees', {id: insert_id}, function(err, res) {
+                qb.get_where('employees', {id: insert_id}, (err, res) => {
                     qb.release();
                     console.dir(res);
                 });
@@ -1165,7 +1165,7 @@ qb.limit(10)
     .join('stars s', 's.galaxy_id=g.id', 'left')
     .group_by('g.id')
     .order_by('g.name', 'asc')
-    .get(function(err, response, conn) {
+    .get((err, response, conn) => {
         conn.release();
         if (err) return console.error(err);
 
@@ -1236,7 +1236,7 @@ Integer
 ```javascript
 // SELECT COUNT(*) AS `numrows` FROM `galaxies` WHERE `type` = 3
 const type = 3;
-qb.where('type',type).count('galaxies', function(err, count) {
+qb.where('type',type).count('galaxies', (err, count) => {
     if (err) return console.error(err);
     console.log("There are " + numrows + " Type " + type + " galaxies in the Universe.");
 });
@@ -1275,7 +1275,7 @@ const app = express();
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
-app.post('/update_account', function(req, res) {
+app.post('/update_account', (req, res) => {
     const user_id = req.session.user_id;
     const sanitize_name = name => { return name.replace(/[^A-Za-z0-9\s'-]+$/,'').trim(); };
     const sanitize_age = age =>  { return age.replace(/[^0-9]+$/,'').trim(); };
@@ -1287,8 +1287,8 @@ app.post('/update_account', function(req, res) {
         bio: req.body.bio,
     };
 
-    pool.get_connection(function(qb) {
-        qb.update('users', data, {id:user_id}, function(err, res) {
+    pool.get_connection(qb => {
+        qb.update('users', data, {id:user_id}, (err, res) => {
             qb.release();
             if (err) return console.error(err);
 
@@ -1308,7 +1308,7 @@ const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single'
 qb.where('id', 42)
     .from('users')
     .set('email', 'email@domain.net')
-    .update(null, null, null, function(err, res) {
+    .update(null, null, null, (err, res) => {
         if (err) return console.error(err);
         console.log("Updated: " + res.affected_rows + " rows");
     });
@@ -1351,7 +1351,7 @@ const dataset = [
 
 const where = {'last_updated <' : '2015-01-01'}
 
-qb.update_batch('galaxies', dataset, key, where, function(err, res) {
+qb.update_batch('galaxies', dataset, key, where, (err, res) => {
     if (err) return console.error(err);
 
     /*
@@ -1408,7 +1408,7 @@ const app = express();
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
-app.post('/add_article', function(req, res) {
+app.post('/add_article', (req, res) => {
     const user_id = req.session.user_id;
 
     const data = {
@@ -1418,8 +1418,8 @@ app.post('/add_article', function(req, res) {
         publish_date: sanitize_age(req.body.last_name)
     };
 
-    pool.get_connection(function(qb) {
-        qb.insert('articles', data, function(err, res) {
+    pool.get_connection(qb => {
+        qb.insert('articles', data, (err, res) => {
             qb.release();
             if (err) return console.error(err);
 
@@ -1463,7 +1463,7 @@ const data = [
     {name: 'Postgres', version: '8.4'}
 ];
 
-qb.insert_batch('db_engines', data, function(err, res) {
+qb.insert_batch('db_engines', data, (err, res) => {
     if (err) throw err;
 
     // INSERT INTO `db_engines` (`name`, `version`)
@@ -1506,7 +1506,7 @@ Object containing information about the result of the query.
 
 const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
 const data = {name: 'Postgres', version: '8.4'};
-qb.insert_ignore('db_engines', data, function(err, res) {
+qb.insert_ignore('db_engines', data, (err, res) => {
     if (err) throw err;
 
     // INSERT IGNORE INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4');
@@ -1521,7 +1521,7 @@ This time we'll do it with an `on_dupe` string
 
 ```javascript
 const data = {name: 'Postgres', version: '8.4'};
-qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NOW()', function(err, res) {
+qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NOW()', (err, res) => {
     if (err) throw err;
 
     // INSERT IGNORE INTO `db_engines` (`name`, `version`) VALUES ('Postgres', '8.4') ON DUPLICATE KEY UPDATE last_modified = NOW();
@@ -1572,15 +1572,15 @@ const app = express();
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
-app.post('/delete_comment/:id', function(req, res) {
+app.post('/delete_comment/:id', (req, res) => {
     const comment_id = req.params.id;
 
-    pool.get_connection(function(qb) {
-        qb.get('comments', {id: id}, function(err, res) {
+    pool.get_connection(qb => {
+        qb.get('comments', {id: id}, (err, res) => {
             if (err) return console.error(err);
             const article_id = res.article_id;
 
-            qb.delete('comments', {id: id}, function(err, res) {
+            qb.delete('comments', {id: id}, (err, res) => {
                 qb.release();
                 if (err) return console.error(err);
 
@@ -1628,12 +1628,12 @@ const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool'
  * ];
  */
 
-pool.get_connection(function(qb) {
-    qb.truncate('users', function(err, res) {
+pool.get_connection(qb => {
+    qb.truncate('users', (err, res) => {
         if (err) throw err;
-        qb.insert('users', {name: 'Bob'}, function(err, res) {
+        qb.insert('users', {name: 'Bob'}, (err, res) => {
             if (err) throw err;
-            qb.get_where('users', {id: res.insert_id}, function(err, res) {
+            qb.get_where('users', {id: res.insert_id}, (err, res) => {
                 qb.release();
                 if (err) throw err;
                 // { id: 1, name: 'Bob' } (notice ID is 1)
@@ -1676,12 +1676,12 @@ const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool'
  * ];
  */
 
-pool.get_connection(function(qb) {
-    qb.empty_table('users', function(err, res) {
+pool.get_connection(qb => {
+    qb.empty_table('users', (err, res) => {
         if (err) throw err;
-        qb.insert('users', {name: 'Bob'}, function(err, res) {
+        qb.insert('users', {name: 'Bob'}, (err, res) => {
             if (err) throw err;
-            qb.get_where('users', {id: res.insert_id}, function(err, res) {
+            qb.get_where('users', {id: res.insert_id}, (err, res) => {
                 qb.release();
                 if (err) throw err;
                 // { id: 4, name: 'Bob' } (notice ID is 4)
@@ -1726,8 +1726,8 @@ Used to get a new connection from the connection pool or cluster pool. An instan
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
-pool.get_connection(function(qb) {
-    qb.limit(10).get('users', function(err, res) {
+pool.get_connection(qb => {
+    qb.limit(10).get('users', (err, res) => {
         qb.release();
         // Do stuff with results or err
     });
@@ -1749,14 +1749,14 @@ Below is a contrived example (with no error handling--for brevity) that gets a l
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
-pool.get_connection(function(qb) {
-    qb.like('username','|','right').get_where('users', {active: true}, function(err, res) {
+pool.get_connection(qb => {
+    qb.like('username','|','right').get_where('users', {active: true}, (err, res) => {
         const users = users;
         (function update_user() {
             const user = users.shift();
             user.username = user.username.replace(/\^|/,'');
 
-            qb.update('users', user, {id: user.id}, function(err, res) {
+            qb.update('users', user, {id: user.id}, (err, res) => {
                 if (user.length > 0) {
                     setTimeout(update_user,0);
                 } else {
@@ -1774,8 +1774,8 @@ Here's a simpler example so you can better see how it will most often be used
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
-pool.get_connection(function(qb) {
-    qb.get_where('users', {username: 'foobar'}, function(err, res) {
+pool.get_connection(qb => {
+    qb.get_where('users', {username: 'foobar'}, (err, res) => {
         qb.release();
         if (err) throw err;
         console.dir(res);
@@ -1797,9 +1797,9 @@ If you'd rather the engine not execute the query first, you can always use the a
 ```javascript
 const settings = require('db.json');
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
-pool.get_connection(function(qb) {
+pool.get_connection(qb => {
     const id = 4531;
-    qb.get('comments', {id: id}, function(err, res) {
+    qb.get('comments', {id: id}, (err, res) => {
         // SELECT * FROM `comments` WHERE `id` = 4531
         console.log(qb.last_query());
         qb.release();
@@ -1835,7 +1835,7 @@ Object     | String      | {foo: 'bar', i: 3} | "`foo` = 'bar', `i` = 3"
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
 const sql = 'SELECT count(*) FROM `star_systems` WHERE ' + qb.escape({planet_num: 5}) + ' LIMIT 10';
-qb.query(sql, function(err, res) {
+qb.query(sql, (err, res) => {
     console.dir(res);
 });
 ```

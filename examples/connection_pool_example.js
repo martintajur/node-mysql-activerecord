@@ -7,7 +7,7 @@ const settings = {
 const nqb = require('node-querybuilder');
 const pool = new QueryBuilder(settings, 'mysql', 'pool');
 
-pool.get_connection(function(qb) {
+pool.get_connection(qb => {
 	qb.select('name', 'position')
 		.where({type: 'rocky', 'diameter <': 12000})
 		.get('planets', function(err,response) {

@@ -18,7 +18,7 @@ const connection_released = qb => {
 	expect(connection._pool._freeConnections).to.have.length(1);
 };
 
-describe('QueryBuilder() - MySQL Adapter', function() {
+describe('QueryBuilder() - MySQL Adapter', () => {
 	const on_connect = err => {
 		if (err) { console.error("Not connected!"); return; }
 		console.log("connected!");
@@ -38,46 +38,46 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 	const bad_port = Object.assign({},settings); bad_port.port = 1;
 	const bad_version = Object.assign({},settings); bad_version.version = 12;
 
-	it('should exist', function() {
+	it('should exist', () => {
 		should.exist(nqb.QueryBuilder);
 	});
-	it('should be a function', function() {
+	it('should be a function', () => {
 		nqb.QueryBuilder.should.be.a('function');
 	});
-	it('should have all the QueryBuilder methods', function() {
+	it('should have all the QueryBuilder methods', () => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
 		const children = ['where_array','where_in_array','from_array','join_array','select_array','set_array','order_by_array','group_by_array','having_array','limit_to','offset_val','join_clause','last_query_string','distinct_clause','aliased_tables','reset_query','where','or_where','_where','where_in','or_where_in','where_not_in','or_where_not_in','_where_in','like','not_like','or_like','or_not_like','_like','from','join','select','select_min','select_max','select_avg','select_sum','_min_max_avg_sum','distinct','group_by','having','or_having','_having','order_by','limit','offset','set'];
 		expect(qb).to.include.keys(children);
 	});
-	it('should have all the QueryExec methods', function() {
+	it('should have all the QueryExec methods', () => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
 		const children = ['insert','insert_ignore','insert_batch','get','get_where','count','update','update_batch','delete','get_compiled_select','get_compiled_delete','get_compiled_update','get_compiled_insert','compile_select','compile_delete','compile_update','compile_insert'];
 		expect(qb).to.include.keys(children);
 	});
-	it('should have all the miscellaneous methods', function() {
+	it('should have all the miscellaneous methods', () => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
 		const children = ['last_query','escape','empty_table','truncate'];
 		expect(qb).to.include.keys(children);
 	});
-	it('should establish a single connection given valid connection credentials', function(done) {
+	it('should establish a single connection given valid connection credentials', done => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
 		expect(qb, 'should have connect property').to.have.property('connect');
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				expect(err, 'should be connected').to.not.be.instanceof(Error);
 			});
 		});
 	});
-	it('should allow us to disconnect from MySQL', function(done) {
+	it('should allow us to disconnect from MySQL', done => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
-		qb.connect(function(err) {
+		qb.connect(err => {
 			should.exist(qb.disconnect);
 			qb.disconnect.should.be.a('function');
 
-			qb.disconnect(function(err) {
+			qb.disconnect(err => {
 				const connection = qb.connection();
 
-				check(done, function() {
+				check(done, () => {
 					expect(err, 'should be diconnected').to.not.be.instanceof(Error);
 					expect(connection._protocol._ended).to.be.true;
 				});
@@ -86,13 +86,13 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 	});
 
 
-	it('should fail to establish a single connection given no parameters', function() {
-		expect(function() { nqb.QueryBuilder(); }).to.throw(Error);
+	it('should fail to establish a single connection given no parameters', () => {
+		expect(() => nqb.QueryBuilder()).to.throw(Error);
 	});
-	it('should fail to establish a single connection given no connection credentials', function() {
-		expect(function() { nqb.QueryBuilder({},driver); }).to.throw(Error);
+	it('should fail to establish a single connection given no connection credentials', () => {
+		expect(() => nqb.QueryBuilder({},driver)).to.throw(Error);
 	});
-	it('should fail to establish a single connection given connection credentials with bad user', function(done) {
+	it('should fail to establish a single connection given connection credentials with bad user', done => {
 
 		let qb;
 
@@ -103,13 +103,13 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			return;
 		}
 		expect(qb, 'should have connect property').to.have.property('connect');
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				expect(err, 'should not be connected').to.be.instanceof(Error);
 			});
 		});
 	});
-	it('should fail to establish a single connection given connection credentials with bad host', function(done) {
+	it('should fail to establish a single connection given connection credentials with bad host', done => {
 
 		let qb;
 
@@ -120,13 +120,13 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			return;
 		}
 		expect(qb, 'should have connect property').to.have.property('connect');
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				expect(err, 'should not be connected').to.be.instanceof(Error);
 			});
 		});
 	});
-	it('should fail to establish a single connection given connection credentials with bad database', function(done) {
+	it('should fail to establish a single connection given connection credentials with bad database', done => {
 
 		let qb;
 
@@ -137,13 +137,13 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			return;
 		}
 		expect(qb, 'should have connect property').to.have.property('connect');
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				expect(err, 'should not be connected').to.be.instanceof(Error);
 			});
 		});
 	});
-	it('should fail to establish a single connection given connection credentials with bad password', function(done) {
+	it('should fail to establish a single connection given connection credentials with bad password', done => {
 
 		let qb;
 
@@ -154,13 +154,13 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			return;
 		}
 		expect(qb, 'should have connect property').to.have.property('connect');
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				expect(err, 'should not be connected').to.be.instanceof(Error);
 			});
 		});
 	});
-	it('should fail to establish a single connection given connection credentials with bad port', function(done) {
+	it('should fail to establish a single connection given connection credentials with bad port', done => {
 		let qb;
 		try {
 			qb = nqb.QueryBuilder(bad_port, driver);
@@ -169,30 +169,30 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			return;
 		}
 		expect(qb, 'should have connect property').to.have.property('connect');
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				expect(err, 'should not be connected').to.be.instanceof(Error);
 			});
 		});
 	});
-	it('should fail to establish connection if an invalid driver is specified', function() {
+	it('should fail to establish connection if an invalid driver is specified', () => {
 		let qb;
-		expect(function() { nqb.QueryBuilder(settings);				}, 'no driver specified').to.throw(Error);
-		expect(function() { nqb.QueryBuilder(settings,'foobar');	}, 'invalid driver specified').to.throw(Error);
+		expect(() => nqb.QueryBuilder(settings), 'no driver specified').to.throw(Error);
+		expect(() => nqb.QueryBuilder(settings,'foobar'), 'invalid driver specified').to.throw(Error);
 	});
-	it('should fail to establish connection if an invalid driver version is specified', function() {
+	it('should fail to establish connection if an invalid driver version is specified', () => {
 		let qb;
-		expect(function() { nqb.QueryBuilder( Object.assign({}, settings), driver); 	}, 'valid driver version').to.not.throw(Error);
-		expect(function() { nqb.QueryBuilder(bad_version, driver);				}, 'invalid driver version').to.throw(Error);
+		expect(() => nqb.QueryBuilder( Object.assign({}, settings), driver), 'valid driver version').to.not.throw(Error);
+		expect(() => nqb.QueryBuilder(bad_version, driver), 'invalid driver version').to.throw(Error);
 	});
 
-	it('should allow us to retrieve our connection settings for reference', function(done) {
+	it('should allow us to retrieve our connection settings for reference', done => {
 		const conn_settings = Object.assign({}, settings, {password: undefined});
 		delete conn_settings.version;
 
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				should.exist(qb.connection_settings);
 				qb.connection_settings.should.be.a('function');
 				const settings = qb.connection_settings();
@@ -202,10 +202,10 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			});
 		});
 	});
-	it('should allow us to escape certain values', function(done) {
+	it('should allow us to escape certain values', done => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				should.exist(qb.escape);
 				qb.escape.should.be.a('function');
 				expect(qb.escape(null)).to.be.eql('NULL');
@@ -217,10 +217,10 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			});
 		});
 	});
-	it('should allow us to escape identifiers the MySQL way', function(done) {
+	it('should allow us to escape identifiers the MySQL way', done => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
-		qb.connect(function(err) {
-			check(done, function() {
+		qb.connect(err => {
+			check(done, () => {
 				should.exist(qb.escape_id);
 				qb.escape_id.should.be.a('function');
 				expect(qb.escape_id('foo'), 'not  pre-escaped').to.be.eql('`foo`');
@@ -230,11 +230,11 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			});
 		});
 	});
-	it('should allow us to execute a query', function(done) {
+	it('should allow us to execute a query', done => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
-		qb.connect(function(err) {
+		qb.connect(err => {
 			qb.query("select * from `cities` where `city` like 'Z%' and `state_code` = 'FL'", function(err, res) {
-				check(done, function() {
+				check(done, () => {
 					expect(err).to.not.be.instanceof(Error);
 					expect(res).to.not.be.empty;
 					expect(res).to.have.length(3);
@@ -242,15 +242,15 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 			});
 		});
 	});
-	it('should not be able to release a non-pooled connection', function(done) {
+	it('should not be able to release a non-pooled connection', done => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
-		qb.connect(function(err) {
-			check(done, function() {
-				expect(function() { qb.release(); }).to.throw(Error);
+		qb.connect(err => {
+			check(done, () => {
+				expect(() => qb.release()).to.throw(Error);
 			});
 		});
 	});
-	it('should create a connection pool object if asked', function() {
+	it('should create a connection pool object if asked', () => {
 		const pool = nqb.QueryBuilder(Object.assign({}, settings), driver, 'pool');
 		expect(pool).to.be.instanceof.object;
 		expect(pool).to.include.keys(['pool','get_connection','disconnect']);
@@ -258,33 +258,33 @@ describe('QueryBuilder() - MySQL Adapter', function() {
 		pool.get_connection.should.be.a('function');
 		pool.disconnect.should.be.a('function');
 	});
-	it('should create a QueryBuilder adapter when getting a connection from the pool', function(done) {
+	it('should create a QueryBuilder adapter when getting a connection from the pool', done => {
 		const qb2 = nqb.QueryBuilder(Object.assign({}, settings), driver);
 		const pool = nqb.QueryBuilder(Object.assign({}, settings), driver, 'pool');
-		pool.get_connection(function(qb) {
-			check(done, function() {
+		pool.get_connection(qb => {
+			check(done, () => {
 				expect(qb).to.include.keys(Object.keys(qb2));
 			});
 		});
 	});
-	it('should allow one to release a connection from the pool', function(done) {
+	it('should allow one to release a connection from the pool', done => {
 		const qb2 = nqb.QueryBuilder(Object.assign({}, settings), driver);
 		const pool = nqb.QueryBuilder(Object.assign({}, settings), driver, 'pool');
-		pool.get_connection(function(qb) {
-			check(done, function() { connection_released(qb); });
+		pool.get_connection(qb => {
+			check(done, () => connection_released(qb));
 		});
 	});
-	it('should allow one use the same connection pool connection for multiple queries', function(done) {
+	it('should allow one use the same connection pool connection for multiple queries', done => {
 		const pool = nqb.QueryBuilder(Object.assign({}, settings), driver, 'pool');
 
-		pool.get_connection(function(qb) {
+		pool.get_connection(qb => {
 			qb.query('select * from `cities` where `city` = "Gainesville"', function(err, res) {
 				if (res.length > 0) {
 					qb.query('select * from `cities` where `state_code` = "' + res[0].state_code + '"', function(err, res) {
-						check(done, function() { connection_released(qb); });
+						check(done, () => connection_released(qb));
 					});
 				} else {
-					check(done, function() { connection_released(qb); });
+					check(done, () => connection_released(qb));
 				}
 			});
 		});

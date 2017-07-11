@@ -1319,7 +1319,7 @@ const QueryBuilder = function() {
             }
 
             for (let i = 0; i < set.length; i++) {
-                (function(i,qb) {
+                ((i,qb) => {
                     const row = [];
                     for (const key in set[i]) {
                         if (set[i].hasOwnProperty(key)) {

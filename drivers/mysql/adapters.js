@@ -160,7 +160,7 @@ const Adapters = function(nqb) {
                         throw new Error(error_msg);
                     }
 
-                    nqb.pool.getConnection(function (err, connection) {
+                    nqb.pool.getConnection((err, connection) => {
                         if (err) throw err;
                         const adapter = new Adapter({
                             pool: {
@@ -185,7 +185,7 @@ const Adapters = function(nqb) {
 
             // Test connection pool (asynchronous -- this shouldn't prevent the pool from initially loading)
             if (that.debugging === true) {
-                nqb.pool.getConnection(function(err, connection) {
+                nqb.pool.getConnection((err, connection) => {
                     connection.query('SELECT 1 + 1 AS solution', function(err) {
                         connection.release();
                         if (err) {
