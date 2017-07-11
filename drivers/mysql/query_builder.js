@@ -1253,7 +1253,7 @@ const QueryBuilder = function() {
         },
 
         insert_batch: function(table,set=null,ignore,suffix) {
-            const self = this;
+
             const orig_table = table = table || '';
             ignore = (typeof ignore !== 'boolean' ? false : ignore);
             suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
@@ -1319,18 +1319,18 @@ const QueryBuilder = function() {
             }
 
             for (let i = 0; i < set.length; i++) {
-                ((i,qb) => {
+                (i => {
                     const row = [];
                     for (const key in set[i]) {
                         if (set[i].hasOwnProperty(key)) {
-                            row.push(qb_escape(qb,set[i][key]));
+                            row.push(qb_escape(this,set[i][key]));
                         }
                     }
                     if (row.length != columns.length) {
                         throw new Error('insert_batch(): Cannot use batch insert into ' + table + ' - fields must match on all rows (' + row.join(',') + ' vs ' + columns.join(',') + ').');
                     }
                     map.push('(' + row.join(', ') + ')');
-                })(i,self);
+                })(i);
             }
 
             const verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
