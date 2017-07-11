@@ -101,7 +101,7 @@ describe('insert()', () => {
     });
     it('should fail if any invalid values are passed in the data object.', () => {
         qb.reset_query();
-        const func = () => { console.log("foo"); };
+        const func = () => console.log("foo");
         const regex = /foobar/;
         const arr = [1,2,3];
         const obj = {foo: 'bar'};
