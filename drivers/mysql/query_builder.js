@@ -99,7 +99,7 @@ const QueryBuilder = function() {
                 }
             }
         }
-        else if (Object.prototype.toString.call(a) === Object.prototype.toString.call([])) {
+        else if (Array.isArray(a)) {
             while (a.length > 0) {
                 a.pop();
             }
@@ -501,7 +501,7 @@ const QueryBuilder = function() {
 
             escape = (typeof escape === 'boolean' ? escape : true);
 
-            if (typeof key === 'string' && typeof value === 'object' && Object.prototype.toString.call(value) === Object.prototype.toString.call([]) && value.length > 0) {
+            if (typeof key === 'string' && typeof value === 'object' && Array.isArray(value) && value.length > 0) {
                 return this._where_in(key, value, false, 'AND ');
             }
             return this._where(key, value, 'AND ', escape);
@@ -510,7 +510,7 @@ const QueryBuilder = function() {
         or_where: function(key, value=null, escape) {
             escape = (typeof escape === 'boolean' ? escape : true);
 
-            if (typeof key === 'string' && typeof value === 'object' && Object.prototype.toString.call(value) === Object.prototype.toString.call([]) && value.length > 0) {
+            if (typeof key === 'string' && typeof value === 'object' && Array.isArray(value) && value.length > 0) {
                 return this._where_in(key, value, false, 'OR ');
             }
             return this._where(key, value, 'OR ', escape);
@@ -571,7 +571,7 @@ const QueryBuilder = function() {
             for (let k in key) {
                 let v = key[k];
 
-                if (typeof v === 'object' && Object.prototype.toString.call(v) === Object.prototype.toString.call([]) && v.length > 0) {
+                if (typeof v === 'object' && Array.isArray(v) && v.length > 0) {
                     return this._where_in(k,v,false,type,escape);
                 }
 
@@ -847,7 +847,7 @@ const QueryBuilder = function() {
                     throw new Error("Your select string is empty!");
                 }
             }
-            else if (Object.prototype.toString.call(select) === Object.prototype.toString.call([])) {
+            else if (Array.isArray(select)) {
                 if (select.length == 0) {
                     throw new Error("Your select array is empty!");
                 }
@@ -993,7 +993,7 @@ const QueryBuilder = function() {
             let m;
             let key_array = {};
             const key_is_object = Object.prototype.toString.call(key) === Object.prototype.toString.call({});
-            const key_is_array = Object.prototype.toString.call(key) === Object.prototype.toString.call([]);
+            const key_is_array = Array.isArray(key);
 
             if (/^(string|number|boolean)$/.test(typeof value)) { // if the value is a string, number, or boolean...
                 if (typeof key !== 'string' || /^\W+$/i.test(key)) { // if the key is not a string...
@@ -1216,7 +1216,7 @@ const QueryBuilder = function() {
                 throw new Error("insert(): Invalid data provided to insert into database!");
             }
 
-            if (Object.prototype.toString.call(set) === Object.prototype.toString.call([])) {
+            if (Array.isArray(set)) {
                 return this.insert_batch(table, set, ignore, suffix);
             }
 
@@ -1398,7 +1398,7 @@ const QueryBuilder = function() {
             set = set || null;
 
             // Send to batch_update if the data param is an array
-            if (Object.prototype.toString.call(set) === Object.prototype.toString.call([])) {
+            if (Array.isArray(set)) {
                 let index = null;
                 if (set.length > 0) {
                     if (Object.prototype.toString.call(set[0]) === Object.prototype.toString.call({})) {
