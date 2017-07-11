@@ -1,4 +1,4 @@
-const Adapters = nqb => {
+const Adapters = function(nqb) {
     // Load MySQL Driver
     const mysql = require('mysql');
 
@@ -30,17 +30,17 @@ const Adapters = nqb => {
     // it's just good practice to go ahead and do this in case things change.
     // ****************************************************************************
     const map_connection_settings = () => {
-        that.connection_settings = {
+        this.connection_settings = {
             host: nqb.settings.host,
             user: nqb.settings.user,
             password: nqb.settings.password
         }
         if (nqb.settings.hasOwnProperty('database')) {
-            that.connection_settings.database = nqb.settings.database;
+            this.connection_settings.database = nqb.settings.database;
             delete nqb.settings.database
         }
         if (nqb.settings.hasOwnProperty('port')) {
-            that.connection_settings.port = nqb.settings.port;
+            this.connection_settings.port = nqb.settings.port;
             delete nqb.settings.port
         }
 
@@ -50,7 +50,7 @@ const Adapters = nqb => {
         delete nqb.settings.password
 
         // Merge any driver-specific settings into connection settings
-        that.connection_settings = Object.assign(that.connection_settings, nqb.settings);
+        this.connection_settings = Object.assign(this.connection_settings, nqb.settings);
     }
 
     map_connection_settings();
@@ -219,14 +219,11 @@ const Adapters = nqb => {
         switch(nqb.connection_type) {
             case 'cluster':
                 return new Cluster();
-                break;
             case 'pool':
                 return new Pool();
-                break;
             case 'single':
             default:
                 return new Adapter({});
-                break;
         }
     }
 
