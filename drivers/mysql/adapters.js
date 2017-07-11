@@ -186,7 +186,7 @@ const Adapters = function(nqb) {
             // Test connection pool (asynchronous -- this shouldn't prevent the pool from initially loading)
             if (that.debugging === true) {
                 nqb.pool.getConnection((err, connection) => {
-                    connection.query('SELECT 1 + 1 AS solution', function(err) {
+                    connection.query('SELECT 1 + 1 AS solution', (err) => {
                         connection.release();
                         if (err) {
                             console.error(err);

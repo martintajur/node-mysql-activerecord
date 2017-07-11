@@ -9,7 +9,7 @@ const qb = new QueryBuilder(settings, 'mysql', 'single');
 
 qb.select('name', 'position')
 	.where({type: 'rocky', 'diameter <': 12000})
-	.get('planets', function(err,response) {
+	.get('planets', (err,response) => {
 		if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
 
 		// SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000

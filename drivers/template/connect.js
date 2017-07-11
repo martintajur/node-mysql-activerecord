@@ -53,7 +53,7 @@ PoolCluster = settings => {
 // @param	Object	settings	Connection settings (including the type)
 // @return	Object				Connection handle
 // ****************************************************************************
-connect = function (settings,type) {
+connect = (settings,type) => {
 	type = type || 'single';
 
 	let connection = null;

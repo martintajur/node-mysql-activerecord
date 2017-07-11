@@ -8,7 +8,7 @@ const QueryExec = function (qb, conn) {
 
     const exec = (sql, callback) => {
         if (Object.prototype.toString.call(conn) == Object.prototype.toString.call({})) {
-            conn.query(sql, function(err, results) {
+            conn.query(sql, (err, results) => {
                 // Standardize some important properties
                 if (!err && results.length > 0) {
 
@@ -48,7 +48,7 @@ const QueryExec = function (qb, conn) {
 
             const sql = qb.count(table);
             qb.reset_query(sql);
-            exec(sql, function(err, row) {
+            exec(sql, (err, row) => {
                 if (!err) {
                     //console.dir(row[0].numrows);
                     callback(err, row[0].numrows);
@@ -148,7 +148,7 @@ const QueryExec = function (qb, conn) {
                 const sql = sqls.shift();
                 qb.reset_query(sql);
 
-                exec(sql, function(err, res) {
+                exec(sql, (err, res) => {
                     if (!err) {
                         if (null === results) {
                             results = res;

@@ -2,7 +2,7 @@ const should = require('chai').should();
 const expect = require('chai').expect;
 const nqb = require('../../index.js');
 
-const check = function(done, f) {
+const check = (done, f) => {
 	try {
 		f();
 		done();
@@ -233,7 +233,7 @@ describe('QueryBuilder() - MySQL Adapter', () => {
 	it('should allow us to execute a query', done => {
 		const qb = nqb.QueryBuilder(Object.assign({}, settings), driver);
 		qb.connect(err => {
-			qb.query("select * from `cities` where `city` like 'Z%' and `state_code` = 'FL'", function(err, res) {
+			qb.query("select * from `cities` where `city` like 'Z%' and `state_code` = 'FL'", (err, res) => {
 				check(done, () => {
 					expect(err).to.not.be.instanceof(Error);
 					expect(res).to.not.be.empty;
@@ -278,9 +278,9 @@ describe('QueryBuilder() - MySQL Adapter', () => {
 		const pool = nqb.QueryBuilder(Object.assign({}, settings), driver, 'pool');
 
 		pool.get_connection(qb => {
-			qb.query('select * from `cities` where `city` = "Gainesville"', function(err, res) {
+			qb.query('select * from `cities` where `city` = "Gainesville"', (err, res) => {
 				if (res.length > 0) {
-					qb.query('select * from `cities` where `state_code` = "' + res[0].state_code + '"', function(err, res) {
+					qb.query('select * from `cities` where `state_code` = "' + res[0].state_code + '"', (err, res) => {
 						check(done, () => connection_released(qb));
 					});
 				} else {
