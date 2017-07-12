@@ -13,7 +13,7 @@
  *
 **/
 
-var connect, Standard, Pool, PoolCluster;
+let connect, Standard, Pool, PoolCluster;
 
 // ****************************************************************************
 // Sets up a standard one-time connection (no pooling). This one is used by the
@@ -22,8 +22,8 @@ var connect, Standard, Pool, PoolCluster;
 // @param	Object	settings	Connection settings
 // @return	Object				Connection handle
 // ****************************************************************************
-Standard = function(settings) {
-	
+Standard = settings => {
+
 };
 
 // ****************************************************************************
@@ -32,8 +32,8 @@ Standard = function(settings) {
 // @param	Object	settings	Connection settings
 // @return	Object				Connection handle
 // ****************************************************************************
-Pool = function(settings) {
-	
+Pool = settings => {
+
 };
 
 // ****************************************************************************
@@ -43,8 +43,8 @@ Pool = function(settings) {
 // @param	Object	settings	Connection settings
 // @return	Object				Connection handle
 // ****************************************************************************
-PoolCluster = function(settings) {
-	
+PoolCluster = settings => {
+
 };
 
 // ****************************************************************************
@@ -53,11 +53,11 @@ PoolCluster = function(settings) {
 // @param	Object	settings	Connection settings (including the type)
 // @return	Object				Connection handle
 // ****************************************************************************
-connect = function(settings,type) {
+connect = (settings,type) => {
 	type = type || 'single';
-	
-	var connection = null;
-	
+
+	let connection = null;
+
 	switch(type) {
 		case 'single':
 			connection = Standard(settings);
@@ -72,7 +72,7 @@ connect = function(settings,type) {
 			throw new Error("Invalid connection type specified!");
 			break;
 	}
-	
+
 	if (connection === null) {
 		throw new Error("A connection could not be established!");
 	}
