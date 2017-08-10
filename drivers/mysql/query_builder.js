@@ -5,7 +5,7 @@ const QueryBuilder = function() {
         const keys = Object.keys(item);
         const length = keys.length;
         const values = Array(length);
-        for (const i = 0; i < length; i++) {
+        for (let i = 0; i < length; i++) {
           values[i] = item[keys[i]];
         }
         return values;
@@ -93,7 +93,7 @@ const QueryBuilder = function() {
             console.dir(a);
         }
         if (Object.prototype.toString.call(a) === Object.prototype.toString.call({})) {
-            for (const key in a) {
+            for (let key in a) {
                 if (a.hasOwnProperty(key)) {
                     delete a[key];
                 }
@@ -113,7 +113,7 @@ const QueryBuilder = function() {
     // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
     const track_aliases = (qb,table) => {
         if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
-            for (const i in table) {
+            for (let i in table) {
                 const t = table[i];
                 track_aliases(qb,t);
             }
@@ -135,7 +135,7 @@ const QueryBuilder = function() {
             const alias = table.slice(table.lastIndexOf(' ')).trim().replace(/`/g,'');
 
             // Store the alias, if it doesn't already exist
-            if(qb.aliased_tables.indexOf(alias) == -1) {
+            if (qb.aliased_tables.indexOf(alias) == -1) {
                 qb.aliased_tables.push(alias);
             }
         }
@@ -155,7 +155,7 @@ const QueryBuilder = function() {
         }
 
         if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
-            for (const i in item) {
+            for (let i in item) {
                 item[i] = escape_identifiers(item[i]);
             }
             return item;
@@ -242,7 +242,7 @@ const QueryBuilder = function() {
             // we have nothing more to do other than escape the item
             if (qb.aliased_tables.indexOf(first_seg) !== -1) {
                 if (protect_identifiers === true) {
-                    for (const key in parts) {
+                    for (let key in parts) {
                         const val = parts[key];
                         if (val !== '*') {
                             parts[key] = escape_identifiers(val);
@@ -268,9 +268,9 @@ const QueryBuilder = function() {
     };
 
     const has_operator = function (str) {
-        if(typeof str === 'string' && str.length > 0) {
+        if (typeof str === 'string' && str.length > 0) {
             const match = /(<|>|!|=|\sIS NULL|\sIS NOT NULL|\sEXISTS|\sBETWEEN|\sLIKE|\sCASE|\sTHEN|\sWHEN|\sIN\s*\(|\s)/i.test(str.trim());
-            if(!match) {
+            if (!match) {
                 return false;
             }
         }
@@ -296,7 +296,7 @@ const QueryBuilder = function() {
     // ---------------------------- SQL BUILD TOOLS ----------------------------//
     const build_where_clause = qb => {
         let sql = '';
-        if(qb.where_array.length > 0) {
+        if (qb.where_array.length > 0) {
             sql += " WHERE ";
         }
         sql += qb.where_array.join(" ");
@@ -305,7 +305,7 @@ const QueryBuilder = function() {
 
     const build_from_clause = qb => {
         let sql = '';
-        if(qb.from_array.length > 0) {
+        if (qb.from_array.length > 0) {
             sql += " FROM ";
         } else {
             throw new Error("You have not provided any tables, views, or store procedures for this query!!");
@@ -317,7 +317,7 @@ const QueryBuilder = function() {
     const build_join_string = qb => {
         let sql = '';
         sql += qb.join_array.join(' ');
-        if(sql.length > 0) sql = ' ' + sql;
+        if (sql.length > 0) sql = ' ' + sql;
         return sql;
     };
 
@@ -400,7 +400,7 @@ const QueryBuilder = function() {
 
     const compile_update = qb => {
         const valstr = [];
-        for (const i in qb.set_array) {
+        for (let i in qb.set_array) {
             const key = Object.keys(qb.set_array[i])[0];
             const val = qb.set_array[i][key];
             valstr.push(key + ' = ' + val);
@@ -430,7 +430,7 @@ const QueryBuilder = function() {
         const keys = [];
         const values = [];
 
-        for (const i in qb.set_array) {
+        for (let i in qb.set_array) {
             const key = Object.keys(qb.set_array[i])[0];
             const val = qb.set_array[i][key];
 
@@ -644,7 +644,7 @@ const QueryBuilder = function() {
                 }
             }
 
-            for (const i in values) {
+            for (let i in values) {
                 this.where_in_array.push(qb_escape(this,values[i]));
             }
 
@@ -686,7 +686,7 @@ const QueryBuilder = function() {
                 throw new Error("like(): You have provided an invalid value as the first parameter. Only valid strings and objects are allowed.");
             }
 
-            if(Object.prototype.toString.call(field) !== Object.prototype.toString.call({})) {
+            if (Object.prototype.toString.call(field) !== Object.prototype.toString.call({})) {
                 if (match === null) {
                     throw new Error("like(): Since your first parameter is a string, your second param must a valid number, boolean, or string.");
                 }
@@ -732,18 +732,18 @@ const QueryBuilder = function() {
             return this;
         },
 
-        from: function(from) {
-            if(!Array.isArray(from)) {
-                from = [from];
+        from: function(from_param) {
+            if (!Array.isArray(from_param)) {
+                from_param = [from_param];
             }
-            for (const i in from) {
-                let val = from[i];
+            for (let i in from_param) {
+                let val = from_param[i];
 
-                if (val.trim() === '') continue;
+                if (typeof val !== 'string' || val.trim() === '') continue;
 
                 if (val.indexOf(',') !== -1) {
                     const objects = val.split(',');
-                    for (const j in objects) {
+                    for (let j in objects) {
                         const v = objects[j].trim();
 
                         track_aliases(this,v);
@@ -883,10 +883,10 @@ const QueryBuilder = function() {
                 }
             }
 
-            for (const i in select) {
+            for (let i in select) {
                 const val = select[i].trim();
 
-                if(val !== '') {
+                if (val !== '') {
                     this.select_array.push(protect_identifiers(this,val,escape));
                 }
             }
@@ -964,7 +964,7 @@ const QueryBuilder = function() {
                 throw new Error("You haven't provided any fields to group by!");
             }
 
-            for (const key in by) {
+            for (let key in by) {
                 if (typeof by[key] !== 'string') {
                     throw new Error("You have provided an invalid value to the group_by() method. Only strings and arrays of strings are allowed!");
                 }
@@ -1015,7 +1015,7 @@ const QueryBuilder = function() {
                     }
                     else if (key_is_array === true) {
                         //console.log("Key is NOT a string");
-                        for (const i in key) {
+                        for (let i in key) {
                             if (typeof key[i] !== 'string') {
                                 throw new Error("having(): You've provided an unparseable format to the having() method..");
                             }
@@ -1089,7 +1089,7 @@ const QueryBuilder = function() {
                 throw new Error("You haven't provided any fields to order by!");
             }
 
-            for (const i in orderby) {
+            for (let i in orderby) {
                 orderby[i] = orderby[i].replace(/\s+/g, ' ');
 
                 if (m = orderby[i].match(/([^\s]+)\s+(ASC|DESC|RAND\(\))/i)) {
@@ -1161,7 +1161,7 @@ const QueryBuilder = function() {
 
 
             // Add each key:value pair to the set_array
-            for (const i in key) {
+            for (let i in key) {
                 let v = key[i];
                 if (typeof v === 'undefined') continue;
 
@@ -1187,7 +1187,7 @@ const QueryBuilder = function() {
 
                 // Determine if this key has already been set
                 let found_index = null;
-                for (const j in this.set_array) {
+                for (let j in this.set_array) {
                     if (this.set_array[j].hasOwnProperty(escaped_key)) {
                         found_index = j;
                         break;
@@ -1283,13 +1283,13 @@ const QueryBuilder = function() {
                 throw new Error('insert_batch(): Array of objects must be provided for batch insert!');
             }
 
-            for (const key in set) {
+            for (let key in set) {
                 const row = set[key];
                 const is_object = Object.prototype.toString.call(row) == Object.prototype.toString.call({});
                 if (!is_object || (is_object && Object.keys(row).length === 0)) {
                     throw new Error('insert_batch(): An invalid item was found in the data array!');
                 } else {
-                    for (const i in row) {
+                    for (let i in row) {
                         const v = row[i];
 
                         if (!/^(number|string|boolean)$/.test(typeof v) && v !== null) {
@@ -1310,7 +1310,7 @@ const QueryBuilder = function() {
             const columns = [];
 
             // Obtain all the column names
-            for (const key in set[0]) {
+            for (let key in set[0]) {
                 if (set[0].hasOwnProperty(key)) {
                     if (columns.indexOf(key) == -1) {
                         columns.push(protect_identifiers(this,key));
@@ -1321,7 +1321,7 @@ const QueryBuilder = function() {
             for (let i = 0; i < set.length; i++) {
                 (i => {
                     const row = [];
-                    for (const key in set[i]) {
+                    for (let key in set[i]) {
                         if (set[i].hasOwnProperty(key)) {
                             row.push(qb_escape(this,set[i][key]));
                         }
@@ -1338,7 +1338,7 @@ const QueryBuilder = function() {
         },
 
         get: function(table) {
-            if (typeof table !== 'undefined') {
+            if (typeof table === 'string' || Array.isArray(table)) {
                 this.from(table);
             }
             else {
@@ -1351,25 +1351,25 @@ const QueryBuilder = function() {
 
         get_where: function(table=null, where=null) {
 
-			// Check if table is either a string or array
+            // Check if table is either a string or array
             if (typeof table !== 'string' && !Array.isArray(table))
                 throw new Error('You must specify a table or array of tables in the first parameter of get_where()');
 
-			// If table is a string, make sure it's not empty
-			if (typeof table === 'string' && table.trim().length <= 0)
-				throw new Error("Invalid table string specified!");
+            // If table is a string, make sure it's not empty
+            if (typeof table === 'string' && table.trim().length <= 0)
+                throw new Error("Invalid table string specified!");
 
-			// If table is array, make sure there are only strings in there and that they are non-empty strings
-			if (Array.isArray(table)) {
-				for (const v in table) {
-					if (typeof v !== 'string' || (typeof v === 'string' && v.trim().length <= 0)) {
-						throw new Error("Invalid table string specified in array of tables!");
-						break;
-					}
-				}
-			}
+            // If table is array, make sure there are only strings in there and that they are non-empty strings
+            if (Array.isArray(table)) {
+                for (let v in table) {
+                    if (typeof v !== 'string' || (typeof v === 'string' && v.trim().length <= 0)) {
+                        throw new Error("Invalid table string specified in array of tables!");
+                        break;
+                    }
+                }
+            }
 
-			this.from(table);
+            this.from(table);
 
             if (where === null || typeof where !== 'object' || Object.keys(where).length === 0)
                 throw new Error('You must supply an object of field:value pairs in the second parameter of get_where()');
@@ -1482,13 +1482,13 @@ const QueryBuilder = function() {
 
             // Make sure each item in the dataset has the specified index and then add data to set_array
             //console.dir(set);
-            for (const i in set) {
+            for (let i in set) {
                 const clean = {};
                 const row = set[i];
                 if (Object.prototype.toString.call(row) === Object.prototype.toString.call({}) && Object.keys(row).length > 0) {
                     const keys = Object.keys(row);
                     if (keys.indexOf(index) !== -1) {
-                        for (const j in row) {
+                        for (let j in row) {
                             clean[protect_identifiers(this, j)] = qb_escape(this, row[j]);
                         }
                         this.set_array.push(clean);
@@ -1553,11 +1553,11 @@ const QueryBuilder = function() {
                 // Escape the index
                 index = protect_identifiers(this, index);
 
-                for (const j in chunk) {
+                for (let j in chunk) {
                     ids.push(chunk[j][index]);
 
                     const keys = Object.keys(chunk[j]);
-                    for (const k in keys) {
+                    for (let k in keys) {
                         if (keys[k] != index) {
                             if (!when_then.hasOwnProperty(keys[k])) {
                                 when_then[keys[k]] = [];
@@ -1571,10 +1571,10 @@ const QueryBuilder = function() {
                 let sql = 'UPDATE (' + table + ') SET ';
                 let cases = '';
 
-                for (const l in when_then) {
+                for (let l in when_then) {
                     cases += l + ' = CASE ';
 
-                    for (const m in when_then[l]) {
+                    for (let m in when_then[l]) {
                         cases += when_then[l][m];
                     }
 
@@ -1615,7 +1615,7 @@ const QueryBuilder = function() {
                 this.from(table);
             }
             else {
-                if (from_array.length == 0) {
+                if (this.from_array.length == 0) {
                     throw new Error('You have not specified any tables to build a select statement with!');
                     return this;
                 }

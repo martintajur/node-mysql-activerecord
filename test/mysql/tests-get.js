@@ -19,6 +19,21 @@ describe('get()', () => {
 		qb.get(['galaxies','star_systems','planets']);
 		qb.from_array.should.eql(['`galaxies`','`star_systems`','`planets`']);
 	});
+	it('should not accept anything but a non-empty string or an array of non-empty strings', () => {
+		qb.reset_query();
+		expect(() => qb.get(),				          'nothing provided').to.throw(Error);
+		expect(() => qb.get({foo: 'bar'}),	          'object provided').to.throw(Error);
+		expect(() => qb.get(true),			          'boolean provided').to.throw(Error);
+		expect(() => qb.get(NaN),			          'NaN provided').to.throw(Error);
+		expect(() => qb.get(null),			          'NULL provided').to.throw(Error);
+		expect(() => qb.get(1),			              'Integer provided').to.throw(Error);
+		expect(() => qb.get(1.1),			          'Float provided').to.throw(Error);
+		expect(() => qb.get(1.1),			          'Float provided').to.throw(Error);
+		expect(() => qb.get([]),			          'Empty array provided').to.throw(Error);
+		expect(() => qb.get(''),			          'Empty string provided').to.throw(Error);
+		expect(() => qb.get('galaxies'),              'Valid string provided').to.not.throw(Error);
+		expect(() => qb.get(['galaxies','planets']),  'Array of non-empty strings provided').to.not.throw(Error);
+	});
 	it('should return a string', () => {
 		qb.reset_query();
 		const sql = qb.get('galaxies');
