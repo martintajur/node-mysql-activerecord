@@ -57,11 +57,11 @@ const QueryBuilder = (settings,driver,type) => {
 	// ****************************************************************************
 	const get_driver_info = qb => {
 		// A driver must be specified
-		if (typeof driver !== 'string') {
+		if (typeof this.driver !== 'string') {
 			throw new Error("No database driver specified!");
 		}
 
-		qb.driver = driver.toLowerCase();
+		qb.driver = qb.driver.toLowerCase();
 
 		// Verify that the driver is one we fundamentally support
 		if (Object.keys(qb.drivers).indexOf(qb.driver) === -1) {
@@ -101,7 +101,7 @@ const QueryBuilder = (settings,driver,type) => {
 	// @return	Object		Modified QueryBuilder object
 	// ****************************************************************************
 	const get_connection_type = qb => {
-		if (Object.keys(qb.drivers[qb.driver].connection_types).indexOf(qb.connection_type) === -1) {
+		if (Object.keys(qb.drivers[qb.driver].connection_types).includes(qb.connection_type)) {
 			throw new Error("You have specified a invalid database connection method: " + qb.connection_type);
 		}
 		if (qb.drivers[qb.driver].connection_types[qb.connection_type] !== true) {
