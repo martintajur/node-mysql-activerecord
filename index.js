@@ -101,7 +101,7 @@ const QueryBuilder = (settings,driver,type) => {
 	// @return	Object		Modified QueryBuilder object
 	// ****************************************************************************
 	const get_connection_type = qb => {
-		if (Object.keys(qb.drivers[qb.driver].connection_types).includes(qb.connection_type)) {
+		if (!Object.keys(qb.drivers[qb.driver].connection_types).includes(qb.connection_type)) {
 			throw new Error("You have specified a invalid database connection method: " + qb.connection_type);
 		}
 		if (qb.drivers[qb.driver].connection_types[qb.connection_type] !== true) {

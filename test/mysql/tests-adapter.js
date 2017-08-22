@@ -177,8 +177,8 @@ describe('QueryBuilder() - MySQL Adapter', () => {
 	});
 	it('should fail to establish connection if an invalid driver is specified', () => {
 		let qb;
-		expect(() => nqb.QueryBuilder(settings), 'no driver specified').to.throw(Error);
-		expect(() => nqb.QueryBuilder(settings,'foobar'), 'invalid driver specified').to.throw(Error);
+		expect(() => nqb.QueryBuilder(settings), 'no driver specified').to.not.throw(Error);
+		expect(() => nqb.QueryBuilder(settings, 'foobar'), 'invalid driver specified').to.throw(Error);
 	});
 	it('should fail to establish connection if an invalid driver version is specified', () => {
 		let qb;
