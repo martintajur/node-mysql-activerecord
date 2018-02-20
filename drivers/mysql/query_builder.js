@@ -283,7 +283,7 @@ const QueryBuilder = function() {
 
         if (typeof str === 'boolean') {
             str = (str === false ? 0 : 1);
-        } else if (typeof str === 'number' || (typeof str === 'string' && /^\d+$/.test(str))) {
+        } else if (typeof str === 'number' || (typeof str === 'string' && /^\d+$/.test(str) && !/^0+/.test(str))) {
             str *= 1;
         } else {
             str = do_escape(str);
