@@ -346,7 +346,7 @@ var Adapter = function(settings) {
 		var columns = [];
 		var escColumns = [];
 
-		for (var aSet in dataSet) {
+		for (var aSet = 0; aSet < dataSet.length; aSet++) {
 			for (var key in dataSet[aSet]) {
 				if (columns.indexOf(key) == -1) {
 					columns.push(key);
@@ -359,7 +359,7 @@ var Adapter = function(settings) {
 			(function(i) {
 				var row = [];
 
-				for (var key in columns) {
+				for (var key = 0; key < columns.length; key++) {
 					if (dataSet[i].hasOwnProperty(columns[key])) {
 						row.push(that.escape(dataSet[i][columns[key]]));
 					} else {
