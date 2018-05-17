@@ -2,7 +2,11 @@ before_script: ./test/create_mock_dbs.sh
 language: node_js
 dist: precise
 node_js:
-    - "6.10.2"
+    - "10.1.0"
+    - "9.11.1"
+    - "8.11.2"
+    - "7.10.1"
+    - "6.14.2"
 services: mysql
 test:
     adapter: mysql2
