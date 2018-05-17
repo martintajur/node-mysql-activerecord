@@ -4,6 +4,34 @@ This file is a manually maintained list of changes for each release. Feel free
 to add your changes here when sending pull requests. Also send corrections if
 you spot any mistakes.
 
+## v1.1.1 (2018-05-25)
+
+* Updated package.json to always use the latest version of mysql 2.x
+
+## v1.1.0 (2018-02-20)
+
+* Fixed a bug where you could not insert with leading zeros. #20
+
+## v1.0.3 (2017-08-22)
+
+* Fixed a bug in how it's checking for valid connection types. Also updated tests to allow for an empty driver string in QueryBuilder constructor (defaults to 'mysql').
+
+## v1.0.2 (2017-08-22)
+
+* Fixed a bug dealing with the default 'driver' param value in the QueryBuilder contructor
+
+## v1.0.1 (2017-08-10)
+
+* Fixed a bug where non-strings or non-array-of-strings could be passed to the method and cause issues
+
+## v1.0.0 (2017-07-26)
+
+* Updated codebase to ES6
+
+## v0.15.0 (2017-04-27)
+
+* Fixed and documented the escape property of the `join` method.
+
 ## v0.9.0 (2015-02-05)
 
 * Added this history file
@@ -36,7 +64,3 @@ you spot any mistakes.
 * Added public `escape()` method
 * Added funtional `update_batch()` method.
 * Added `truncate()` and `empty_table()` methods.
-
-## v0.15.0 (2017-04-27)
-
-* Fixed and documented the escape property of the `join` method.
