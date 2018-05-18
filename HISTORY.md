@@ -4,7 +4,7 @@ This file is a manually maintained list of changes for each release. Feel free
 to add your changes here when sending pull requests. Also send corrections if
 you spot any mistakes.
 
-## v1.1.2 (2018-05-18)
+## v1.2.0 (2018-05-18)
 
 * retroactive fix of this change log
 * updated the mysql escape string to use the proper mysql method.
