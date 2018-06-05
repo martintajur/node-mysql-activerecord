@@ -863,10 +863,14 @@ const QueryBuilder = function() {
                     select = select.split(',');
                 } else {
                     if (escape === true) {
+                        // Prevent it from trying to parse select statements with functions and if statements
+                        if (/\w\s?\(/.test(select)) throw new Error("Select statements with subqueries or functions cannot be escaped! Please escape manually and pass FALSE as the second paramter to the select method.");
+
+                        // Identify individual statements within select string
                         let m, open_paren_index, inner_parenthesis;
                         const reg = /\)/g;
                         while ((m = reg.exec(select) !== null)) {
-                            open_paren_index = m.input.substring(0,m.index).lastIndexOf('(');
+                            open_paren_index = m.input.substring(0, m.index).lastIndexOf('(');
                             if (open_paren_index !== -1) {
                                 inner_parenthesis = m.input.substring((open_paren_index + 1), m.index);
                                 if (inner.parenthesis.indexOf(',') !== -1) {

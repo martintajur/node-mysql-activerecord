@@ -136,14 +136,36 @@ describe('select()', () => {
 		qb.select('universe.galaxy.star_system.planet as planet');
 		qb.select_array.should.eql(['`universe`.`galaxy`.`star_system`.`planet` as `planet`']);
 	});
-	it('should not allow subqueries or functions with commas in them without the second parameter being false', () => {
+	it('should not allow subqueries without the second parameter being false', () => {
 		qb.reset_query();
 		expect(
 			() => qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets')
 		).to.throw(Error);
 
 		expect(
-			() => qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets',false)
+			() => qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id = 42) as num_planets')
+		).to.throw(Error);
+
+		expect(
+			() => qb.select('s.star_systems, (select count(p.*) as count from planets p where p.star_system_id IN(2,3,5)) as num_planets', false)
+		).to.not.throw(Error);
+	});
+	it('should not allow functions without the second paramter being false', () => {
+		expect(
+			() => qb.select('s.star_systems, count(planets) as num_planets')
+		).to.throw(Error);
+
+		expect(
+			() => qb.select('s.star_systems, if(num_planets > 0, true, false) as has_planets')
+		).to.throw(Error);
+
+
+		expect(
+			() => qb.select('s.star_systems, count(planets) as num_planets', false)
+		).to.not.throw(Error);
+
+		expect(
+			() => qb.select('s.star_systems, if(num_planets > 0, true, false) as has_planets', false)
 		).to.not.throw(Error);
 	});
 	it('should allow for functions and subqueries in statement without escaping them (aliases at the end will still be escaped)', () => {

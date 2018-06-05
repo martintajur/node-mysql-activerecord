@@ -14,7 +14,7 @@ The primary benefits of this module (currently) are:
 - Is fully unit tested
 - **Very thoroughly documented**
 - Allows for greater flexibility and more control over a full ORM
-- Ligher-weight than an ORM
+- Lighter-weight than an ORM
 - Allows you to drop down to the native methods of your driver if you choose to
 - Allows for different drivers for different versions (SQLite 2 vs SQLite 3)
 - The order in which you call the methods is irrelevant except for the execution methods (get, insert, update, delete) which must be called last.
@@ -74,14 +74,14 @@ const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single'
 
 qb.select('name', 'position')
     .where({type: 'rocky', 'diameter <': 12000})
-    .get('planets', (err,response) => {
+    .get('planets', (err, response) => {
         if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
 
         // SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
         console.log("Query Ran: " + qb.last_query());
 
         // [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
-        console.dir(response);
+        console.log("Results:", response);
     }
 );
 ```
@@ -224,9 +224,9 @@ Parameter | Type         | Default  | Description
 fields    | String/Array | Required | The fields in which to grab from the database
 escape    | Boolean      | true     | TRUE: auto-escape fields; FALSE: don't escape
 
-The fields provided to this method will be automatically escaped by the database driver. The `fields` paramter can be passed in 1 of 2 ways (field names will be trimmed in either scenario):
+The fields provided to this method will be automatically escaped by the database driver. The `fields` parameter can be passed in 1 of 2 ways (field names will be trimmed in either scenario):
 
-**_NOTE:_** If the select method is never called before an execution method is ran, 'SELECT *' will be assumed.
+**_NOTE:_** If the select method is never called before an execution method is ran, `SELECT *` will be assumed.
 - String with fields seperated by a comma:
   - `.select('foo, bar, baz')`
 
@@ -237,10 +237,10 @@ The fields provided to this method will be automatically escaped by the database
 
 ```javascript
 // SELECT * FROM galaxies
-qb.select('*').get('foo',callback);
+qb.select('*').get('foo', callback);
 
 // Easier and same result:
-qb.get('foo',callback);
+qb.get('foo', callback);
 ```
 
 An array of field names:
@@ -254,7 +254,7 @@ You can chain the method together using different patterns if you want:
 
 ```javascript
 // SELECT `foo`, `bar`, `baz`, `this`, `that`, `the_other`
-qb.select(['foo', 'bar', 'baz']).select('this,that,the_other');
+qb.select(['foo', 'bar', 'baz']).select('this, that, the_other');
 ```
 
 You can alias your field names and they will be escaped properly as well:
@@ -268,7 +268,15 @@ You can optionally choose not to have the driver auto-escape the fieldnames (dan
 
 ```javascript
 // SELECT CONCAT(first_name,' ',last_name) AS `full_name`
-qb.select('CONCAT(first_name,' ',last_name) AS `full_name`',false);
+qb.select('CONCAT(first_name,' ',last_name) AS `full_name`', false);
+```
+
+In order to successfully use subqueries in your select statements, you *must* supply `false` to the second parameter. _Please, for custom clauses containing subqueries, make sure you escape everything properly!_ **_ALSO NOTE:_** with this method, there may be conflicts between database drivers!
+
+```javascript
+// (SELECT `name` FROM `planets` WHERE `id`=8675309) AS `planet_name`
+qb.select('(SELECT `name` FROM `planets` WHERE `id`=8675309) AS `planet_name`', false);
+
 ```
 
 **_NOTE:_** If you use this technique to add driver-specific functions, it may (and probably will) cause unexpected outcomes with other database drivers!
@@ -285,7 +293,7 @@ This SQL command is used to prevent duplicate rows from being returned in the re
 
 ```javascript
 // SELECT DISTINCT `id`, `name`, `description` FROM `users`
-qb.distinct().select('id,name,description').get('users',callback);
+qb.distinct().select('id, name, description').get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -303,14 +311,14 @@ alias     | String | NULL     | Optional alias to rename field
 
 ```javascript
 // SELECT MIN(`age`) FROM `users`
-qb.select_min('age').get('users',callback);
+qb.select_min('age').get('users', callback);
 ```
 
 You can optionally include a second parameter to rename the resulting field
 
 ```javascript
 // SELECT MIN(`age`) AS `min_age` FROM `users`
-qb.select_min('age', 'min_age').get('users',callback);
+qb.select_min('age', 'min_age').get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -328,14 +336,14 @@ alias     | String | NULL     | Optional alias to rename field
 
 ```javascript
 // SELECT MAX(`age`) FROM `users`
-qb.select_max('age').get('users',callback);
+qb.select_max('age').get('users', callback);
 ```
 
 You can optionally include a second parameter to rename the resulting field
 
 ```javascript
 // SELECT MAX(`age`) AS `max_age` FROM `users`
-qb.select_max('age', 'max_age').get('users',callback);
+qb.select_max('age', 'max_age').get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -353,14 +361,14 @@ alias     | String | NULL     | Optional alias to rename field
 
 ```javascript
 // SELECT AVG(`age`) FROM `users`
-qb.select_avg('age').get('users',callback);
+qb.select_avg('age').get('users', callback);
 ```
 
 You can optionally include a second parameter to rename the resulting field
 
 ```javascript
 // SELECT AVG(`age`) AS `avg_age` FROM `users`
-qb.select_avg('age', 'avg_age').get('users',callback);
+qb.select_avg('age', 'avg_age').get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -378,14 +386,14 @@ alias     | String | NULL     | Optional alias to rename field
 
 ```javascript
 // SELECT SUM(`age`) FROM `users`
-qb.select_sum('age').get('users',callback);
+qb.select_sum('age').get('users', callback);
 ```
 
 You can optionally include a second parameter to rename the resulting field
 
 ```javascript
 // SELECT SUM(`age`) AS `sum_age` FROM `users`
-qb.select_sum('age', 'sum_age').get('users',callback);
+qb.select_sum('age', 'sum_age').get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -398,7 +406,7 @@ Parameter | Type         | Default  | Description
 :-------- | :----------- | :------- | :------------------------------------------
 tables    | String/Array | Required | Table(s), view(s), etc... to grab data from
 
-You can provide tables, views, or any other valid source of data in a comma-seperated list (string) or an array. When more than one data-source is provided when connected to a traditional RDMS, the tables will joined using a basic join. You can also `.from()` multiple times to get the same effect (the order in which they are called does not matter).
+You can provide tables, views, or any other valid source of data in a comma-separated list (string) or an array. When more than one data-source is provided when connected to a traditional RDMS, the tables will joined using a basic join. You can also `.from()` multiple times to get the same effect (the order in which they are called does not matter).
 
 Aliases can be provided and they will be escaped properly.
 
@@ -410,7 +418,7 @@ Aliases can be provided and they will be escaped properly.
 
 ```javascript
 // SELECT `id`, `name`, `description` FROM `users`
-qb.select('id,name,description').from('users').get(callback);
+qb.select('id, name, description').from('users').get(callback);
 ```
 
 **_Comma-Seperated_**
@@ -418,7 +426,7 @@ qb.select('id,name,description').from('users').get(callback);
 ```javascript
 // SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name`
 // FROM (`users` `u`, `groups` `g`)
-qb.select('u.id,u.name,u,description,g.name as group_name')
+qb.select('u.id, u.name, u, description, g.name as group_name')
     .from('users u, groups g')
     .get(callback);
 ```
@@ -428,7 +436,7 @@ qb.select('u.id,u.name,u,description,g.name as group_name')
 ```javascript
 // SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name`
 // FROM (`users` `u`, `groups` `g`)
-qb.select('u.id,u.name,u,description,g.name as group_name')
+qb.select('u.id, u.name, u, description, g.name as group_name')
     .from(['users u', 'groups g'])
     .get(callback);
 ```
@@ -438,7 +446,7 @@ qb.select('u.id,u.name,u,description,g.name as group_name')
 ```javascript
 // SELECT `u`.`id`, `u`.`name`, `u`.`description`, `g`.`name` AS `group_name`
 // FROM (`users` `u`, `groups` `g`)
-qb.from('groups g').select('u.id,u.name,u,description,g.name as group_name')
+qb.from('groups g').select('u.id, u.name, u, description, g.name as group_name')
     .from('users u')
     .get(callback);
 ```
@@ -446,7 +454,7 @@ qb.from('groups g').select('u.id,u.name,u,description,g.name as group_name')
 --------------------------------------------------------------------------------
 
 ### JOIN
-#### .join(table,relation[,direction])
+#### .join(table, relation[,direction])
 This SQL command is used query multiple tables related and connected by keys and get a single resultset.
 
 Parameter | Type    | Default  | Description
@@ -464,7 +472,7 @@ escape    | Boolean | true     | TRUE: Escape table name and conditions; FALSE: 
 - left outer
 - right outer
 
-The table/view and the relationship of it to the main table/view (see: `.from()`) must be specified. The specific type of join defaults to "left" if none is specified (althought it is recommened to always supply this value for readability). Multiple function calls can be made if you need several joins in one query. Aliases can (and should) be provided and they will be escaped properly.
+The table/view and the relationship of it to the main table/view (see: `.from()`) must be specified. The specific type of join defaults to "left" if none is specified (although it is recommended to always supply this value for readability). Multiple function calls can be made if you need several joins in one query. Aliases can (and should) be provided and they will be escaped properly.
 
 **Examples**
 
@@ -474,7 +482,7 @@ If no direction is specified, "left" will be used:
 // SELECT `u`.`id`, `u`.`name`, `t`.`name` AS `type_name`
 // FROM `users` `u`
 // LEFT JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
-qb.select('u.id,u.name,t.name as type_name').from('users u')
+qb.select('u.id, u.name, t.name as type_name').from('users u')
     .join('types t', 't.id=u.type_id')
     .get(callback);
 ```
@@ -485,7 +493,7 @@ You may specify a direction:
 // SELECT `u`.`id`, `u`.`name`, `t`.`name` AS `type_name`
 // FROM `users` `u`
 // RIGHT OUTER JOIN `types` `t` ON `t`.`id`=`u`.`type_id`
-qb.select('u.id,u.name,t.name as type_name').from('users u')
+qb.select('u.id, u.name, t.name as type_name').from('users u')
     .join('types t', 't.id=u.type_id', 'right outer')
     .get(callback);
 ```
@@ -543,28 +551,28 @@ If you just want to pass a single filter at a time:
 
 ```javascript
 // SELECT `galaxy` FROM `universe` WHERE `planet_name` = 'Earth'
-qb.select('galaxy').where('planet_name', 'Earth').get('universe',callback);
+qb.select('galaxy').where('planet_name', 'Earth').get('universe', callback);
 ```
 
 If you need more complex filtering using different operators (`<, >, <=, =>, !=, <>, etc...`), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
 
 ```javascript
 // SELECT `planet` FROM `planets` WHERE `order` <= 3
-qb.select('planet').where('order <=',3).get('planets',callback);
+qb.select('planet').where('order <=', 3).get('planets', callback);
 ```
 
 You can conveniently pass an object of key:value pairs (which can also contain custom operators):
 
 ```javascript
 // SELECT `planet` FROM `planets` WHERE `order` <= 3 AND `class` = 'M'
-qb.select('planet').where({'order <=':3, class:'M'}).get('planets',callback);
+qb.select('planet').where({'order <=':3, class:'M'}).get('planets', callback);
 ```
 
-You can construct complex WHERE clauses manually and they will be escaped properly as long as there are no paranthesis within it. _Please, for custom clauses containing subqueries, make sure you escape everything properly!_ **_ALSO NOTE:_** with this method, there may be conflicts between database drivers!
+You can construct complex WHERE clauses manually and they will be escaped properly as long as there are no parenthesis within it. _Please, for custom clauses containing subqueries, make sure you escape everything properly!_ **_ALSO NOTE:_** with this method, there may be conflicts between database drivers!
 
 ```javascript
 // SELECT `planet` FROM `planets` WHERE `order` <= 3 AND `class` = 'M'
-qb.select('planet').where("order <= 3 AND class = 'M'").get('planets',callback);
+qb.select('planet').where("order <= 3 AND class = 'M'").get('planets', callback);
 ```
 
 You can pass a non-empty array as a value and that portion will be treated as a call to `.where_in()`:
@@ -573,8 +581,8 @@ You can pass a non-empty array as a value and that portion will be treated as a 
 // SELECT `star_system` FROM `star_systems`
 // WHERE `planet_count` >= 4, `star` IN('Sun', 'Betelgeuse')
 qb.select('star_system')
-    .where({'planet_count >=': 4, star: ['Sun', 'Betelgeuse'])
-    .get('star_systems',callback);
+    .where({'planet_count >=': 4, star: ['Sun', 'Betelgeuse']})
+    .get('star_systems', callback);
 ```
 
 <a name="or_where"></a>
@@ -587,50 +595,50 @@ This method functions identically to [.where()](#where) except that it joins cla
 // WHERE `star` = 'Sun' OR `star` = 'Betelgeuse'
 qb.select('star_system').where('star', 'Sun')
     .or_where('star', 'Betelgeuse')
-    .get('star_systems',callback);
+    .get('star_systems', callback);
 ```
 
 <a name="where_in"></a>
 
-#### .where_in(field,values[,escape])
+#### .where_in(field, values[,escape])
 This will create a "WHERE IN" statement in traditional SQL which is useful when you're trying to find rows with fields matching many different values... It will be joined with existing "WHERE" statements with 'AND'.
 
 ```javascript
 // SELECT `star_system` FROM `star_systems`
 // WHERE `star` IN('Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri')
 const stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
-qb.select('star_system').where_in('star',stars).get('star_systems',callback);
+qb.select('star_system').where_in('star', stars).get('star_systems', callback);
 ```
 
 <a name="or_where_in"></a>
 
-#### .or_where_in(field,values[,escape])
+#### .or_where_in(field, values[,escape])
 Same as `.where_in()` except the clauses are joined by 'OR'.
 
 ```javascript
 // SELECT `star_system` FROM `star_systems`
 // WHERE `planet_count` = 4 OR `star` IN('Sun', 'Betelgeuse')
 const stars = ['Sun', 'Betelgeuse'];
-qb.select('star_system').where('planet_count',4)
-    .or_where_in('star',stars)
-    .get('star_systems',callback);
+qb.select('star_system').where('planet_count', 4)
+    .or_where_in('star', stars)
+    .get('star_systems', callback);
 ```
 
 <a name="where_not_in"></a>
 
-#### .where_not_in(field,values[,escape])
+#### .where_not_in(field, values[,escape])
 Same as `.where_in()` except this generates a "WHERE NOT IN" statement. All clauses are joined with 'AND'.
 
 ```javascript
 // SELECT `star_system` FROM `star_systems`
 // WHERE `star` NOT IN('Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri')
 const stars = ['Sun', 'Betelgeuse', 'Sirius', 'Vega', 'Alpha Centauri'];
-qb.select('star_system').where_not_in('star',stars).get('star_systems',callback);
+qb.select('star_system').where_not_in('star', stars).get('star_systems', callback);
 ```
 
 <a name="or_where_not_in"></a>
 
-#### .or_where_not_in(field,values[,escape])
+#### .or_where_not_in(field, values[,escape])
 Same as `.where_not_in()` except that clauses are joined with 'OR'.
 
 ```javascript
@@ -640,9 +648,9 @@ Same as `.where_not_in()` except that clauses are joined with 'OR'.
 const stars = ['Sun', 'Betelgeuse'];
 const planet_sizes = [2,4,6,8];
 qb.select('star_system')
-    .where_not_in('star',stars)
-    .or_where_not_in('planet_size',planet_sizes)
-    .get('star_systems',callback);
+    .where_not_in('star', stars)
+    .or_where_not_in('planet_size', planet_sizes)
+    .get('star_systems', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -658,7 +666,7 @@ side          | String        | 'both'   | before: '%value'; after: 'value%', bo
 
 **NOTE:** You can, alternatively, use `'right'` and `'left'` in place of `'before'` and '`after`' if you prefer.
 
-#### .like(field,match[,side])
+#### .like(field, match[,side])
 All fields are escaped automatically, no exceptions. Multiple calls will be joined together with 'AND'. You can also pass an object of field/match pairs. Wildcard sides are interchangeable between before/left and after/right--choose the one that makes the most sense to you (there are examples of each below).
 
 **Examples**
@@ -668,7 +676,7 @@ By default, the match string will be wrapped on both sides with the wildcard (%)
 ```javascript
 // SELECT `first_name` FROM `users` WHERE `first_name` LIKE '%mber%'
 // Potential results: [{first_name: 'Kimberly'},{first_name: 'Amber'}]
-qb.select('first_name').like('first_name', 'mber').get('users',callback);
+qb.select('first_name').like('first_name', 'mber').get('users', callback);
 ```
 
 You can specify a side to place the wildcard (%) on if you'd like (before/left, after/right, both):
@@ -676,11 +684,11 @@ You can specify a side to place the wildcard (%) on if you'd like (before/left, 
 ```javascript
 // SELECT `first_name` FROM `users` WHERE `first_name` LIKE '%mber'
 // Potential results: [{first_name: 'Amber'}]
-qb.select('first_name').like('first_name', 'mber', 'before').get('users',callback);
+qb.select('first_name').like('first_name', 'mber', 'before').get('users', callback);
 
 // SELECT `first_name` FROM `users` WHERE `first_name` LIKE 'Kim%'
 // Potential results: [{first_name: 'Kim'},{first_name: 'Kimberly'}]
-qb.select('first_name').like('first_name', 'Kim', 'right').get('users',callback);
+qb.select('first_name').like('first_name', 'Kim', 'right').get('users', callback);
 ```
 
 You can also pass 'none' if you don't want to use the wildcard (%)
@@ -688,7 +696,7 @@ You can also pass 'none' if you don't want to use the wildcard (%)
 ```javascript
 // SELECT `first_name` FROM `users` WHERE `first_name` LIKE 'kim'
 // Potential results: [{first_name: 'Kim'}]
-qb.select('first_name').like('first_name', 'kim', 'none').get('users',callback);
+qb.select('first_name').like('first_name', 'kim', 'none').get('users', callback);
 ```
 
 If you'd like to have multiple like clauses, you can do that by calling like multiple times:
@@ -702,10 +710,10 @@ qb.select('first_name')
     .like('first_name', 'Kim', 'right')
     .like('middle_name', 'lyt')
     .like('last_name', 'arris', 'left')
-    .get('users',callback);
+    .get('users', callback);
 ```
 
-Or you can do it with an object of field/match pairs. If you want to pass a wildcard side, provide `null` as the second paramter and the side as the third. **Note**: All `match` values in an object will share the same wildcard side.
+Or you can do it with an object of field/match pairs. If you want to pass a wildcard side, provide `null` as the second parameter and the side as the third. **Note**: All `match` values in an object will share the same wildcard side.
 
 ```javascript
 // SELECT `first_name` FROM `users`
@@ -714,12 +722,12 @@ Or you can do it with an object of field/match pairs. If you want to pass a wild
 // AND `last_name` LIKE '%is'
 qb.select('first_name')
     .like({first_name: 'ly', middle_name: 'the', last_name: 'is'}, null, 'before')
-    .get('users',callback);
+    .get('users', callback);
 ```
 
 <a name="or_like"></a>
 
-#### .or_like(field,match[,side])
+#### .or_like(field, match[,side])
 This is exactly the same as the `.like()` method except that the clauses are joined by 'OR' not 'AND'.
 
 **Example**
@@ -733,12 +741,12 @@ qb.select('first_name')
     .or_like('first_name', 'Kim', 'right')
     .or_like('middle_name', 'lyt')
     .or_like('last_name', 'arris', 'left')
-    .get('users',callback);
+    .get('users', callback);
 ```
 
 <a name="not_like"></a>
 
-#### .not_like(field,match[,side])
+#### .not_like(field, match[,side])
 This is exactly the same as the `.like()` method except that it creates "NOT LIKE" statements.
 
 **Example**
@@ -750,12 +758,12 @@ This is exactly the same as the `.like()` method except that it creates "NOT LIK
 // AND `last_name` NOT LIKE 'C%'
 qb.select('first_name')
     .not_like({first_name: 'A', middle_name: 'B', last_name: 'C'}, null, 'after')
-    .get('users',callback);
+    .get('users', callback);
 ```
 
 <a name="or_not_like"></a>
 
-#### .or_not_like(field,match[,side])
+#### .or_not_like(field, match[,side])
 This is exactly the same as the `.not_like()` method except that the clauses are joined by 'OR' not 'AND'.
 
 **Example**
@@ -767,7 +775,7 @@ This is exactly the same as the `.not_like()` method except that the clauses are
 // OR `last_name` NOT LIKE 'C%'
 qb.select('first_name')
     .or_not_like({first_name: 'A', middle_name: 'B', last_name: 'C'}, null, 'after')
-    .get('users',callback);
+    .get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -786,20 +794,20 @@ Group by a single field:
 
 ```javascript
 // SELECT * FROM `users` GROUP BY `department_id`
-qb.group_by('department_id').get('users',callback);
+qb.group_by('department_id').get('users', callback);
 ```
 
 Group by multiple fields:
 
 ```javascript
 // SELECT * FROM `users` GROUP BY `department_id`, `position_id`
-qb.group_by(['department_id', 'position_id']).get('users',callback);
+qb.group_by(['department_id', 'position_id']).get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
 
 ### HAVING
-#### .having(field,value)
+#### .having(field, value)
 This SQL command is similar to the 'WHERE' command but is used when aggregate functions are used in the "SELECT" portion of the query.
 
 Parameter     | Type          | Default  | Description
@@ -818,7 +826,7 @@ If you just want to add a single having clause:
 // SELECT COUNT(*) AS `num_planets` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` = 5
-qb.group_by('id').having('num_planets',5).count('star_systems',callback);
+qb.group_by('id').having('num_planets', 5).count('star_systems', callback);
 ```
 
 If you need more complex filtering using different operators (`<, >, <=, =>, !=, <>, etc...`), you can simply provide that operator along with the key in the first parameter. The '=' is assumed if a custom operator is not passed:
@@ -827,7 +835,7 @@ If you need more complex filtering using different operators (`<, >, <=, =>, !=,
 // SELECT COUNT(*) AS `num_planets` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` > 5
-qb.group_by('id').having('num_planets >',5).count('star_systems',callback);
+qb.group_by('id').having('num_planets >', 5).count('star_systems', callback);
 ```
 
 You can conveniently pass an object of key:value pairs (which can also contain custom operators):
@@ -836,7 +844,7 @@ You can conveniently pass an object of key:value pairs (which can also contain c
 // SELECT COUNT(*) AS `num_planets` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` > 5
-qb.group_by('id').having({'num_planets >': 5}).count('star_systems',callback);
+qb.group_by('id').having({'num_planets >': 5}).count('star_systems', callback);
 ```
 
 You can construct complex WHERE clauses manually and they will be escaped properly. _Please, for custom clauses containing subqueries, make sure you escape everything properly!_ **_ALSO NOTE:_** with this method, there may be conflicts between database drivers!
@@ -845,7 +853,7 @@ You can construct complex WHERE clauses manually and they will be escaped proper
 // SELECT COUNT(*) AS `num_planets` FROM `star_systems`
 // GROUP BY `id`
 // HAVING `num_planets` > (5+2)
-qb.group_by('id').having("`num_planets` > (5+2)",null,false).count('star_systems',callback);
+qb.group_by('id').having("`num_planets` > (5+2)", null, false).count('star_systems', callback);
 ```
 
 <a name="or_having"></a>
@@ -858,9 +866,9 @@ This method functions identically to [.having()](#having) except that it joins c
 // GROUP BY `id`
 // HAVING `num_planets` >= 5 OR `num_moons` <= 10
 qb.group_by('id')
-    .having('num_planets >=',5)
+    .having('num_planets >=', 5)
     .or_having('num_moons <=', 10)
-    .count('star_systems',callback);
+    .count('star_systems', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -874,62 +882,62 @@ Parameter | Type         | Default  | Description
 fields    | String/Array | Required | Field name or an array of field names, possibly with directions as well
 direction | String       | 'asc'    | 'asc': Ascending; 'desc': Descending; 'rand'/'random'/'rand()': Random.
 
-This is a very flexible method, offerring a wide constiety of ways you can call it. constiations include:
-- Pass the field name and ommit the direction
+This is a very flexible method, offering a wide variety of ways you can call it. Variations include:
+- Pass the field name and omit the direction
 - Pass the field name and the direction as the first and second parameters, respectively (most common)
-- Pass an array of fields to first paramter, direction to second parameter.
-- Pass an array of fields + directions in first parameter and ommit the second one.
-- Pass an array of fields (+ directions for some to override second parameter) to first paramter, direction to second parameter.
-- Pass a raw comma-seperated string of field + directions in first parameter and ommit the second one.
+- Pass an array of fields to first parameter, direction to second parameter.
+- Pass an array of fields + directions in first parameter and omit the second one.
+- Pass an array of fields (+ directions for some to override second parameter) to first parameter, direction to second parameter.
+- Pass a raw comma-separated string of field + directions in first parameter and omit the second one.
 
 **Examples**
 
-Pass the field name and ommit the direction
+Pass the field name and omit the direction
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` ASC
-qb.order_by('galaxy_name').get('galaxies',callback);
+qb.order_by('galaxy_name').get('galaxies', callback);
 ```
 
 Pass the field name and the direction as the first and second parameters, respectively
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC
-qb.order_by('galaxy_name', 'desc').get('galaxies',callback);
+qb.order_by('galaxy_name', 'desc').get('galaxies', callback);
 ```
 
 Pass an array of fields to first paramter, direction to second parameter
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` DESC
-qb.order_by(['galaxy_name', 'galaxy_size'],'desc').get('galaxies',callback);
+qb.order_by(['galaxy_name', 'galaxy_size'],'desc').get('galaxies', callback);
 ```
 
 Pass an array of fields + directions in first parameter and ommit the second one.
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` ASC
-qb.order_by(['galaxy_name desc', 'galaxy_size asc']).get('galaxies',callback);
+qb.order_by(['galaxy_name desc', 'galaxy_size asc']).get('galaxies', callback);
 ```
 
-Pass an array of fields (+ directions for some to override second parameter) to first paramter, direction to second parameter
+Pass an array of fields (+ directions for some to override second parameter) to first parameter, direction to second parameter
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` ASC
-qb.order_by(['galaxy_name desc', 'galaxy_size'],'asc').get('galaxies',callback);
+qb.order_by(['galaxy_name desc', 'galaxy_size'],'asc').get('galaxies', callback);
 ```
 
-Pass a raw comma-seperated string of field + directions in first parameter and ommit the second one.
+Pass a raw comma-separated string of field + directions in first parameter and omit the second one.
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` ASC, `galaxy_size` DESC
-qb.order_by('galaxy_name asc, galaxy_size desc').get('galaxies',callback);
+qb.order_by('galaxy_name asc, galaxy_size desc').get('galaxies', callback);
 ```
 
 --------------------------------------------------------------------------------
 
 ### LIMIT
-#### .limit(limit_to,offset)
+#### .limit(limit_to, offset)
 This SQL command is used to limit a result set to a maximum number of results, regardless of the actual number of results that might be returned by a non-limited query.
 
 Parameter | Type    | Default  | Description
@@ -941,14 +949,14 @@ offset    | Integer | NULL     | Optional offset value (where to start before li
 
 ```javascript
 // SELECT * FROM `users` LIMIT 5
-qb.limit(5).get('users',callback);
+qb.limit(5).get('users', callback);
 ```
 
-You can provide an option offset value instead of calling [.offset()](#offset) seperately:
+You can provide an option offset value instead of calling [.offset()](#offset) separately:
 
 ```javascript
 // SELECT * FROM `users` LIMIT 5, 5
-qb.limit(5,5).get('users',callback);
+qb.limit(5, 5).get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -967,7 +975,7 @@ The practical uses of this method are probably miniscule since the `.limit()` me
 
 ```javascript
 // SELECT * FROM `users` LIMIT 5, 25
-qb.limit(5).offset(25).get('users',callback);
+qb.limit(5).offset(25).get('users', callback);
 ```
 
 --------------------------------------------------------------------------------
@@ -1022,7 +1030,7 @@ API Method                        | SQL Command   | MySQL    | MSSQL | Oracle | 
 Execution methods are the end-of-chain methods in the QueryBuilder library. Once these methods are called, all the chainable methods you've called up until this point will be compiled into a query string and sent to the driver's `query()` method. At this point, the QueryBuilder will be reset and ready to build a new query. The database driver will respond with results depending on the type of query being executed or with an error message. Both (if provided) will be supplied to the callback function.
 
 ### Handling Error Messages and Results
-The final parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. If the driver throws an error, a javascript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
+The final parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. If the driver throws an error, a JavaScript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
 
 ### Response Format Examples
 
@@ -1051,7 +1059,7 @@ const callback =  (err, response) => {
     }
 };
 pool.get_connection(qb => {
-    qb.get('foo',callback);
+    qb.get('foo', callback);
 });
 ```
 
@@ -1086,7 +1094,7 @@ pool.get_connection(qb => {
 
 <a name="query"></a>
 
-### .query(query_string,callback)
+### .query(query_string, callback)
 
 Parameter    | Type     | Default  | Description
 :----------- | :------- | :------- | :---------------------------------------------
@@ -1118,7 +1126,7 @@ Parameter | Type     | Default   | Description
 table     | String   | undefined | (optional) Used to avoid having to call `.from()` seperately.
 callback  | Function | Required  | What to do when the driver has responded
 
-This method is used when running queries that might respond with rows of data (namely, "SELECT" statements...). You can pass a table name as the first parameter to avoid having to call [.from()](#from) seperately. If the table name is omitted, and the first paramter is a callback function, there will be no need to pass a callback function into the second parameter.
+This method is used when running queries that might respond with rows of data (namely, "SELECT" statements...). You can pass a table name as the first parameter to avoid having to call [.from()](#from) separately. If the table name is omitted, and the first parameter is a callback function, there will be no need to pass a callback function into the second parameter.
 
 **Type of Response Sent to Callback**
 
@@ -1182,15 +1190,15 @@ qb.limit(10)
 
 <a name="get_where"></a>
 
-### .get_where(table,where,callback)
+### .get_where(table, where, callback)
 
 Parameter | Type            | Default  | Description
 :-------- | :-------------- | :------- | :-------------------------------------------------
-table     | String or Array | Required | Used to avoid having to call `.from()` seperately.
-where     | Object          | Required | Used to avoid having to call `.where()` seperately
+table     | String or Array | Required | Used to avoid having to call `.from()` separately.
+where     | Object          | Required | Used to avoid having to call `.where()` separately
 callback  | Function        | Required | What to do when the driver has responded.
 
-This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` seperately).  The other difference is that _all_ parameters are required and they must be in the proper order.
+This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` separately).  The other difference is that _all_ parameters are required and they must be in the proper order.
 
 **Type of Response Sent to Callback**
 
@@ -1205,7 +1213,7 @@ Basic example:
 qb.get_where('galaxies', {'num_stars >': 100000000}, callback);
 ```
 
-You can still provide other where statements if you want—they'll all work hapilly together:
+You can still provide other where statements if you want—they'll all work happily together:
 
 ```javascript
 // SELECT * FROM `galaxies` WHERE `num_stars` > 100000000 AND `galaxy_type_id` = 3
@@ -1220,7 +1228,7 @@ qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, ca
 
 Parameter | Type     | Default   | Description
 :-------- | :------- | :-------- | :------------------------------------------------------------
-table     | String   | undefined | (optional) Used to avoid having to call `.from()` seperately.
+table     | String   | undefined | (optional) Used to avoid having to call `.from()` separately.
 callback  | Function | Required  | What to do when the driver has responded.
 
 This method is used to determine the total number of results that a query would return without actually returning the entire resultset back to this module. Obviously, you could simply execute the same query with `.get()` and then check the `length` property of the response array, but, that would take significantly more time and memory for very large resultsets.
@@ -1236,7 +1244,7 @@ Integer
 ```javascript
 // SELECT COUNT(*) AS `numrows` FROM `galaxies` WHERE `type` = 3
 const type = 3;
-qb.where('type',type).count('galaxies', (err, count) => {
+qb.where('type', type).count('galaxies', (err, count) => {
     if (err) return console.error(err);
     console.log("There are " + numrows + " Type " + type + " galaxies in the Universe.");
 });
@@ -1246,20 +1254,20 @@ qb.where('type',type).count('galaxies', (err, count) => {
 
 <a name="update"></a>
 
-### .update(table,data[,where],callback)
+### .update(table, data[,where], callback)
 
 Parameter | Type     | Default  | Description
 :-------- | :------- | :------- | :----------------------------------------------------------------------------------------------------
 table     | String   | null     | (suggested) The table/collection you'd like to update
 data      | Object   | null     | (suggested) The data to update (ex. `{field: value}`)
-where     | Object   | null     | (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.
+where     | Object   | null     | (optional) Used to avoid having to call `.where()` separately. Pass NULL if you don't want to use it.
 callback  | Function | Required | What to do when the driver has responded.
 
 This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
 
 **NOTE:**
 
-The first and second parameters are not required but I do suggest you use them as your code will be much easier to read. If you choose not to use them, you will need to pass a falsy value to each... you can't simply skip them. My recommendation is to use `null`. The way you would supply these values without using this method would be through the `from()` method for the first paramater and the `set()` method for the second paramter.
+The first and second parameters are not required but I do suggest you use them as your code will be much easier to read. If you choose not to use them, you will need to pass a "falsey" value to each... you can't simply skip them. My recommendation is to use `null`. The way you would supply these values without using this method would be through the `from()` method for the first parameter and the `set()` method for the second parameter.
 
 **Type of Response Sent to Callback**
 
@@ -1318,14 +1326,14 @@ qb.where('id', 42)
 
 <a name="update_batch"></a>
 
-### .update_batch(table,dataset,index[,where],callback)
+### .update_batch(table, dataset, index[,where], callback)
 
 Parameter | Type     | Default  | Description
 :-------- | :------- | :------- | :----------------------------------------------------------------------------------------------------
 table     | String   | Required | The table/collection you'd like to insert into
 dataset   | Array    | Required | An array of data (rows) to update (ex. `[{id: 3, field: value}, {id: 4, field: val}]`)
 index     | String   | Required | Name of the key in each data object that represents a `where` clause.
-where     | Object   | NULL     | (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.
+where     | Object   | NULL     | (optional) Used to avoid having to call `.where()` separately. Pass NULL if you don't want to use it.
 callback  | Function | Required | What to do when the driver has responded.
 
 This method is a somewhat-complex one and, when using transactional databases, a bit pointless. Nevertheless, this will allow you to update a batch of rows with one query which, in theory, should be faster than running multiple update queries.
@@ -1382,7 +1390,7 @@ As you can see, in each `CASE` statement, the `key` and it's value are being use
 
 <a name="insert"></a>
 
-### .insert(table,data[,ignore[,on_dupe]],callback)
+### .insert(table, data[,ignore[,on_dupe]], callback)
 
 Parameter | Type     | Default   | Description
 :-------- | :------- | :-------- | :--------------------------------------------------------------------------------------------------------------
@@ -1436,7 +1444,7 @@ app.post('/add_article', (req, res) => {
 
 <a name="insert_batch"></a>
 
-### .insert_batch(table,dataset[,ignore[,on_dupe]],callback)
+### .insert_batch(table, dataset[,ignore[,on_dupe]], callback)
 
 Parameter | Type     | Default   | Description
 :-------- | :------- | :-------- | :------------------------------------------------------------------------------------------------------------------
@@ -1476,7 +1484,7 @@ qb.insert_batch('db_engines', data, (err, res) => {
 
 <a name="insert_ignore"></a>
 
-### .insert_ignore(table,data[,on_dupe],callback)
+### .insert_ignore(table, data[,on_dupe], callback)
 
 Parameter | Type     | Default   | Description
 :-------- | :------- | :-------- | :------------------------------------------------------------------------------------------------------------------
@@ -1546,12 +1554,12 @@ qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NO
 
 <a name="delete"></a>
 
-### .delete(table,where,callback)
+### .delete(table, where, callback)
 
 Parameter | Type     | Default   | Description
 :-------- | :------- | :-------- | :----------------------------------------------------------------------------------------------------
 table     | String   | Required  | The table/collection you'd like to delete records from.
-where     | Object   | undefined | (optional) Used to avoid having to call `.where()` seperately. Pass NULL if you don't want to use it.
+where     | Object   | undefined | (optional) Used to avoid having to call `.where()` separately. Pass NULL if you don't want to use it.
 callback  | Function | Required  | What to do when the driver has responded.
 
 This method is used to delete records from a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with the number of affected rows.
@@ -1598,7 +1606,7 @@ app.post('/delete_comment/:id', (req, res) => {
 
 <a name="truncate"></a>
 
-### .truncate(table,callback)
+### .truncate(table, callback)
 
 Parameter | Type     | Default  | Description
 :-------- | :------- | :------- | :-------------------------------------------
@@ -1648,7 +1656,7 @@ pool.get_connection(qb => {
 
 <a name="empty_table"></a>
 
-### .empty_table(table,callback)
+### .empty_table(table, callback)
 
 Parameter | Type     | Default  | Description
 :-------- | :------- | :------- | :-------------------------------------------
@@ -1758,7 +1766,7 @@ pool.get_connection(qb => {
 
             qb.update('users', user, {id: user.id}, (err, res) => {
                 if (user.length > 0) {
-                    setTimeout(update_user,0);
+                    setTimeout(update_user, 0);
                 } else {
                     qb.release();
                 }
@@ -1817,7 +1825,7 @@ Parameter | Type  | Default  | Description
 :-------- | :---- | :------- | :------------------------------------------------
 value     | Mixed | Required | The value to escape based on your database driver
 
-This can be used to excape a value using your driver's native escape method. If your driver does not have a native escape method, the value will simply be returned. This is useful for when you want to build a SQL string manually (for instance, you don't want certain items to be escaped).
+This can be used to escape a value using your driver's native escape method. If your driver does not have a native escape method, the value will simply be returned. This is useful for when you want to build a SQL string manually (for instance, you don't want certain items to be escaped).
 
 **What should happen:** _Examples given are for MySQL_
 
@@ -1847,7 +1855,7 @@ qb.query(sql, (err, res) => {
 ### SQL Compilation Methods
 These methods can be used to build a query string without having to execute it. This is a fantastic option if you want to use the querybuilder to simply build queries and display the resulting string or to send the compiled query string off to a driver/engine other than the one offered by `node-querybuilder`.
 
-These are excellent educational tools and can be used like a SQL/NoSQL language rosetta stone of sorts.
+These are excellent educational tools and can be used like a SQL/NoSQL language Rosetta Stone of sorts.
 
 These methods are not asynchronous and, therefore, just return the compiled query string.
 
@@ -1860,7 +1868,7 @@ These methods are not asynchronous and, therefore, just return the compiled quer
 
 Parameter | Type   | Default   | Description
 :-------- | :----- | :-------- | :----------------------------------------------------------
-table     | String | Undefined | (optional) Used to avoid having to call .from() seperately.
+table     | String | Undefined | (optional) Used to avoid having to call .from() separately.
 
 Compiles a SELECT-like query into a properly-escaped string.
 
@@ -1890,7 +1898,7 @@ console.log(sql);
 
 Parameter | Type   | Default   | Description
 :-------- | :----- | :-------- | :----------------------------------------------------------
-table     | String | Undefined | (optional) Used to avoid having to call .from() seperately.
+table     | String | Undefined | (optional) Used to avoid having to call .from() separately.
 
 Compiles a INSERT-like query into a properly-escaped string.
 
@@ -1911,7 +1919,6 @@ const sql = qb.set(data).get_compiled_insert('users');
 
 // INSERT INTO `users` (`username`, `password`, `first_name`, `last_name`) VALUES ('foobar', '5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8', 'Foo', 'Bar')
 console.log(sql);
-});
 ```
 
 --------------------------------------------------------------------------------
@@ -1923,7 +1930,7 @@ console.log(sql);
 
 Parameter | Type   | Default   | Description
 :-------- | :----- | :-------- | :----------------------------------------------------------
-table     | String | Undefined | (optional) Used to avoid having to call .from() seperately.
+table     | String | Undefined | (optional) Used to avoid having to call .from() separately.
 
 Compiles an UPDATE-like query into a properly-escaped string.
 
@@ -1938,7 +1945,7 @@ const data = {
     password: crypto.createHash('sha1').update('P@$$w0rD').digest('hex'),
 };
 const sql = qb
-    .where('id',4321)
+    .where('id', 4321)
     .set(data)
     .get_compiled_update('users');
 
@@ -1955,7 +1962,7 @@ console.log(sql);
 
 Parameter | Type   | Default   | Description
 :-------- | :----- | :-------- | :----------------------------------------------------------
-table     | String | Undefined | (optional) Used to avoid having to call .from() seperately.
+table     | String | Undefined | (optional) Used to avoid having to call .from() separately.
 
 Compiles a SELECT-like query into a properly-escaped string.
 
@@ -1965,11 +1972,10 @@ Delete a user
 
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
-const sql = qb.where('id',4321).get_compiled_delete('users');
+const sql = qb.where('id', 4321).get_compiled_delete('users');
 
 // DELETE FROM `users` WHERE `id` = 4321
 console.log(sql);
-});
 ```
 
 --------------------------------------------------------------------------------
