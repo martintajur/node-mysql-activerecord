@@ -171,6 +171,7 @@ This library currently supports 3 connection methods:
   - This will utilize the driver's connection pooling capabilities if it is offered. Connection pooling allows your application to pull from a pool of connections that were created by the driver. Typically the connections will be handed out to requesting methods in a round-robin fashion. This is ideal for a web application.
 
 - **_cluster_**
+  - _NOTE: This feature is currently incomplete._
   - When you have a cluster of servers and you want to create pools of connections to different servers to help load balance your stack, using the `cluster` connection type can come in handy. This is ideal for high-traffic web sites and applications that utilize a farm of database servers as opposed to just one.
 
 **Note:** You will specify the type of connection as the third parameter to the contructor
