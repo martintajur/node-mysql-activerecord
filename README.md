@@ -75,6 +75,8 @@ const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single'
 qb.select('name', 'position')
     .where({type: 'rocky', 'diameter <': 12000})
     .get('planets', (err, response) => {
+        qb.disconnect();
+        
         if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
 
         // SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
@@ -177,6 +179,40 @@ This library currently supports 3 connection methods:
 
 ```javascript
 const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+```
+
+## Handling Connections
+
+It's important to handle your connections properly. When not using a pool, for every connection you make, you'll need to disconnect it when you're done. If you're using a pool (or cluster), it's a similar concept... but you'll be _releasing_ the connection back to the pool so it can be used again later.
+
+**Single Connection Example:**
+
+```javascript
+const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+
+qb.get('planets', (err, response) => {
+    // Disconnect right away unless you're going to use it again for subsequent query
+    qb.disconnect();
+    
+    if (err) return console.error(err);
+    return console.log("Results: ", response);
+});
+```
+
+**Connection Pool Example:**
+
+```javascript
+const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+
+pool.get_connection(qb => {
+    qb.get('planets', (err, response) => {
+        // Release right away unless you're going to use it again for subsequent query
+        qb.release();
+
+        if (err) return console.error(err);
+        return console.log("Results: ", response);
+    });
+});
 ```
 
 # API Methods
