@@ -204,6 +204,7 @@ qb.get('planets', (err, response) => {
 ```javascript
 const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
 
+// Get a connection (aka a QueryBuilder instance) from the pool
 pool.get_connection(qb => {
     qb.get('planets', (err, response) => {
         // Release right away unless you're going to use it again for subsequent query
