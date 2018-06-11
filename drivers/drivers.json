@@ -1,6 +1,6 @@
 {
     "mysql": {
-        "connection_types": { "single": true, "pool": true, "cluster": true },
+        "connection_types": { "single": true, "pool": true, "cluster": false },
         "versions": {
             "2.5.4": {
                 "path": "./drivers/mysql/",
@@ -12,13 +12,13 @@
         }
     },
     "mssql": {
-        "connection_types": { "single": true, "pool": false, "cluster": false },
+        "connection_types": { "single": true, "pool": true, "cluster": false },
         "versions": {
-            "1.3.0": {
+            "4.1.0": {
                 "path": "./drivers/mssql/",
-                "active": false
+                "active": true
             },
-            "default": "1.3.0"
+            "default": "4.1.0"
         }
     },
     "oracle": {

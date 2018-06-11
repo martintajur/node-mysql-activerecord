@@ -1,6 +1,6 @@
 /**
  * QueryBuilder for Node.js
- * (C) Kyle Farris 2014-2015
+ * (C) Kyle Farris 2014-2018
  * kyle@chomponllc.com
  *
  * A generic Query Builder for any SQL or NOSQL database adapter.
@@ -38,94 +38,102 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
 **/
-const lo_assign = require('lodash.assign');
-const QueryBuilder = (settings,driver,type) => {
+class QueryBuilder {
+    constructor(settings, driver, type) {
+        this.settings = (settings ? Object.assign({}, settings) : {});
+        this.driver = driver || 'mysql';
+        this.connection_type = type || 'single';
+        this.drivers = require('./drivers/drivers.json');
+        this.driver_version = 'default';
+        this.driver_info = null;
+        this.pool = [];
 
-	this.settings = (settings ? lo_assign({}, settings) : {});
-	this.driver = driver || 'mysql';
-	this.connection_type = type || 'single';
-	this.drivers = require('./drivers/drivers.json');
-	this.driver_version = 'default';
-	this.driver_info = null;
-	this.pool = [];
+        this.get_driver_info();
+        this.get_connection_type();
+        return this.get_adapter();
+    }
 
-	// ****************************************************************************
-	// Get information about the driver the user wants to use and modify QB object
-	// -----
-	// @param	Object	qb	The QueryBuilder object
-	// @return	Object		Modified QueryBuilder object
-	// ****************************************************************************
-	const get_driver_info = qb => {
-		// A driver must be specified
-		if (typeof this.driver !== 'string') {
-			throw new Error("No database driver specified!");
-		}
+    // ****************************************************************************
+    // Get information about the driver the user wants to use and modify QB object
+    // -----
+    // @return    Object        Modified QueryBuilder object
+    // ****************************************************************************
+    get_driver_info() {
+        // A driver must be specified
+        if (typeof this.driver !== 'string') {
+            throw new Error("No database driver specified!");
+        }
 
-		qb.driver = qb.driver.toLowerCase();
+        this.driver = this.driver.toLowerCase();
 
-		// Verify that the driver is one we fundamentally support
-		if (Object.keys(qb.drivers).indexOf(qb.driver) === -1) {
-			throw new Error("Invalid driver specified!");
-		}
+        // Verify that the driver is one we fundamentally support
+        if (Object.keys(this.drivers).indexOf(this.driver) === -1) {
+            throw new Error("Invalid driver specified!");
+        }
 
-		// Determine version of driver to use
-		if (qb.settings.hasOwnProperty('version') && /^(string|number)$/i.test(typeof qb.settings.version)) {
-			qb.driver_version = qb.settings.version;
-			delete qb.settings.version;
-		}
+        // Determine version of driver to use
+        if (this.settings.hasOwnProperty('version') && /^(string|number)$/i.test(typeof this.settings.version)) {
+            this.driver_version = this.settings.version;
+            delete this.settings.version;
+        }
 
-		// Retrieve info about driver if available, error if not
-		if (qb.drivers[qb.driver].versions.hasOwnProperty(qb.driver_version)) {
-			if (qb.drivers[qb.driver].versions[qb.driver_version].hasOwnProperty('version')) {
-				qb.driver_info = qb.drivers[qb.driver].versions[qb.drivers[qb.driver].versions[qb.driver_version].version];
-			} else {
-				qb.driver_info = qb.drivers[qb.driver].versions[qb.driver_version];
-			}
-		} else {
-			throw new Error(qb.driver_version + " is not a version of the " + qb.driver + " driver that this library specifically supports. Try being more generic.");
-		}
+        // Retrieve info about driver if available, error if not
+        if (this.drivers[this.driver].versions.hasOwnProperty(this.driver_version)) {
+            if (this.drivers[this.driver].versions[this.driver_version].hasOwnProperty('version')) {
+                this.driver_info = this.drivers[this.driver].versions[this.drivers[this.driver].versions[this.driver_version].version];
+            } else {
+                this.driver_info = this.drivers[this.driver].versions[this.driver_version];
+            }
+        } else {
+            throw new Error(`${this.driver_version} is not a version of the ${this.driver} driver that this library specifically supports. Try being more generic.`);
+        }
 
-		// Fail if specified driver is inactive
-		if (qb.driver_info.active === false) {
-			const err = (qb.driver_version == 'default' ? 'The default version' : "Version " + qb.driver_version)
-					+ " of the " + qb.driver + " driver you are attempting to load is not currently available!";
-			throw new Error(err);
-		}
-	};
-	get_driver_info(this);
+        // Fail if specified driver is inactive
+        if (this.driver_info.active === false) {
+            const err = (this.driver_version == 'default' ? 'The default version' : "Version " + this.driver_version)
+                    + ` of the ${this.driver} driver you are attempting to load is not currently available!`;
+            throw new Error(err);
+        }
+    }
 
-	// ****************************************************************************
-	// Determine the type of connection (single, pool, cluster, etc...)
-	// -----
-	// @param	Object	qb	The QueryBuilder object
-	// @return	Object		Modified QueryBuilder object
-	// ****************************************************************************
-	const get_connection_type = qb => {
-		if (!Object.keys(qb.drivers[qb.driver].connection_types).includes(qb.connection_type)) {
-			throw new Error("You have specified a invalid database connection method: " + qb.connection_type);
-		}
-		if (qb.drivers[qb.driver].connection_types[qb.connection_type] !== true) {
-			throw new Error("You cannot connect to a " + qb.driver + " database using the " + qb.connection_type + " connection type using this library.");
-		}
-		return qb;
-	}
-	get_connection_type(this);
+    // ****************************************************************************
+    // Determine the type of connection (single, pool, cluster, etc...)
+    // -----
+    // @return    Object        Modified QueryBuilder object
+    // ****************************************************************************
+    get_connection_type() {
+        if (!Object.keys(this.drivers[this.driver].connection_types).includes(this.connection_type)) {
+            throw new Error(`You have specified a invalid database connection method: ${this.connection_type}`);
+        }
+        if (this.drivers[this.driver].connection_types[this.connection_type] !== true) {
+            throw new Error(`You cannot connect to a ${this.driver} database using the ${this.connection_type} connection type using this library.`);
+        }
+        return this;
+    }
 
-	// ****************************************************************************
-	// Returns the single, pool, or cluster adapter
-	// -----
-	// @return	VOID	This method responds asychronously via a callback
-	// ****************************************************************************
-	const get_adapter = qb => {
-		try {
-			const adapter = require(qb.driver_info.path + 'adapters.js').Adapters(qb);
-			return adapter;
-		} catch(e) {
-			throw new Error("Couldn't load the Connection library for " + qb.driver + "(" + JSON.stringify(qb.settings) + "): " + e);
-		}
-	};
+    // ****************************************************************************
+    // Returns the single, pool, or cluster adapter
+    // -----
+    // @return    VOID    This method responds asychronously via a callback
+    // ****************************************************************************
+    get_adapter() {
+        try {
+            const {Cluster,Pool,Single} = require(this.driver_info.path + 'adapters.js').Adapters;
 
-	return get_adapter(this);
-};
+            switch (this.connection_type) {
+                case 'cluster':
+                    return new Cluster(this);
+                case 'pool':
+                    return new Pool(this);
+                case 'single':
+                    return new Single(this, {});
+                default:
+                    return new Single(this, {});
+            }
+        } catch(e) {
+            throw new Error(`Couldn't load the Connection library for ${this.driver} (${JSON.stringify(this.settings)}): ${e}`);
+        }
+    }
+}
 
-exports.QueryBuilder = QueryBuilder;
+module.exports = QueryBuilder;

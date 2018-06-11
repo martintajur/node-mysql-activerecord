@@ -64,19 +64,20 @@ Licensed under the GPL license and MIT:
 This quick example shows how to connect to and asynchronously query a MySQL database using a single connection.
 
 ```javascript
+const QueryBuilder = require('node-querybuilder');
 const settings = {
     host: 'localhost',
     database: 'mydatabase',
     user: 'myuser',
     password: 'MyP@ssw0rd'
 };
-const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
+const qb = new QueryBuilder(settings, 'mysql', 'single');
 
 qb.select('name', 'position')
     .where({type: 'rocky', 'diameter <': 12000})
     .get('planets', (err, response) => {
         qb.disconnect();
-        
+
         if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
 
         // SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
@@ -93,11 +94,11 @@ qb.select('name', 'position')
 
 Driver                                     | Default  | Ready   | single | pool | cluster | Additional Connection Options
 :----------------------------------------- | :------- | :------ | :----- | :--- | :------ | :----------------------------------------------------------------------------------------
-[mysql](//www.npmjs.com/package/mysql)     | &#x2713; | Yes     | Yes    | Yes  | Yes     | [node-mysql connection options](https://github.com/felixge/node-mysql#connection-options)
-[mssql](//www.npmjs.com/package/mssql)     |          | No      | Yes    | ???  | ???     |
+[mysql](//www.npmjs.com/package/mysql)     | &#x2713; | Yes     | Yes    | Yes  | Pending | [node-mysql connection options](https://github.com/felixge/node-mysql#connection-options)
+[mssql](//www.npmjs.com/package/mssql)     |          | Yes     | Yes    | Yes  | ???     | [node-mssql connection options](https://github.com/tediousjs/node-mssql#general-same-for-all-drivers)
 [sqlite3](//www.npmjs.com/package/sqlite3) |          | No      | Yes    | ???  | ???     |
 [oracle](//www.npmjs.com/package/oracle)   |          | No      | Yes    | ???  | ???     |
-[postgres](//www.npmjs.com/package/pg)     |          | Pending | Yes    | Yes  | ???     |
+[postgres](//www.npmjs.com/package/pg)     |          | No      | Yes    | Yes  | ???     |
 [mongodb](//www.npmjs.com/package/mongodb) |          | No      | Yes    | ???  | ???     |
 
 ## Standard Connection Settings
@@ -135,7 +136,7 @@ We'll call this `db.json`.
 ```javascript
 const settings = require('db.json');
 // Second and third parameters of the QueryBuilder method default to 'mysql' and 'standard', respectively
-const qb = require('node-querybuilder').QueryBuilder(settings);
+const qb = new require('node-querybuilder')(settings);
 ```
 
 Of course you can also just have a normal javascript object directly within your code somwhere if you're honing your inner Chuck Norris:
@@ -143,7 +144,7 @@ Of course you can also just have a normal javascript object directly within your
 **Chuck Norris App**
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder({
+const qb = new require('node-querybuilder')({
     host: 'db.myserver.com',
     user: 'myusername',
     password: 'P@s$w0rD',
@@ -158,7 +159,7 @@ This part is super simple. Just pass which one you'd like to use as the second p
 **_Example:_**
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(settings, 'postgres');
+const qb = new require('node-querybuilder')(settings, 'postgres');
 ```
 
 ## Choosing the Connection Type
@@ -179,7 +180,7 @@ This library currently supports 3 connection methods:
 **Example:**
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const qb = new require('node-querybuilder')(settings, 'mysql', 'pool');
 ```
 
 ## Handling Connections
@@ -189,12 +190,12 @@ It's important to handle your connections properly. When not using a pool, for e
 **Single Connection Example:**
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+const qb = new require('node-querybuilder')(settings, 'mysql');
 
 qb.get('planets', (err, response) => {
     // Disconnect right away unless you're going to use it again for subsequent query
     qb.disconnect();
-    
+
     if (err) return console.error(err);
     return console.log("Results: ", response);
 });
@@ -203,7 +204,7 @@ qb.get('planets', (err, response) => {
 **Connection Pool Example:**
 
 ```javascript
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 
 // Get a connection (aka a QueryBuilder instance) from the pool
 pool.get_connection(qb => {
@@ -223,33 +224,33 @@ pool.get_connection(qb => {
 ## Chainable Methods
 Chainable methods can be called as many times as you'd like in any order you like. The final query will not be built and executed until one of the [execution methods](#execution-methods), like `get()`,  are callled. As the name implies, the methods can be chained together indefinitely but this is not required. You definitely call them individually with the same effect at execution time.
 
-API Method                            | SQL Command | MySQL    | MSSQL | Oracle | SQLite | Postgres | Mongo
-:------------------------------------ | :---------- | :------: | :---: | :----: | :----: | :------: | :---:
-[select()](#select)                   | SELECT      | &#x2713; |       |        |        |          |
-[distinct()](#distinct)               | DISTINCT    | &#x2713; |       |        |        |          |
-[select_min()](#min)                  | MIN         | &#x2713; |       |        |        |          |
-[select_max()](#max)                  | MAX         | &#x2713; |       |        |        |          |
-[select_avg()](#avg)                  | AVG         | &#x2713; |       |        |        |          |
-[select_sum()](#sum)                  | SUM         | &#x2713; |       |        |        |          |
-[from()](#from)                       | FROM        | &#x2713; |       |        |        |          |
-[join()](#join)                       | JOIN        | &#x2713; |       |        |        |          |
-[where()](#where)                     | WHERE       | &#x2713; |       |        |        |          |
-[where_in()](#where_in)               | IN          | &#x2713; |       |        |        |          |
-[where_not_in()](#where_not_in)       | WHERE       | &#x2713; |       |        |        |          |
-[or_where()](#or_where)               | WHERE       | &#x2713; |       |        |        |          |
-[or_where_in()](#or_where_in)         | WHERE       | &#x2713; |       |        |        |          |
-[or_where_not_in()](#or_where_not_in) | WHERE       | &#x2713; |       |        |        |          |
-[like()](#like)                       | LIKE        | &#x2713; |       |        |        |          |
-[or_like()](#or_like)                 | LIKE        | &#x2713; |       |        |        |          |
-[or_not_like()](#or_not_like)         | LIKE        | &#x2713; |       |        |        |          |
-[not_like()](#not_like)               | LIKE        | &#x2713; |       |        |        |          |
-[group_by()](#group-by)               | GROUP BY    | &#x2713; |       |        |        |          |
-[having()](#having)                   | HAVING      | &#x2713; |       |        |        |          |
-[or_having()](#or_having)             | HAVING      | &#x2713; |       |        |        |          |
-[order_by()](#order-by)               | ORDER BY    | &#x2713; |       |        |        |          |
-[limit()](#limit)                     | LIMIT       | &#x2713; |       |        |        |          |
-[offset()](#offset)                   | OFFSET      | &#x2713; |       |        |        |          |
-[set()](#set)                         | SET         | &#x2713; |       |        |        |          |
+API Method                            | SQL Command | MySQL    | MSSQL    | Oracle   | SQLite   | Postgres | Mongo
+:------------------------------------ | :---------- | :------: | :------: | :------: | :------: | :------: | :------:
+[select()](#select)                   | SELECT      | &#x2713; |          |          |          |          |
+[distinct()](#distinct)               | DISTINCT    | &#x2713; |          |          |          |          |
+[select_min()](#min)                  | MIN         | &#x2713; |          |          |          |          |
+[select_max()](#max)                  | MAX         | &#x2713; |          |          |          |          |
+[select_avg()](#avg)                  | AVG         | &#x2713; |          |          |          |          |
+[select_sum()](#sum)                  | SUM         | &#x2713; |          |          |          |          |
+[from()](#from)                       | FROM        | &#x2713; |          |          |          |          |
+[join()](#join)                       | JOIN        | &#x2713; |          |          |          |          |
+[where()](#where)                     | WHERE       | &#x2713; |          |          |          |          |
+[where_in()](#where_in)               | IN          | &#x2713; |          |          |          |          |
+[where_not_in()](#where_not_in)       | WHERE       | &#x2713; |          |          |          |          |
+[or_where()](#or_where)               | WHERE       | &#x2713; |          |          |          |          |
+[or_where_in()](#or_where_in)         | WHERE       | &#x2713; |          |          |          |          |
+[or_where_not_in()](#or_where_not_in) | WHERE       | &#x2713; |          |          |          |          |
+[like()](#like)                       | LIKE        | &#x2713; |          |          |          |          |
+[or_like()](#or_like)                 | LIKE        | &#x2713; |          |          |          |          |
+[or_not_like()](#or_not_like)         | LIKE        | &#x2713; |          |          |          |          |
+[not_like()](#not_like)               | LIKE        | &#x2713; |          |          |          |          |
+[group_by()](#group-by)               | GROUP BY    | &#x2713; |          |          |          |          |
+[having()](#having)                   | HAVING      | &#x2713; |          |          |          |          |
+[or_having()](#or_having)             | HAVING      | &#x2713; |          |          |          |          |
+[order_by()](#order-by)               | ORDER BY    | &#x2713; |          |          |          |          |
+[limit()](#limit)                     | LIMIT       | &#x2713; |          |          |          |          |
+[offset()](#offset)                   | OFFSET      | &#x2713; |          |          |          |          |
+[set()](#set)                         | SET         | &#x2713; |          |          |          |          |
 
 --------------------------------------------------------------------------------
 
@@ -1104,7 +1105,7 @@ pool.get_connection(qb => {
 #### Using the Same Connection Pool Connection for Successive Calls
 
 ```javascript
-const pool = require('node-querybuilder').QueryBuilder(settings,'mysql','pool');
+const pool = new require('node-querybuilder')(settings,'mysql','pool');
 const data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
 
 pool.get_connection(qb => {
@@ -1319,7 +1320,7 @@ Here's a contrived example of how it might be used in an app made with the Expre
 const express = require('express');
 const app = express();
 const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 
 app.post('/update_account', (req, res) => {
     const user_id = req.session.user_id;
@@ -1350,7 +1351,7 @@ app.post('/update_account', (req, res) => {
 Here's another (more-direct) example where one decided to supply the table, data, and filters through alternative methods:
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
+const qb = new require('node-querybuilder')(settings, 'mysql', 'single');
 qb.where('id', 42)
     .from('users')
     .set('email', 'email@domain.net')
@@ -1383,7 +1384,7 @@ The important thing to understand is that there are, essentially, _two_ `where` 
 **Example:**
 
 ```javascript
-const qb =  require('node-querybuilder').QueryBuilder(settings, 'mysql', 'single');
+const qb =  new require('node-querybuilder')(settings, 'mysql', 'single');
 
 // The key to use as the local where clause
 const key = 'id';
@@ -1452,7 +1453,7 @@ Here's a contrived example of how it might be used in an app made with the Expre
 const express = require('express');
 const app = express();
 const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 
 app.post('/add_article', (req, res) => {
     const user_id = req.session.user_id;
@@ -1501,7 +1502,7 @@ Object containing information about the result of the query.
 **Example**
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+const qb = new require('node-querybuilder')(settings, 'mysql');
 
 const data = [
     {name: 'MySQL', version: '5.5.40'},
@@ -1550,7 +1551,7 @@ Object containing information about the result of the query.
  *    ]
  */
 
-const qb = require('node-querybuilder').QueryBuilder(settings, 'mysql');
+const qb = new require('node-querybuilder')(settings, 'mysql');
 const data = {name: 'Postgres', version: '8.4'};
 qb.insert_ignore('db_engines', data, (err, res) => {
     if (err) throw err;
@@ -1616,7 +1617,7 @@ Here's a contrived example of how it might be used in an app made with the Expre
 const express = require('express');
 const app = express();
 const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 
 app.post('/delete_comment/:id', (req, res) => {
     const comment_id = req.params.id;
@@ -1663,7 +1664,7 @@ Object containing information about the result of the query.
 
 ```javascript
 const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 
 /*
  * Assume we have a table like this to start with...
@@ -1711,7 +1712,7 @@ Object containing information about the result of the query.
 
 ```javascript
 const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 
 /*
  * Assume we have a table like this to start with...
@@ -1740,116 +1741,122 @@ pool.get_connection(qb => {
 
 --------------------------------------------------------------------------------
 
-## Other Library-Specifc Methods
-These are methods that aren't part of the query-building chain, but, rather, methods you might call before, after, or during (but not as part of) building a query.
+## Other Library-Specific Methods
+These are methods that are not part of the query-building chain, but, rather, methods you might call before, after, or during (but not as part of) building a query.
 
-API Method                                    | MySQL    | MSSQL | Oracle | SQLite | Postgres | Mongo
-:-------------------------------------------- | :------: | :---: | :----: | :----: | :------: | :---:
-[get_connection()](#get_connection)           | &#x2713; |       |        |        |          |
-[release()](#release)                         | &#x2713; |       |        |        |          |
-[last_query()](#last_query)                   | &#x2713; |       |        |        |          |
-[escape()](#escape)                           | &#x2713; |       |        |        |          |
-[get_compiled_select()](#get_compiled_select) | &#x2713; |       |        |        |          |
-[get_compiled_insert()](#get_compiled_insert) | &#x2713; |       |        |        |          |
-[get_compiled_update()](#get_compiled_update) | &#x2713; |       |        |        |          |
-[get_compiled_delete()](#get_compiled_delete) | &#x2713; |       |        |        |          |
+API Method                                    | MySQL    | MSSQL    | Oracle   | SQLite   | Postgres | Mongo
+:-------------------------------------------- | :------: | :------: | :------: | :------: | :------: | :------:
+[connection](#connection_settings)            | &#x2713; | &#x2713; |          |          |          |
+[connection_settings()](#connection_settings) | &#x2713; | &#x2713; |          |          |          |
+[disconnect()](#disconnect)                   | &#x2713; | &#x2713; |          |          |          |
+[escape()](#escape)                           | &#x2713; |          |          |          |          |
+[get_connection()](#get_connection)           | &#x2713; | &#x2713; |          |          |          |
+[last_query()](#last_query)                   | &#x2713; |          |          |          |          |
+[release()](#release)                         | &#x2713; | &#x2713; |          |          |          |
+[get_compiled_select()](#get_compiled_select) | &#x2713; |          |          |          |          |
+[get_compiled_insert()](#get_compiled_insert) | &#x2713; |          |          |          |          |
+[get_compiled_update()](#get_compiled_update) | &#x2713; |          |          |          |          |
+[get_compiled_delete()](#get_compiled_delete) | &#x2713; |          |          |          |          |
 
 --------------------------------------------------------------------------------
 
-<a name="get_connection"></a>
+<a name="connection"></a>
 
-### .get_connection(callback)
+### .connection()
 
-Parameter | Type     | Default  | Description
-:-------- | :------- | :------- | :---------------------------------------------------------
-callback  | Function | Required | What to do when the connection is retrieved from the pool.
-
-Used to get a new connection from the connection pool or cluster pool. An instances of the QueryBuilder adapter for your specific connection will be passed to the callback. Make sure that your connection is [release](#release)d when you are done with it!
+Get a reference to an instance of the connection handle from the driver that's being utilized under the surface. With that connection handle instance, you can run any of the native methods from that driver that don't have equivalents in this library. For instance, with the `mssql` driver, you would be able to execute stored procedures.
 
 **Example**
 
 ```javascript
 const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const pool = new require('node-querybuilder')(settings, 'mssql', 'pool');
 
 pool.get_connection(qb => {
-    qb.limit(10).get('users', (err, res) => {
+    const conn = qb.get_connection();
+    const request = new conn.Request();
+
+    request.input('input_parameter', sql.Int, 8675309);
+    request.output('output_parameter', sql.Int);
+
+    request.execute('call_phone_number', (err, result) => {
         qb.release();
-        // Do stuff with results or err
+        // Do stuff
     });
 });
 ```
 
 --------------------------------------------------------------------------------
 
-<a name="release"></a>
+<a name="connection_settings"></a>
 
-### .release()
-Releases a connection back to the pool when you are done with it. Calling this is _super_ important!
+### .connection_settings()
 
-**Examples**
+Simply returns your connection settings object (the configuration object used to create your QueryBuilder instance) for reference or use elsewhere. This is not something you'll likely find yourself using but we'll document it nonetheless.
 
-Below is a contrived example (with no error handling--for brevity) that gets a list of all users in a users table where their username starts with a `|` character. It then loops over each one and removes the `|` from the username and re-inserts it. Notice that the connection is not released until all the queries that needed to be executed have been executed.
-
-```javascript
-const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
-
-pool.get_connection(qb => {
-    qb.like('username','|','right').get_where('users', {active: true}, (err, res) => {
-        const users = users;
-        (function update_user() {
-            const user = users.shift();
-            user.username = user.username.replace(/\^|/,'');
-
-            qb.update('users', user, {id: user.id}, (err, res) => {
-                if (user.length > 0) {
-                    setTimeout(update_user, 0);
-                } else {
-                    qb.release();
-                }
-            });
-        })();
-    });
-});
-```
-
-Here's a simpler example so you can better see how it will most often be used
+**Example**
 
 ```javascript
 const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
+const qb = new require('node-querybuilder')(settings, 'mssql');
 
-pool.get_connection(qb => {
-    qb.get_where('users', {username: 'foobar'}, (err, res) => {
-        qb.release();
-        if (err) throw err;
-        console.dir(res);
-    });
-});
+// This results in the same value as the value of the `settings` variable
+const connection_settings = qb.connection_settings();
 ```
 
 --------------------------------------------------------------------------------
 
-<a name="last_query"></a>
+<a name="disconnect"></a>
 
-### .last_query()
-This is used to retrieve the query string that was most-recently executed. This MUST be called before closing the connection or releasing a connection back to the pool. This is useful for debugging what the `node-querybuilder` library is executing (or trying to execute).
+### .disconnect(callback)
 
-If you'd rather the engine not execute the query first, you can always use the appropriate [compilation methods](#compilation_methods) detailed below.
+Parameter | Type     | Default  | Description
+:-------- | :------- | :------- | :---------------------------------------------------------
+callback  | Function | Required | What to do when the connection is fully terminated.
+
+Disconnect from the server after your query is complete. You _must_ call this each time after your done querying the database! **NOTE:** You would _not_ use this when using a connection pool. This should only be called when working with single one-off connections. After disconnecting, all subsequent queries will fail unless you reconnect ([connect()](#connect)).
 
 **Examples**
 
+Below is a contrived example that gets a list of all users in a users table where their username starts with a `|` character. It then loops over each one and removes the `|` from the username and re-inserts it. Notice that the connection is not terminated until all the queries that needed to be executed have been executed.
+
 ```javascript
 const settings = require('db.json');
-const pool = require('node-querybuilder').QueryBuilder(settings, 'mysql', 'pool');
-pool.get_connection(qb => {
-    const id = 4531;
-    qb.get('comments', {id: id}, (err, res) => {
-        // SELECT * FROM `comments` WHERE `id` = 4531
-        console.log(qb.last_query());
-        qb.release();
-    });
+const qb = new require('node-querybuilder')(settings, 'mysql');
+
+qb.like('username','|','right').get_where('users', {active: true}, (err, res) => {
+    let users = res;
+    (function update_user() {
+        const user = users.shift();
+        user.username = user.username.replace(/\^|/,'');
+
+        qb.update('users', user, {id: user.id}, (err, res) => {
+            if (err) {
+                console.error("Failed to update user...", err);
+                qb.diconnect();
+            }
+
+            if (user.length > 0) {
+                setTimeout(update_user, 0);
+            } else {
+                qb.disconnect();
+            }
+        });
+    })();
+});
+
+```
+
+Here's a simpler example so you can better see how it will most often be used:
+
+```javascript
+const settings = require('db.json');
+const qb = new require('node-querybuilder')(settings, 'mysql');
+
+qb.get_where('users', {username: 'foobar'}, (err, res) => {
+    qb.disconnect();
+    if (err) throw err;
+    console.log("Success: ", res);
 });
 ```
 
@@ -1879,10 +1886,110 @@ Object     | String      | {foo: 'bar', i: 3} | "`foo` = 'bar', `i` = 3"
 **Example**
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const qb = new require('node-querybuilder')(require('db.json'), 'mysql');
 const sql = 'SELECT count(*) FROM `star_systems` WHERE ' + qb.escape({planet_num: 5}) + ' LIMIT 10';
 qb.query(sql, (err, res) => {
-    console.dir(res);
+    // SELECT count(*) FROM `star_systems` WHERE `planet_num` = 5 LIMIT 10
+    console.log(res);
+});
+```
+
+--------------------------------------------------------------------------------
+
+<a name="get_connection"></a>
+
+### .get_connection(callback)
+
+Parameter | Type     | Default  | Description
+:-------- | :------- | :------- | :---------------------------------------------------------
+callback  | Function | Required | What to do when the connection is retrieved (or not) from the pool.
+
+Used to get a new connection from the connection pool or cluster pool. An instance of the QueryBuilder adapter for your specific connection will be passed to the callback. Make sure that your connection is [release](#release)d when you are done with it!
+
+**Example**
+
+```javascript
+const settings = require('db.json');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
+
+pool.get_connection(qb => {
+    qb.limit(10).get('users', (err, res) => {
+        qb.release();
+        // Do stuff with results or err
+    });
+});
+```
+
+--------------------------------------------------------------------------------
+
+<a name="last_query"></a>
+
+### .last_query()
+This is used to retrieve the query string that was most-recently executed. This MUST be called before closing the connection or releasing a connection back to the pool. This is useful for debugging what the `node-querybuilder` library is executing (or trying to execute).
+
+If you'd rather the engine not execute the query first, you can always use the appropriate [compilation methods](#compilation_methods) detailed below.
+
+**Examples**
+
+```javascript
+const settings = require('db.json');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
+pool.get_connection(qb => {
+    const id = 4531;
+    qb.get('comments', {id: id}, (err, res) => {
+        // SELECT * FROM `comments` WHERE `id` = 4531
+        console.log(qb.last_query());
+        qb.release();
+    });
+});
+```
+
+--------------------------------------------------------------------------------
+
+<a name="release"></a>
+
+### .release()
+Releases a connection back to the pool when you are done with it. Calling this is _super_ important!
+
+**Examples**
+
+Below is a contrived example (with no error handling--for brevity) that gets a list of all users in a users table where their username starts with a `|` character. It then loops over each one and removes the `|` from the username and re-inserts it. Notice that the connection is not released until all the queries that needed to be executed have been executed.
+
+```javascript
+const settings = require('db.json');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
+
+pool.get_connection(qb => {
+    qb.like('username','|','right').get_where('users', {active: true}, (err, res) => {
+        let users = res;
+        (function update_user() {
+            const user = users.shift();
+            user.username = user.username.replace(/\^|/,'');
+
+            qb.update('users', user, {id: user.id}, (err, res) => {
+                if (user.length > 0) {
+                    setTimeout(update_user, 0);
+                } else {
+                    qb.release();
+                }
+            });
+        })();
+    });
+});
+```
+
+Here's a simpler example so you can better see how it will most often be used
+
+```javascript
+const settings = require('db.json');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
+
+pool.get_connection(qb => {
+    qb.get_where('users', {username: 'foobar'}, (err, res) => {
+        qb.release();
+        if (err) throw err;
+        console.dir(res);
+    });
 });
 ```
 
@@ -1915,7 +2022,7 @@ Compiles a SELECT-like query into a properly-escaped string.
 Get certain details of a user account
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const qb = new require('node-querybuilder')(require('db.json'), 'mysql');
 
 const sql = qb
     .select(['id','username','first_name','last_name'])
@@ -1945,7 +2052,7 @@ Compiles a INSERT-like query into a properly-escaped string.
 Add a new user to a `users` table.
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const qb = new require('node-querybuilder')(require('db.json'), 'mysql');
 const crypto = require('crypto');
 const data = {
     username: 'foobar',
@@ -1977,7 +2084,7 @@ Compiles an UPDATE-like query into a properly-escaped string.
 Update the password of a user
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const qb = new require('node-querybuilder')(require('db.json'), 'mysql');
 const crypto = require('crypto');
 const data = {
     password: crypto.createHash('sha1').update('P@$$w0rD').digest('hex'),
@@ -2009,7 +2116,7 @@ Compiles a SELECT-like query into a properly-escaped string.
 Delete a user
 
 ```javascript
-const qb = require('node-querybuilder').QueryBuilder(require('db.json'), 'mysql');
+const qb = new require('node-querybuilder')(require('db.json'), 'mysql');
 const sql = qb.where('id', 4321).get_compiled_delete('users');
 
 // DELETE FROM `users` WHERE `id` = 4321

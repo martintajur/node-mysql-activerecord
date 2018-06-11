@@ -4,6 +4,12 @@ This file is a manually maintained list of changes for each release. Feel free
 to add your changes here when sending pull requests. Also send corrections if
 you spot any mistakes.
 
+## v2.0.0 (2018-06-15)
+
+* Added mssql support
+* Updated class files to use new ES6 class syntax for easier-maintainability
+* Changed the Query Builder instantiation syntax
+
 ## v1.2.0 (2018-05-18)
 
 * retroactive fix of this change log
