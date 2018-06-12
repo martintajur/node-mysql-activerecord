@@ -104,16 +104,18 @@ Driver                                     | Default  | Ready   | single | pool 
 ## Standard Connection Settings
 The options listed below are available for all database drivers. Additional properties may be passed if the driver of the database you are connecting to supports them. See the "Additional Connection Options" column above for a link to the a specific driver's connection options documentation.
 
-Option        | Default   | Optional | Description
-:------------ | :-------- | :------- | :-------------------------------------------
-**host**      | localhost | No       | The server you're connecting to
-**user**      | NULL      | No       | The database user
-**password**  | NULL      | Yes      | The database `user`'s password
-**database**  | NULL      | Yes      | The database to connect to
-**port**      | NULL      | Yes      | The database port to use when connecting
-**pool_size** | 10        | Yes      | Max connections for `pool` connection type
-**debug**     | false     | Yes      | If true, debug info will be place in app log
-**version**   | default   | Yes      | Version of database driver to use
+Option              | Default   | Optional | Description
+:------------------ | :-------- | :------- | :-------------------------------------------
+**host**            | localhost | No       | The server you're connecting to
+**user**            | NULL      | No       | The database user
+**password**        | NULL      | Yes      | The database `user`'s password
+**database**        | NULL      | Yes      | The database to connect to
+**port**            | NULL      | Yes      | The database port to use when connecting
+**pool_size**       | 10        | Yes      | Max connections for `pool` connection type
+**pool_min**        | 10        | Yes      | Min connections for `pool` connection type (`mssql` only)
+**acquireTimeout**  | 10000     | Yes      | The milliseconds before a timeout occurs during the connection acquisition.
+**debug**           | false     | Yes      | If true, debug info will be place in app log
+**version**         | default   | Yes      | Version of database driver to use
 
 The best way to store these options is in a JSON file outsite of your web root where only root and the server user can access them.
 

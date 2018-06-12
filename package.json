@@ -20,7 +20,8 @@
   "dependencies": {
     "lodash.assign": "^4.0.7",
     "mssql": "^4.1.0",
-    "mysql": "^2.10.1"
+    "mysql": "^2.10.1",
+    "tedious-connection-pool": "^1.0.5"
   },
   "devDependencies": {
     "chai": "~1.4.2",

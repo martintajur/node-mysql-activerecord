@@ -13,25 +13,47 @@ const check = (done, f) => {
 
 const connection_released = qb => {
     const connection = qb.connection();
-    expect(connection._pool._freeConnections).to.have.length(0);
+    const settings = qb.connection_settings();
+
+    //console.log("Connection Pool: ", connection.pool);
+
+    let used_connections = connection.pool.connections.filter(v => v.status === 2).length;
+    let available_connections = connection.pool.connections.filter(v => v.status !== 2).length;
+    expect(used_connections, 'one used connection').to.be.eql(1);
+    expect(available_connections, 'max -1 available connections').to.be.eql(settings.pool_settings.min - 1);
+
     qb.release();
-    expect(connection._pool._freeConnections).to.have.length(1);
+
+    // Release of the connection is not really immediate... ugh...
+    setTimeout(() => {
+        used_connections = connection.pool.connections.filter(v => v.status === 2).length;
+        available_connections = connection.pool.connections.filter(v => v.status !== 2).length;
+        //console.log("Connections: ", connection.pool.connections);
+        expect(used_connections, 'no used connections').to.be.eql(0);
+        expect(available_connections, 'max connections available').to.be.eql(settings.pool_settings.min);
+    }, 100);
 };
 
 describe('QueryBuilder() - MS SQL Adapter', () => {
-    afterEach(done => {
-
-        done();
-   });
-
     const driver = 'mssql';
     const settings = {
         host: '127.0.0.1',
         database: 'mock_db',
         user: 'travis',
         version: '4.1.0',
-        port: 3306
+        port: 3306,
+        options: {
+            encrypt: false
+        }
     };
+
+
+
+    afterEach(done => {
+        // const qb = new QueryBuilder(Object.assign({}, settings), driver);
+        // qb.disconnect();
+        done();
+   });
 
     const bad_user = Object.assign({},settings, {user: 'foobar'});
     const bad_host = Object.assign({},settings, {host: 'nonlocalhost'});
@@ -77,11 +99,8 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
             qb.disconnect.should.be.a('function');
 
             qb.disconnect(err => {
-                const connection = qb.connection();
-
                 check(done, () => {
-                    expect(err, 'should be diconnected').to.not.be.instanceof(Error);
-                    expect(connection._protocol._ended).to.be.true;
+                    expect(err, 'should not have errored during disconnect process').to.not.be.instanceof(Error);
                 });
             });
         });
@@ -94,115 +113,95 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
     it('should fail to establish a single connection given no connection credentials', () => {
         expect(() => new QueryBuilder({},driver)).to.throw(Error);
     });
-    // it('should fail to establish a single connection given connection credentials with bad user', done => {
-    //     let qb;
-    //
-    //     try {
-    //         qb = new QueryBuilder(bad_user, driver);
-    //     } catch(e) {
-    //         expect(e, 'should not get a connection').to.be.instanceof(Error);
-    //         return;
-    //     }
-    //     expect(qb, 'should have connect property').to.have.property('connect');
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             expect(err, 'should not be connected').to.be.instanceof(Error);
-    //         });
-    //     });
-    // });
-    // it('should fail to establish a single connection given connection credentials with bad host', done => {
-    //
-    //     let qb;
-    //
-    //     try {
-    //         qb = new QueryBuilder(bad_host, driver);
-    //     } catch(e) {
-    //         expect(e, 'should not get a connection').to.be.instanceof(Error);
-    //         return;
-    //     }
-    //     expect(qb, 'should have connect property').to.have.property('connect');
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             expect(err, 'should not be connected').to.be.instanceof(Error);
-    //         });
-    //     });
-    // });
-    // it('should fail to establish a single connection given connection credentials with bad database', done => {
-    //
-    //     let qb;
-    //
-    //     try {
-    //         qb = new QueryBuilder(bad_database, driver);
-    //     } catch(e) {
-    //         expect(e, 'should not get a connection').to.be.instanceof(Error);
-    //         return;
-    //     }
-    //     expect(qb, 'should have connect property').to.have.property('connect');
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             expect(err, 'should not be connected').to.be.instanceof(Error);
-    //         });
-    //     });
-    // });
-    // it('should fail to establish a single connection given connection credentials with bad password', done => {
-    //
-    //     let qb;
-    //
-    //     try {
-    //         qb = new QueryBuilder(bad_password, driver);
-    //     } catch(e) {
-    //         expect(e, 'should not get a connection').to.be.instanceof(Error);
-    //         return;
-    //     }
-    //     expect(qb, 'should have connect property').to.have.property('connect');
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             expect(err, 'should not be connected').to.be.instanceof(Error);
-    //         });
-    //     });
-    // });
-    // it('should fail to establish a single connection given connection credentials with bad port', done => {
-    //     let qb;
-    //     try {
-    //         qb = new QueryBuilder(bad_port, driver);
-    //     } catch(e) {
-    //         expect(e, 'should not get a connection').to.be.instanceof(Error);
-    //         return;
-    //     }
-    //     expect(qb, 'should have connect property').to.have.property('connect');
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             expect(err, 'should not be connected').to.be.instanceof(Error);
-    //         });
-    //     });
-    // });
-    // it('should fail to establish connection if an invalid driver is specified', () => {
-    //     let qb;
-    //     expect(() => new QueryBuilder(settings), 'no driver specified').to.not.throw(Error);
-    //     expect(() => new QueryBuilder(settings, 'foobar'), 'invalid driver specified').to.throw(Error);
-    // });
-    // it('should fail to establish connection if an invalid driver version is specified', () => {
-    //     let qb;
-    //     expect(() => new QueryBuilder( Object.assign({}, settings), driver), 'valid driver version').to.not.throw(Error);
-    //     expect(() => new QueryBuilder(bad_version, driver), 'invalid driver version').to.throw(Error);
-    // });
-    //
-    // it('should allow us to retrieve our connection settings for reference', done => {
-    //     const conn_settings = Object.assign({}, settings, {password: undefined});
-    //     delete conn_settings.version;
-    //
-    //     const qb = new QueryBuilder(Object.assign({}, settings), driver);
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             should.exist(qb.connection_settings);
-    //             qb.connection_settings.should.be.a('function');
-    //             const settings = qb.connection_settings();
-    //             expect(settings).to.be.instanceof(Object);
-    //             expect(settings).to.be.eql(conn_settings);
-    //             qb.disconnect();
-    //         });
-    //     });
-    // });
+    it('should fail to establish a single connection given connection credentials with bad user', done => {
+        const qb = new QueryBuilder(bad_user, driver);
+
+        expect(qb, 'should have connect method').to.have.property('connect');
+
+        qb.connect(err => {
+            check(done, () => {
+                expect(err, 'should not be connected').to.be.instanceof(Error);
+            });
+        });
+    });
+    it('should fail to establish a single connection given connection credentials with bad host', done => {
+        const qb = new QueryBuilder(bad_host, driver);
+
+        expect(qb, 'should have connect method').to.have.property('connect');
+
+        qb.connect(err => {
+            check(done, () => {
+                expect(err, 'should not be connected').to.be.instanceof(Error);
+            });
+        });
+    });
+    it('should fail to establish a single connection given connection credentials with bad database', done => {
+        const qb = new QueryBuilder(bad_database, driver);
+
+        expect(qb, 'should have connect method').to.have.property('connect');
+
+        qb.connect(err => {
+            check(done, () => {
+                expect(err, 'should not be connected').to.be.instanceof(Error);
+            });
+        });
+    });
+    it('should fail to establish a single connection given connection credentials with bad password', done => {
+        const qb = new QueryBuilder(bad_password, driver);
+
+        expect(qb, 'should have connect method').to.have.property('connect');
+
+        qb.connect(err => {
+            check(done, () => {
+                expect(err, 'should not be connected').to.be.instanceof(Error);
+            });
+        });
+    });
+    it('should fail to establish a single connection given connection credentials with bad port', done => {
+        const qb = new QueryBuilder(bad_port, driver);
+
+        expect(qb, 'should have connect method').to.have.property('connect');
+
+        qb.connect(err => {
+            check(done, () => {
+                expect(err, 'should not be connected').to.be.instanceof(Error);
+            });
+        });
+    });
+    it('should fail to establish connection if no driver is specified', () => {
+        expect(() => new QueryBuilder(settings), 'no driver specified').to.throw(Error);
+    });
+    it('should fail to establish connection if an invalid driver is specified', () => {
+        expect(() => new QueryBuilder(settings, 'foobar'), 'invalid driver specified').to.throw(Error);
+    });
+    it('should fail to establish connection if an invalid driver version is specified', () => {
+        expect(() => new QueryBuilder(Object.assign({}, settings), driver), 'valid driver version').to.not.throw(Error);
+        expect(() => new QueryBuilder(bad_version, driver), 'invalid driver version').to.throw(Error);
+    });
+
+    it('should allow us to retrieve our connection settings for reference', done => {
+        const qb_settings = Object.assign({}, settings);
+        const qb = new QueryBuilder(qb_settings, driver);
+        qb.connect(err => {
+            check(done, () => {
+                should.exist(qb.connection_settings);
+                qb.connection_settings.should.be.a('function');
+                const all_settings = qb.connection_settings();
+                const settings = all_settings.connection_settings;
+                expect(settings).to.be.instanceof(Object);
+                expect(settings).to.have.property('server');
+                expect(settings).to.have.property('userName');
+                expect(settings).to.have.property('password');
+                expect(settings).to.have.property('options');
+                expect(settings.options).to.have.property('database');
+                expect(settings.options).to.have.property('port');
+                expect(settings.server).to.be.eql(qb_settings.host);
+                expect(settings.userName).to.be.eql(qb_settings.user);
+                expect(settings.password).to.be.eql(qb_settings.password);
+                expect(settings.options.database).to.be.eql(qb_settings.database);
+            });
+        });
+    });
     // it('should allow us to escape certain values', done => {
     //     const qb = new QueryBuilder(Object.assign({}, settings), driver);
     //     qb.connect(err => {
@@ -231,50 +230,52 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
     //         });
     //     });
     // });
-    // it('should allow us to execute a query', done => {
-    //     const qb = new QueryBuilder(Object.assign({}, settings), driver);
-    //     qb.connect(err => {
-    //         qb.query("select * from `cities` where `city` like 'Z%' and `state_code` = 'FL'", (err, res) => {
-    //             check(done, () => {
-    //                 expect(err).to.not.be.instanceof(Error);
-    //                 expect(res).to.not.be.empty;
-    //                 expect(res).to.have.length(3);
-    //             });
-    //         });
-    //     });
-    // });
-    // it('should not be able to release a non-pooled connection', done => {
-    //     const qb = new QueryBuilder(Object.assign({}, settings), driver);
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             expect(() => qb.release()).to.throw(Error);
-    //         });
-    //     });
-    // });
-    // it('should create a connection pool object if asked', () => {
-    //     const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
-    //     expect(pool).to.be.instanceof.object;
-    //     expect(pool).to.include.keys(['pool','get_connection','disconnect']);
-    //     pool.pool.should.be.a('function');
-    //     pool.get_connection.should.be.a('function');
-    //     pool.disconnect.should.be.a('function');
-    // });
-    // it('should create a QueryBuilder adapter when getting a connection from the pool', done => {
-    //     const qb2 = new QueryBuilder(Object.assign({}, settings), driver);
-    //     const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
-    //     pool.get_connection(qb => {
-    //         check(done, () => {
-    //             expect(qb).to.include.keys(Object.keys(qb2));
-    //         });
-    //     });
-    // });
-    // it('should allow one to release a connection from the pool', done => {
-    //     const qb2 = new QueryBuilder(Object.assign({}, settings), driver);
-    //     const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
-    //     pool.get_connection(qb => {
-    //         check(done, () => connection_released(qb));
-    //     });
-    // });
+    it('should allow us to execute a query', done => {
+        const qb = new QueryBuilder(Object.assign({}, settings), driver);
+        qb.connect(err => {
+            expect(err).to.not.be.instanceof(Error);
+
+            qb.query("select * from [_employees] where [FirstName] like 'Kyl%' and [Department] = 111", (err, res) => {
+                check(done, () => {
+                    expect(err).to.not.be.instanceof(Error);
+                    expect(res).to.not.be.empty;
+                    expect(res).to.have.length(1);
+                });
+            });
+        });
+    });
+    it('should not be able to release a non-pooled connection', done => {
+        const qb = new QueryBuilder(Object.assign({}, settings), driver);
+        qb.connect(err => {
+            check(done, () => {
+                expect(() => qb.release()).to.throw(Error);
+            });
+        });
+    });
+    it('should create a connection pool object if asked', () => {
+        const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
+        expect(pool).to.be.instanceof.object;
+        expect(pool).to.include.keys(['pool','get_connection','disconnect']);
+        pool.pool.should.be.a('function');
+        pool.get_connection.should.be.a('function');
+        pool.disconnect.should.be.a('function');
+    });
+    it('should create a QueryBuilder adapter when getting a connection from the pool', done => {
+        const qb2 = new QueryBuilder(Object.assign({}, settings), driver);
+        const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
+        pool.get_connection(qb => {
+            check(done, () => {
+                expect(qb).to.include.keys(Object.keys(qb2));
+            });
+        });
+    });
+    it('should allow one to release a connection from the pool', done => {
+        const qb2 = new QueryBuilder(Object.assign({}, settings), driver);
+        const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
+        pool.get_connection(qb => {
+            check(done, () => connection_released(qb));
+        });
+    });
     // it('should allow one use the same connection pool connection for multiple queries', done => {
     //     const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
     //

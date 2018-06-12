@@ -9,6 +9,9 @@ you spot any mistakes.
 * Added mssql support
 * Updated class files to use new ES6 class syntax for easier-maintainability
 * Changed the Query Builder instantiation syntax
+* Added new options:
+** `pool_min` (minimum number of pooled connections (`mssql` driver only))
+** `acquireTimeout` (milliseconds before a timeout occurs during the connection acquisition)
 
 ## v1.2.0 (2018-05-18)
 

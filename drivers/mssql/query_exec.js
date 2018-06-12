@@ -1,3 +1,5 @@
+const Request = require('tedious').Request;
+
 // ****************************************************************************
 // QueryBuilder "Query Execution" methods.
 // -----
@@ -5,10 +7,12 @@
 // @param    Object    adapter        The connection adapter object
 // ****************************************************************************
 const QueryExec = function (qb, conn) {
-
     const exec = (sql, callback) => {
         if (Object.prototype.toString.call(conn) == Object.prototype.toString.call({})) {
-            conn.query(sql, (err, results) => {
+            //console.log("Connection: ", conn);
+            const request = new Request(sql, (err, count, results) => {
+                //console.log("Results:" , results);
+
                 // Standardize some important properties
                 if (!err && results.length > 0) {
 
@@ -18,18 +22,27 @@ const QueryExec = function (qb, conn) {
                     }
 
                     // Affected Rows
-                    if (results.hasOwnProperty('affectedRows')) {
-                        results.affected_rows = results.affectedRows;
+                    if (results.hasOwnProperty('rowsAffected')) {
+                        results.affected_rows = count;
                     }
 
                     // Changed Rows
                     if (results.hasOwnProperty('changedRows')) {
-                        results.changed_rows = results.changedRows;
+                        results.changed_rows = count;
                     }
                 }
 
                 callback(err, results);
             });
+
+            if (!conn.connection) {
+                conn.connect(err => {
+                    if (err) return callback(err, null);
+                    conn.connection.execSql(request);
+                });
+            } else {
+                conn.connection.execSql(request);
+            }
         } else {
             throw new Error("No connection object supplied to the Query Exec Library!");
         }
