@@ -37,17 +37,16 @@ const connection_released = qb => {
 describe('QueryBuilder() - MS SQL Adapter', () => {
     const driver = 'mssql';
     const settings = {
-        host: '127.0.0.1',
+        host: 'localhost',
         database: 'mock_db',
         user: 'travis',
+        password: 'Password123',
         version: '4.1.0',
-        port: 3306,
+        port: 1433,
         options: {
             encrypt: false
         }
     };
-
-
 
     afterEach(done => {
         // const qb = new QueryBuilder(Object.assign({}, settings), driver);
@@ -235,11 +234,11 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
         qb.connect(err => {
             expect(err).to.not.be.instanceof(Error);
 
-            qb.query("select * from [_employees] where [FirstName] like 'Kyl%' and [Department] = 111", (err, res) => {
+            qb.query("select * from [cities] where [city] like 'Z%' and [state_code] = 'FL'", (err, res) => {
                 check(done, () => {
-                    expect(err).to.not.be.instanceof(Error);
-                    expect(res).to.not.be.empty;
-                    expect(res).to.have.length(1);
+                    expect(err, 'there should not be an error when querying').to.not.be.instanceof(Error);
+                    expect(res, 'results should not be empty').to.not.be.empty;
+                    expect(res, 'should have 3 results').to.have.length(3);
                 });
             });
         });
