@@ -201,21 +201,20 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
             });
         });
     });
-    // it('should allow us to escape certain values', done => {
-    //     const qb = new QueryBuilder(Object.assign({}, settings), driver);
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             should.exist(qb.escape);
-    //             qb.escape.should.be.a('function');
-    //             expect(qb.escape(null)).to.be.eql('NULL');
-    //             expect(qb.escape('3')).to.be.eql(3);
-    //             expect(qb.escape(false)).to.be.eql(0);
-    //             expect(qb.escape(true)).to.be.eql(1);
-    //             expect(qb.escape(null)).to.be.eql('NULL');
-    //             qb.disconnect();
-    //         });
-    //     });
-    // });
+    it('should allow us to escape certain values', done => {
+        const qb = new QueryBuilder(Object.assign({}, settings), driver);
+        qb.connect(err => {
+            check(done, () => {
+                should.exist(qb.escape);
+                qb.escape.should.be.a('function');
+                expect(qb.escape(null)).to.be.eql('NULL');
+                expect(qb.escape('3')).to.be.eql(3);
+                expect(qb.escape(false)).to.be.eql(0);
+                expect(qb.escape(true)).to.be.eql(1);
+                qb.disconnect();
+            });
+        });
+    });
     // it('should allow us to escape identifiers the MS SQL way', done => {
     //     const qb = new QueryBuilder(Object.assign({}, settings), driver);
     //     qb.connect(err => {

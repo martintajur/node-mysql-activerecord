@@ -278,8 +278,6 @@ const QueryBuilder = function() {
     };
 
     const qb_escape = (qb,str) => {
-        const mysql = require('mysql');
-
         if (typeof str === 'boolean') {
             str = (str === false ? 0 : 1);
         } else if (typeof str === 'number' || (typeof str === 'string' && /^\d+$/.test(str) && !/^0+/.test(str))) {

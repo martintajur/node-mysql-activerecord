@@ -41,10 +41,10 @@ The primary benefits of this module (currently) are:
 # Database Drivers
 ## Currently Written:
 - MySQL / MariaDB
+- Microsoft SQL Server
 
 ## Coming Soon:
 - Postgres
-- Microsoft SQL Server
 - Oracle
 - SQLite
 - MongoDB
