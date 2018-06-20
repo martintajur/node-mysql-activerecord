@@ -1,6 +1,7 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
-const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const QueryBuilder = require('../../drivers/mysql/query_builder.js');
+const qb = new QueryBuilder();
 
 const test_where = {id:3};
 const test_data = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'Andromeda', type: 'spiral'}];

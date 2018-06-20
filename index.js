@@ -117,21 +117,27 @@ class QueryBuilder {
     // @return    VOID    This method responds asychronously via a callback
     // ****************************************************************************
     get_adapter() {
-        try {
-            const {Cluster,Pool,Single} = require(this.driver_info.path + 'adapters.js').Adapters;
+        const settings = Object.assign({}, this.settings);
 
+        let Single;
+
+        try {
             switch (this.connection_type) {
                 case 'cluster':
-                    return new Cluster(this);
+                    const Cluster = require(`${this.driver_info.path}/adapters/cluster.js`);
+                    return new Cluster(settings);
                 case 'pool':
-                    return new Pool(this);
+                    const Pool = require(`${this.driver_info.path}/adapters/pool.js`)
+                    return new Pool(settings);
                 case 'single':
-                    return new Single(this, {});
+                    Single = require(`${this.driver_info.path}/adapters/single.js`)
+                    return new Single(settings, {});
                 default:
-                    return new Single(this, {});
+                    Single = require(`${this.driver_info.path}/adapters/single.js`)
+                    return new Single(settings, {});
             }
         } catch(e) {
-            throw new Error(`Couldn't load the Connection library for ${this.driver} (${JSON.stringify(this.settings)}): ${e}`);
+            throw new Error(`Couldn't load the "${this.connection_type}" Adapter library for ${this.driver} (${JSON.stringify(this.settings)}): ${e}`);
         }
     }
 }

@@ -1,6 +1,7 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
-const qb = require('../../drivers/mysql/query_builder.js').QueryBuilder();
+const QueryBuilder = require('../../drivers/mysql/query_builder.js');
+const qb = new QueryBuilder();
 
 describe('join()', () => {
 	it('should exist', () => {

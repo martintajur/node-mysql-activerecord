@@ -1172,7 +1172,7 @@ const QueryBuilder = function() {
                     throw new Error("set(): Invalid value provided! (provided: " + v + " (type: " + (typeof v) + ")");
                 }
                 else if (typeof v === 'number' && (v === Infinity || v !== +v)) {
-                    throw new Error("set(): Infinity and NaN are not valid values in MySQL!");
+                    throw new Error("set(): Infinity and NaN are not valid values in MS SQL!");
                 }
 
                 // Escape the key to be DRY
@@ -1297,7 +1297,7 @@ const QueryBuilder = function() {
                             throw new Error("set(): Invalid value provided!");
                         }
                         else if (typeof v === 'number' && (v === Infinity || v !== +v)) {
-                            throw new Error("set(): Infinity and NaN are not valid values in MySQL!");
+                            throw new Error("set(): Infinity and NaN are not valid values in MS SQL!");
                         }
                     }
                 }
