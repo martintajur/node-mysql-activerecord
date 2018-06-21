@@ -34,30 +34,30 @@ class Adapter extends QueryExec {
     // it's just good practice to go ahead and do this in case things change.
     // ****************************************************************************
     map_connection_settings() {
-        const nqb_settings = JSON.parse(JSON.stringify(this._connection_settings));
+        const settings = JSON.parse(JSON.stringify(this._connection_settings));
 
         this._connection_settings = {
-            host: nqb_settings.host,
-            user: nqb_settings.user,
-            password: nqb_settings.password,
+            host: settings.host,
+            user: settings.user,
+            password: settings.password,
         };
 
-        if (nqb_settings.hasOwnProperty('database')) {
-            this._connection_settings.database = nqb_settings.database;
-            delete nqb_settings.database;
+        if (settings.hasOwnProperty('database')) {
+            this._connection_settings.database = settings.database;
+            delete settings.database;
         }
-        if (nqb_settings.hasOwnProperty('port')) {
-            this._connection_settings.port = nqb_settings.port;
-            delete nqb_settings.port;
+        if (settings.hasOwnProperty('port')) {
+            this._connection_settings.port = settings.port;
+            delete settings.port;
         }
-        
+
         // Remove mapped settings:
-        delete nqb_settings.host;
-        delete nqb_settings.user;
-        delete nqb_settings.password;
+        delete settings.host;
+        delete settings.user;
+        delete settings.password;
 
         // Merge any driver-specific settings into connection settings
-        this._connection_settings = Object.assign(this._connection_settings, nqb_settings);
+        this._connection_settings = Object.assign(this._connection_settings, settings);
     }
 }
 

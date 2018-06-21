@@ -1,14 +1,16 @@
 const Request = require('tedious').Request;
+const QueryBuilder = require('./query_builder.js');
 
 // ****************************************************************************
 // QueryBuilder "Query Execution" methods.
-// -----
-// @param    Object    qb            The QueryBuilder object
-// @param    Object    adapter        The connection adapter object
 // ****************************************************************************
-const QueryExec = function (qb, conn) {
-    const exec = (sql, callback) => {
-        if (Object.prototype.toString.call(conn) == Object.prototype.toString.call({})) {
+class QueryExec extends QueryBuilder {
+    constructor() {
+        super();
+    }
+
+    _exec(sql, cb) {
+        if (Object.prototype.toString.call(this._connection) == Object.prototype.toString.call({})) {
             //console.log("Connection: ", conn);
             const request = new Request(sql, (err, count, results) => {
                 //console.log("Results:" , results);
@@ -32,190 +34,189 @@ const QueryExec = function (qb, conn) {
                     }
                 }
 
-                callback(err, results);
+                cb(err, results);
             });
 
-            if (!conn.connection) {
-                conn.connect(err => {
-                    if (err) return callback(err, null);
-                    conn.connection.execSql(request);
+            if (!this._connection) {
+                this._connection.connect(err => {
+                    if (err) return cb(err, null);
+                    this._connection.execSql(request);
                 });
             } else {
-                conn.connection.execSql(request);
+                //console.log("connection object2: ", this._connection);
+                this._connection.execSql(request);
             }
         } else {
             throw new Error("No connection object supplied to the Query Exec Library!");
         }
-    };
+    }
 
-    return {
-        query: function(sql, callback) {
-            exec(sql, callback);
-        },
+    query(sql, cb) {
+        this._exec(sql, cb);
+    }
 
-        count: function(table, callback) {
-            if (typeof table === 'function' && typeof callback !== 'function') {
-                table = null;
-                callback = table;
+    count(table, cb) {
+        if (typeof table === 'function' && typeof cb !== 'function') {
+            table = null;
+            cb = table;
+        }
+
+        const sql = this._count(table);
+        this.reset_query(sql);
+        this._exec(sql, (err, row) => {
+            if (!err) {
+                //console.dir(row[0].numrows);
+                cb(err, row[0].numrows);
             }
+            else {
+                cb(err, row);
+            }
+        });
+    }
 
-            const sql = qb.count(table);
-            qb.reset_query(sql);
-            exec(sql, (err, row) => {
+    get(table,cb,conn) {
+        // The table parameter is optional, it could be the cb...
+        if (typeof table === 'function' && typeof cb !== 'function') {
+            cb = table;
+        }
+        else if (typeof table === 'undefined' && typeof cb !== 'function') {
+            throw new Error("No cb function has been provided in your 'get' call!");
+        }
+
+        const sql = this._get(table);
+        this.reset_query(sql);
+        this._exec(sql,cb);
+    }
+
+    get_where(table,where,cb) {
+        if (typeof table !== 'string' && !Array.isArray(table)) {
+            throw new Error("First parameter of get_where() must be a string or an array of strings.");
+        }
+        if (Object.prototype.toString.call(where) !== Object.prototype.toString.call({})) {
+            throw new Error("Second parameter of get_where() must be an object with key:value pairs.");
+        }
+        const sql = this._get_where(table,where);
+        this.reset_query(sql);
+        this._exec(sql,cb);
+    }
+
+    insert(table,set,cb,ignore,suffix) {
+        const sql = this._insert(table,set,ignore,suffix);
+        this.reset_query(sql);
+        this._exec(sql,cb);
+    }
+
+    insert_ignore(table,set,on_dupe,cb) {
+        if (typeof on_dupe === 'function') {
+            cb = on_dupe;
+            on_dupe = null;
+        }
+        const sql = this._insert_ignore(table,set,on_dupe);
+        this.reset_query(sql);
+        this._exec(sql,cb);
+    }
+
+    insert_batch(table,set,cb) {
+        const sql = this._insert_batch(table,set);
+        this.reset_query(sql);
+        this._exec(sql,cb);
+    }
+
+    update(table,set,where,cb) {
+        // The where parameter is optional, it could be the cb...
+        if (typeof where === 'function' && typeof cb !== 'function') {
+            cb = where;
+            where = null;
+        }
+        else if (typeof where === 'undefined' && typeof cb !== 'function') {
+            throw new Error("No cb function has been provided in your update call!");
+        }
+        else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && where.length == 0)) {
+            where = null;
+        }
+
+        const sql = this._update(table,set,where);
+        this.reset_query(sql);
+        this._exec(sql,cb);
+    }
+
+    // TODO: Write this complicated-ass function
+    update_batch(table,set,index,where,cb) {
+        // The where parameter is optional, it could be the cb...
+        if (typeof where === 'function' && typeof cb !== 'function') {
+            cb = where;
+            where = null;
+        }
+        else if (typeof where === 'undefined' && typeof cb !== 'function') {
+            throw new Error("No cb function has been provided in your update_batch call!");
+        }
+        else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && where.length == 0)) {
+            where = null;
+        }
+
+        const sqls = this._update_batch(table,set,index,where);
+        const results = null;
+        const errors = [];
+
+        // Execute each batch of (at least) 100
+        (function next_batch() {
+            const sql = sqls.shift();
+            this.reset_query(sql);
+
+            this._exec(sql, (err, res) => {
                 if (!err) {
-                    //console.dir(row[0].numrows);
-                    callback(err, row[0].numrows);
+                    if (null === results) {
+                        results = res;
+                    } else {
+                        results.affected_rows += res.affected_rows;
+                        results.changed_rows += res.changed_rows;
+                    }
+                } else {
+                    errors.push(err);
                 }
-                else {
-                    callback(err, row);
+
+                if (sqls.length > 0) {
+                    setTimeout(next_batch,0);
+                } else {
+                    return cb(errors, results);
                 }
             });
-        },
+        })();
+    }
 
-        get: function(table, callback,conn) {
-            // The table parameter is optional, it could be the callback...
-            if (typeof table === 'function' && typeof callback !== 'function') {
-                callback = table;
-            }
-            else if (typeof table === 'undefined' && typeof callback !== 'function') {
-                throw new Error("No callback function has been provided in your 'get' call!");
-            }
+    delete(table, where, cb) {
+        if (typeof where === 'function' && typeof cb !== 'function') {
+            cb = where;
+            where = undefined;
+        }
 
-            const sql = qb.get(table);
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
+        if (typeof table === 'function' && typeof cb !== 'function') {
+            cb = table;
+            table = undefined;
+            where = undefined;
+        }
 
-        get_where: function(table,where, callback) {
-            if (typeof table !== 'string' && !Array.isArray(table)) {
-                throw new Error("First parameter of get_where() must be a string or an array of strings.");
-            }
-            if (Object.prototype.toString.call(where) !== Object.prototype.toString.call({})) {
-                throw new Error("Second parameter of get_where() must be an object with key:value pairs.");
-            }
-            const sql = qb.get_where(table,where);
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
+        if (typeof cb !== 'function') {
+            throw new Error("delete(): No callback function has been provided!");
+        }
 
-        insert: function(table,set, callback,ignore,suffix) {
-            const sql = qb.insert(table,set,ignore,suffix);
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
+        const sql = this._delete(table, where);
 
-        insert_ignore: function(table,set,on_dupe, callback) {
-            if (typeof on_dupe === 'function') {
-                callback = on_dupe;
-                on_dupe = null;
-            }
-            const sql = qb.insert_ignore(table,set,on_dupe);
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
+        this.reset_query(sql);
+        this._exec(sql,cb);
+    }
 
-        insert_batch: function(table,set, callback) {
-            const sql = qb.insert_batch(table,set);
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
+    empty_table(table, cb) {
+        const sql = this._empty_table(table,cb);
+        this.reset_query(sql);
+        this._exec(sql,cb);
+    }
 
-        update: function(table,set,where, callback) {
-            // The where parameter is optional, it could be the callback...
-            if (typeof where === 'function' && typeof callback !== 'function') {
-                callback = where;
-                where = null;
-            }
-            else if (typeof where === 'undefined' && typeof callback !== 'function') {
-                throw new Error("No callback function has been provided in your update call!");
-            }
-            else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && where.length == 0)) {
-                where = null;
-            }
-
-            const sql = qb.update(table,set,where);
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
-
-        // TODO: Write this complicated-ass function
-        update_batch: function(table,set,index,where, callback) {
-            // The where parameter is optional, it could be the callback...
-            if (typeof where === 'function' && typeof callback !== 'function') {
-                callback = where;
-                where = null;
-            }
-            else if (typeof where === 'undefined' && typeof callback !== 'function') {
-                throw new Error("No callback function has been provided in your update_batch call!");
-            }
-            else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && where.length == 0)) {
-                where = null;
-            }
-
-            const sqls = qb.update_batch(table,set,index,where);
-            const results = null;
-            const errors = [];
-
-            // Execute each batch of (at least) 100
-            (function next_batch() {
-                const sql = sqls.shift();
-                qb.reset_query(sql);
-
-                exec(sql, (err, res) => {
-                    if (!err) {
-                        if (null === results) {
-                            results = res;
-                        } else {
-                            results.affected_rows += res.affected_rows;
-                            results.changed_rows += res.changed_rows;
-                        }
-                    } else {
-                        errors.push(err);
-                    }
-
-                    if (sqls.length > 0) {
-                        setTimeout(next_batch,0);
-                    } else {
-                        return callback(errors, results);
-                    }
-                });
-            })();
-        },
-
-        delete: function(table, where, callback) {
-            if (typeof where === 'function' && typeof callback !== 'function') {
-                callback = where;
-                where = undefined;
-            }
-
-            if (typeof table === 'function' && typeof callback !== 'function') {
-                callback = table;
-                table = undefined;
-                where = undefined;
-            }
-
-            if (typeof callback !== 'function') {
-                throw new Error("delete(): No callback function has been provided!");
-            }
-
-            const sql = qb.delete(table, where);
-
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
-
-        empty_table: function(table, callback) {
-            const sql = qb.empty_table(table, callback);
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
-
-        truncate: function(table, callback) {
-            const sql = qb.truncate(table, callback);
-            qb.reset_query(sql);
-            exec(sql, callback);
-        },
+    truncate(table, cb) {
+        const sql = this._truncate(table,cb);
+        this.reset_query(sql);
+        this._exec(sql,cb);
     }
 }
 
-exports.QueryExec = QueryExec;
+module.exports = QueryExec;

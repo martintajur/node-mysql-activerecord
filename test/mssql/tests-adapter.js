@@ -69,18 +69,28 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
     });
     it('should have all the QueryBuilder methods', () => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
-        const children = ['where_array','where_in_array','from_array','join_array','select_array','set_array','order_by_array','group_by_array','having_array','limit_to','offset_val','join_clause','last_query_string','distinct_clause','aliased_tables','reset_query','where','or_where','_where','where_in','or_where_in','where_not_in','or_where_not_in','_where_in','like','not_like','or_like','or_not_like','_like','from','join','select','select_min','select_max','select_avg','select_sum','_min_max_avg_sum','distinct','group_by','having','or_having','_having','order_by','limit','offset','set'];
-        expect(qb).to.include.keys(children);
+        const children = [
+            'reset_query','where','or_where','_where','where_in','or_where_in','where_not_in','or_where_not_in','_where_in','like',
+            'not_like','or_like','or_not_like','_like','from','join','select','select_min','select_max','select_avg','select_sum',
+            '_min_max_avg_sum','distinct','group_by','having','or_having','_having','order_by','limit','offset','set',
+        ];
+        children.forEach(v => {
+            expect(qb).to.respondTo(v);
+        });
     });
     it('should have all the QueryExec methods', () => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
         const children = ['insert','insert_ignore','insert_batch','get','get_where','count','update','update_batch','delete','get_compiled_select','get_compiled_delete','get_compiled_update','get_compiled_insert','compile_select','compile_delete','compile_update','compile_insert'];
-        expect(qb).to.include.keys(children);
+        children.forEach(v => {
+            expect(qb).to.respondTo(v);
+        });
     });
     it('should have all the miscellaneous methods', () => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
         const children = ['last_query','escape','empty_table','truncate'];
-        expect(qb).to.include.keys(children);
+        children.forEach(v => {
+            expect(qb).to.respondTo(v);
+        });
     });
     it('should establish a single connection given valid connection credentials', done => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
@@ -252,8 +262,13 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
     });
     it('should create a connection pool object if asked', () => {
         const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
-        expect(pool).to.be.instanceof.object;
-        expect(pool).to.include.keys(['pool','get_connection','disconnect']);
+        const methods = ['pool','get_connection','disconnect'];
+
+        expect(pool, 'pool should be object').to.be.instanceof(Object);
+        methods.forEach(v => {
+            expect(pool, `pool should have method: ${v}`).to.respondTo(v);
+        });
+
         pool.pool.should.be.a('function');
         pool.get_connection.should.be.a('function');
         pool.disconnect.should.be.a('function');
@@ -263,7 +278,7 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
         const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
         pool.get_connection(qb => {
             check(done, () => {
-                expect(qb).to.include.keys(Object.keys(qb2));
+                expect(qb2).to.include.keys(Object.keys(qb));
             });
         });
     });

@@ -288,7 +288,7 @@ describe('QueryBuilder() - MySQL Adapter', () => {
         const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
         pool.get_connection(qb => {
             check(done, () => {
-                expect(qb).to.include.keys(Object.keys(qb2));
+                expect(qb2).to.include.keys(Object.keys(qb));
             });
         });
     });
