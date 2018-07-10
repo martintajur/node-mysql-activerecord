@@ -156,7 +156,7 @@ const qb = new require('node-querybuilder')({
 ```
 
 ## Choosing the Database Type
-This part is super simple. Just pass which one you'd like to use as the second paramter to the constructor (`mysql` is the default):
+This part is super simple. Just pass which one you'd like to use as the second parameter to the constructor (`mysql` is the default):
 
 **_Example:_**
 
@@ -228,31 +228,31 @@ Chainable methods can be called as many times as you'd like in any order you lik
 
 API Method                            | SQL Command | MySQL    | MSSQL    | Oracle   | SQLite   | Postgres | Mongo
 :------------------------------------ | :---------- | :------: | :------: | :------: | :------: | :------: | :------:
-[select()](#select)                   | SELECT      | &#x2713; |          |          |          |          |
-[distinct()](#distinct)               | DISTINCT    | &#x2713; |          |          |          |          |
-[select_min()](#min)                  | MIN         | &#x2713; |          |          |          |          |
-[select_max()](#max)                  | MAX         | &#x2713; |          |          |          |          |
-[select_avg()](#avg)                  | AVG         | &#x2713; |          |          |          |          |
-[select_sum()](#sum)                  | SUM         | &#x2713; |          |          |          |          |
-[from()](#from)                       | FROM        | &#x2713; |          |          |          |          |
-[join()](#join)                       | JOIN        | &#x2713; |          |          |          |          |
-[where()](#where)                     | WHERE       | &#x2713; |          |          |          |          |
-[where_in()](#where_in)               | IN          | &#x2713; |          |          |          |          |
-[where_not_in()](#where_not_in)       | WHERE       | &#x2713; |          |          |          |          |
-[or_where()](#or_where)               | WHERE       | &#x2713; |          |          |          |          |
-[or_where_in()](#or_where_in)         | WHERE       | &#x2713; |          |          |          |          |
-[or_where_not_in()](#or_where_not_in) | WHERE       | &#x2713; |          |          |          |          |
-[like()](#like)                       | LIKE        | &#x2713; |          |          |          |          |
-[or_like()](#or_like)                 | LIKE        | &#x2713; |          |          |          |          |
-[or_not_like()](#or_not_like)         | LIKE        | &#x2713; |          |          |          |          |
-[not_like()](#not_like)               | LIKE        | &#x2713; |          |          |          |          |
-[group_by()](#group-by)               | GROUP BY    | &#x2713; |          |          |          |          |
-[having()](#having)                   | HAVING      | &#x2713; |          |          |          |          |
-[or_having()](#or_having)             | HAVING      | &#x2713; |          |          |          |          |
-[order_by()](#order-by)               | ORDER BY    | &#x2713; |          |          |          |          |
-[limit()](#limit)                     | LIMIT       | &#x2713; |          |          |          |          |
-[offset()](#offset)                   | OFFSET      | &#x2713; |          |          |          |          |
-[set()](#set)                         | SET         | &#x2713; |          |          |          |          |
+[select()](#select)                   | SELECT      | &#x2713; | &#x2713; |          |          |          |
+[distinct()](#distinct)               | DISTINCT    | &#x2713; | &#x2713; |          |          |          |
+[select_min()](#min)                  | MIN         | &#x2713; | &#x2713; |          |          |          |
+[select_max()](#max)                  | MAX         | &#x2713; | &#x2713; |          |          |          |
+[select_avg()](#avg)                  | AVG         | &#x2713; | &#x2713; |          |          |          |
+[select_sum()](#sum)                  | SUM         | &#x2713; | &#x2713; |          |          |          |
+[from()](#from)                       | FROM        | &#x2713; | &#x2713; |          |          |          |
+[join()](#join)                       | JOIN        | &#x2713; | &#x2713; |          |          |          |
+[where()](#where)                     | WHERE       | &#x2713; | &#x2713; |          |          |          |
+[where_in()](#where_in)               | IN          | &#x2713; | &#x2713; |          |          |          |
+[where_not_in()](#where_not_in)       | WHERE       | &#x2713; | &#x2713; |          |          |          |
+[or_where()](#or_where)               | WHERE       | &#x2713; | &#x2713; |          |          |          |
+[or_where_in()](#or_where_in)         | WHERE       | &#x2713; | &#x2713; |          |          |          |
+[or_where_not_in()](#or_where_not_in) | WHERE       | &#x2713; | &#x2713; |          |          |          |
+[like()](#like)                       | LIKE        | &#x2713; | &#x2713; |          |          |          |
+[or_like()](#or_like)                 | LIKE        | &#x2713; | &#x2713; |          |          |          |
+[or_not_like()](#or_not_like)         | LIKE        | &#x2713; | &#x2713; |          |          |          |
+[not_like()](#not_like)               | LIKE        | &#x2713; | &#x2713; |          |          |          |
+[group_by()](#group-by)               | GROUP BY    | &#x2713; | &#x2713; |          |          |          |
+[having()](#having)                   | HAVING      | &#x2713; | &#x2713; |          |          |          |
+[or_having()](#or_having)             | HAVING      | &#x2713; | &#x2713; |          |          |          |
+[order_by()](#order-by)               | ORDER BY    | &#x2713; | &#x2713; |          |          |          |
+[limit()](#limit)                     | LIMIT       | &#x2713; | &#x2713; |          |          |          |
+[offset()](#offset)                   | OFFSET      | &#x2713; | &#x2713; |          |          |          |
+[set()](#set)                         | SET         | &#x2713; | &#x2713; |          |          |          |
 
 --------------------------------------------------------------------------------
 
@@ -921,7 +921,7 @@ This SQL command is used to order the resultset by a field or fields in descendi
 Parameter | Type         | Default  | Description
 :-------- | :----------- | :------- | :----------------------------------------------------------------------
 fields    | String/Array | Required | Field name or an array of field names, possibly with directions as well
-direction | String       | 'asc'    | 'asc': Ascending; 'desc': Descending; 'rand'/'random'/'rand()': Random.
+direction | String       | 'asc'    | 'asc': Ascending; 'desc': Descending; 'rand'/'newid'/'random'/'rand()': Random.
 
 This is a very flexible method, offering a wide variety of ways you can call it. Variations include:
 - Pass the field name and omit the direction
@@ -940,6 +940,14 @@ Pass the field name and omit the direction
 qb.order_by('galaxy_name').get('galaxies', callback);
 ```
 
+Random sort
+
+```javascript
+// (MySQL) SELECT * FROM `galaxies` ORDER BY RAND() ASC
+// (MSSQL) SELECT * FROM `galaxies` ORDER BY NEWID() ASC
+qb.order_by('random').get('galaxies', callback);
+```
+
 Pass the field name and the direction as the first and second parameters, respectively
 
 ```javascript
@@ -947,7 +955,7 @@ Pass the field name and the direction as the first and second parameters, respec
 qb.order_by('galaxy_name', 'desc').get('galaxies', callback);
 ```
 
-Pass an array of fields to first paramter, direction to second parameter
+Pass an array of fields to first parameter, direction to second parameter
 
 ```javascript
 // SELECT * FROM `galaxies` ORDER BY `galaxy_name` DESC, `galaxy_size` DESC
@@ -1052,20 +1060,20 @@ qb.set({birthday: birthday, anniversary: '2010-05-15'}).update('users', callback
 
 ## Execution Methods
 
-API Method                        | SQL Command   | MySQL    | MSSQL | Oracle | SQLite | Postgres | Mongo
-:-------------------------------- | :------------ | :------: | :---: | :----: | :----: | :------: | :---:
-[query()](#query)                 | N/A           | &#x2713; |       |        |        |          |
-[get()](#get)                     | N/A           | &#x2713; |       |        |        |          |
-[get_where()](#get_where)         | N/A           | &#x2713; |       |        |        |          |
-[count()](#count)                 | COUNT         | &#x2713; |       |        |        |          |
-[update()](#update)               | UPDATE        | &#x2713; |       |        |        |          |
-[update_batch()](#update_batch)   | N/A           | &#x2713; |       |        |        |          |
-[insert()](#insert)               | INSERT        | &#x2713; |       |        |        |          |
-[insert_batch()](#insert_batch)   | N/A           | &#x2713; |       |        |        |          |
-[insert_ignore()](#insert-ignore) | INSERT IGNORE | &#x2713; |       |        |        |          |
-[delete()](#delete)               | DELETE        | &#x2713; |       |        |        |          |
-[truncate()](#truncate)           | TRUNCATE      | &#x2713; |       |        |        |          |
-[empty_table()](#empty_table)     | DELETE        | &#x2713; |       |        |        |          |
+API Method                        | SQL Command   | MySQL    | MSSQL    | Oracle | SQLite | Postgres | Mongo
+:-------------------------------- | :------------ | :------: | :------: | :----: | :----: | :------: | :---:
+[query()](#query)                 | N/A           | &#x2713; | &#x2713; |        |        |          |
+[get()](#get)                     | N/A           | &#x2713; | &#x2713; |        |        |          |
+[get_where()](#get_where)         | N/A           | &#x2713; | &#x2713; |        |        |          |
+[count()](#count)                 | COUNT         | &#x2713; | &#x2713; |        |        |          |
+[update()](#update)               | UPDATE        | &#x2713; | &#x2713; |        |        |          |
+[update_batch()](#update_batch)   | N/A           | &#x2713; | &#x2713; |        |        |          |
+[insert()](#insert)               | INSERT        | &#x2713; | &#x2713; |        |        |          |
+[insert_batch()](#insert_batch)   | N/A           | &#x2713; | &#x2713; |        |        |          |
+[insert_ignore()](#insert-ignore) | INSERT IGNORE | &#x2713; |          |        |        |          |
+[delete()](#delete)               | DELETE        | &#x2713; | &#x2713; |        |        |          |
+[truncate()](#truncate)           | TRUNCATE      | &#x2713; | &#x2713; |        |        |          |
+[empty_table()](#empty_table)     | DELETE        | &#x2713; | &#x2713; |        |        |          |
 
 ### What are "Execution Methods"??
 Execution methods are the end-of-chain methods in the QueryBuilder library. Once these methods are called, all the chainable methods you've called up until this point will be compiled into a query string and sent to the driver's `query()` method. At this point, the QueryBuilder will be reset and ready to build a new query. The database driver will respond with results depending on the type of query being executed or with an error message. Both (if provided) will be supplied to the callback function.
@@ -1534,7 +1542,7 @@ data      | Object   | undefined | An array of objects containing the data you w
 on_dupe   | String   | undefined | (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).
 callback  | Function | Required  | What to do when the driver has responded.
 
-This method is just a wrapper to the `insert()` method which passes `true` to the ignore parameter. The purpose of using `IGNORE` syntax, for the drivers that support it, is so that a row insertion will be skipped if it's an exact duplicate of another row in the database. Optionally, you can provide a 3rd paramter containing a query that will update specified keys in the case of a duplicate entry (instead of simply ignoring it). With the third parameter, you can create an 'upsert' of sorts. Without the third parameter, it's essentially just "ignoring" errors, or, rather, converting them to simple warnings.
+This method is just a wrapper to the `insert()` method which passes `true` to the ignore parameter. The purpose of using `IGNORE` syntax, for the drivers that support it, is so that a row insertion will be skipped if it's an exact duplicate of another row in the database. Optionally, you can provide a 3rd parameter containing a query that will update specified keys in the case of a duplicate entry (instead of simply ignoring it). With the third parameter, you can create an 'upsert' of sorts. Without the third parameter, it's essentially just "ignoring" errors, or, rather, converting them to simple warnings.
 
 **Type of Response Sent to Callback**
 
@@ -1654,7 +1662,7 @@ Parameter | Type     | Default  | Description
 table     | String   | Required | The table/collection you'd like to truncate.
 callback  | Function | Required | What to do when the driver has responded.
 
-For drivers that support it (MySQL), this method will utilize the `TRUNCATE` directive to empty a table of all it's data. The main difference between the `truncate()` method and the `empty_table()` method is that, when available, and when possible, truncating a table will reset your AUTO_INCREMENT counter back to zero. If you simply delete every row from a table, the next item inserted will just continue with the next highest ID from the deleted records.
+For drivers that support it (MySQL, MSSQL), this method will utilize the `TRUNCATE` directive to empty a table of all it's data. The main difference between the `truncate()` method and the `empty_table()` method is that, when available, and when possible, truncating a table will reset your AUTO_INCREMENT counter back to zero. If you simply delete every row from a table, the next item inserted will just continue with the next highest ID from the deleted records.
 
 For drivers that don't support the truncate method, this will simply act as a wrapper to the [.empty_table()](#empty_table) method.
 

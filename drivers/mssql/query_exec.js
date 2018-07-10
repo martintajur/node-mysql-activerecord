@@ -107,13 +107,14 @@ class QueryExec extends QueryBuilder {
     }
 
     insert_ignore(table,set,on_dupe,cb) {
-        if (typeof on_dupe === 'function') {
-            cb = on_dupe;
-            on_dupe = null;
-        }
-        const sql = this._insert_ignore(table,set,on_dupe);
-        this.reset_query(sql);
-        this._exec(sql,cb);
+        throw new Error("This feature is currently unsupported in the MSSQL driver.");
+        // if (typeof on_dupe === 'function') {
+        //     cb = on_dupe;
+        //     on_dupe = null;
+        // }
+        // const sql = this._insert_ignore(table,set,on_dupe);
+        // this.reset_query(sql);
+        // this._exec(sql,cb);
     }
 
     insert_batch(table,set,cb) {
