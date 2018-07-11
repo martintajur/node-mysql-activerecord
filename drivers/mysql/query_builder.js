@@ -4,6 +4,9 @@ class QueryBuilder extends GenericQueryBuilder {
     constructor() {
         super();
         this.rand_word = 'RAND()';
+        this.escape_char = '`';
+        this.condition_rgx = /([\[\]\w\."\s-]+)(\s*[^\"\[`'\w-]+\s*)(.+)/i;
+        this.multi_condition_rgx = /\sAND\s|\sOR\s/ig;
     }
 
     // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
@@ -154,6 +157,7 @@ class QueryBuilder extends GenericQueryBuilder {
         return sql.replace(/\s+$/, ' ') + 'LIMIT ' + offset + limit;
     };
 
+    // ---------------------------- SQL EXEC TOOLS ----------------------------//
     _compile_delete() {
         if (this.from_array.length === 0) {
             throw new Error('You have not specified any tables to delete from!');
@@ -247,80 +251,6 @@ class QueryBuilder extends GenericQueryBuilder {
         sql += this._build_order_by_clause();
         return this._build_limit_clause(sql, limit_to, offset_val);
     };
-
-    join(table, relation, direction, escape) {
-        if (typeof table !== 'string' || table.trim().length == 0) {
-            throw new Error("You must provide a table, view, or stored procedure to join to!");
-        }
-
-        relation = (typeof relation === 'string' && relation.trim().length != 0 ? relation.trim() : '');
-        direction = (typeof direction === 'string' && direction.trim().length != 0 ? direction.trim() : '');
-        escape = (typeof escape === 'boolean' ? escape : true);
-
-        const valid_directions = ['LEFT', 'RIGHT', 'OUTER', 'INNER', 'LEFT OUTER', 'RIGHT OUTER'];
-
-        if (direction != '') {
-            direction = direction.toUpperCase().trim();
-            if (valid_directions.indexOf(direction) === -1) {
-                throw new Error("Invalid join direction provided as third parameter.");
-            }
-            if (relation === '') {
-                throw new Error("You must provide a valid condition to join on when providing a join direction.");
-            }
-
-            direction += ' ';
-        }
-
-        this._track_aliases(table);
-
-        // Split multiple conditions
-        const regex = /\sAND\s|\sOR\s/ig;
-        const m = relation.match(regex);
-        const matches = [];
-        let k, temp, temp_match, match;
-        if (escape === true && m) {
-            while (k = regex.exec(relation)) {
-                matches.push(k);
-            }
-
-            let new_relation = '';
-            matches.push(['']);
-            matches[(matches.length - 1)].index = relation.length;
-            for (let j = 0, c = matches.length, s = 0; j < c; s = matches[j].index + matches[j][0].length, j++) {
-                temp = relation.substr(s, matches[j].index - s);
-                temp_match = temp.match(/([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i);
-                new_relation += (temp_match ? this._protect_identifiers(temp_match[1], escape) + temp_match[2] + this._protect_identifiers(temp_match[3], escape) : temp);
-                new_relation += matches[j][0];
-            }
-
-            relation = ' ON ' + new_relation;
-        }
-
-        // Split apart the condition and protect the identifiers
-        else if (escape === true && /([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i.test(relation)) {
-            match = relation.match(/([\[\]\w\.'-]+)(\s*[^\"\[`'\w]+\s*)(.+)/i)
-            relation = ' ON ' + this._protect_identifiers(match[1], true) + match[2] + this._protect_identifiers(match[3], true);
-        }
-        else if (!this._has_operator(relation)) {
-            relation = ' USING (' + (escape ? this._escape_identifiers(relation) : relation) + ')';
-        }
-        else if (relation && escape === false) {
-            relation = ' ON ' + relation;
-        }
-        else {
-            relation = ' ';
-        }
-
-        // Do we want to escape the table name?
-        if (escape === true) {
-            table = this._protect_identifiers(table,true);
-        }
-
-        const join = direction + 'JOIN ' + table + relation;
-
-        this.join_array.push(join);
-        return this;
-    }
 
     _insert_batch(table,set=null,ignore,suffix) {
         const orig_table = table = table || '';

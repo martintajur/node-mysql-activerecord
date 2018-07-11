@@ -1,5 +1,7 @@
 class GenericQueryBuilder {
     constructor() {
+        this.reserved_identifiers = ['*'];
+
         this.where_array = [];
         this.where_in_array = [];
         this.from_array = [];
@@ -127,6 +129,167 @@ class GenericQueryBuilder {
    }
 
    // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
+   /**
+    * Escape the SQL Identifiers
+    *
+    * This function escapes column and table names
+    *
+    * @param	mixed	item	Identifier to escape
+    * @param	bool	split	Whether to split identifiers when a dot is encountered
+    * @return	mixed
+    */
+   _escape_identifiers(item = '*', split=true) {
+       if (item === '*') return item;
+
+       // If object is supplied, escape the value of each key
+       if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
+           for (let i in item) {
+               item[i] = this._escape_identifiers(item[i]);
+           }
+           return item;
+       }
+
+       // Avoid breaking functions and literal values inside queries
+       else if ((typeof item === 'string' && /^\d+$/.test(item)) || item[0] === "'" || item.indexOf('(') !== -1) {
+           return item;
+       }
+
+       let str;
+       let escape_chars = [];
+
+       if (Array.isArray(this.escape_char)) {
+           escape_chars = this.escape_char;
+       } else {
+           escape_chars[0] = escape_chars[1] = this.escape_char;
+       }
+
+       this.reserved_identifiers.forEach(v => {
+           if (item.indexOf(v) === -1) {
+               return item.replace(RegExp(`${escape_chars[0]}?([^${escape_chars[1]}\.]+)${escape_chars[1]}?\.`, 'i'), `${escape_chars[0]}$1${escape_chars[1]}.`);
+           }
+       });
+
+       const dot = (split !== FALSE ? '\.' : '');
+       return item.replace(RegExp(`${escape_chars[0]}?([^${escape_chars[1]}${dot}]+)${escape_chars[1]}?(\.)?`, 'i'), `${escape_chars[0]}$1${escape_chars[1]}$2`);
+   }
+
+   /**
+    * Protect Identifiers
+    *
+    * Takes a column or table name (optionally with an alias) and inserts
+    * the table prefix onto it. Some logic is necessary in order to deal with
+    * column names that include the path. Consider a query like this:
+    *
+    * SELECT hostname.database.table.column AS c FROM hostname.database.table
+    *
+    * Or a query with aliasing:
+    *
+    * SELECT m.member_id, m.member_name FROM members AS m
+    *
+    * Since the column name can include up to four segments (host, DB, table, column)
+    * or also have an alias prefix, we need to do a bit of work to figure this out and
+    * insert the table prefix (if it exists) in the proper position, and escape only
+    * the correct identifiers.
+    *
+    * @param	string   item
+    * @param	bool     prefix_single
+    * @param	mixed    protect_identifiers
+    * @param	bool     field_exists
+    * @return	string
+    */
+   _protect_identifiers(item, prefix_single=false, protect_identifiers = null, field_exists = true) {
+       if (item === '') return item;
+
+       protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
+
+       if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
+           const escaped_array = {};
+
+           for (let k in item) {
+               const v = item[k];
+               escaped_array[this._protect_identifiers(k)] = this._protect_identifiers(v, prefix_single, protect_identifiers, field_exists);
+           }
+           return escaped_array;
+       }
+
+       // Make sure item is a string...
+       if (typeof item !== 'string') throw new Error("Invalid item passed to _protect_identifiers:" + typeof item);
+
+       // This is basically a bug fix for queries that use MAX, MIN, subqueries, etc.
+       // If a parenthesis is found we know that we do not need to
+       // escape the data or add a prefix.
+       const match = /[\(\)\']{1}/.exec(str)
+       if (match && match.index !== item.length) return item;
+       // const parantheses_regex = /^([^\(]+)\(([^\)]+)\)\s+(?:as\s*)?([^\s]+)(?:\s*(.*))?$/;
+       // if (parantheses_regex.test(item)) {
+       //     return item.replace(parantheses_regex, `$1($2) AS ${this._escape_identifiers("$3")} $4`);
+       // }
+
+       // Convert tabs or multiple spaces into single spaces
+       item = item.trim().replace(/\s+/g, ' ');
+
+       let alias = '';
+
+       // If the item has an alias declaration we remove it and set it aside.
+       // Basically we remove everything to the right of the first space
+       if (/\sAS\s/i.test(item)) {
+           const offset = item.indexOf(item.match(/\sAS\s/i)[0]);
+           alias = (protect_identifiers ? item.substr(offset, 4) + this._escape_identifiers(item.substr(offset + 4), false) : item.substr(offset));
+           item = item.substr(0, alias_index);
+       }
+       else if (item.indexOf(' ') !== -1) {
+           const alias_index = item.indexOf(' ');
+
+           alias = (protect_identifiers && ! this._has_operator(item.substr(alias_index + 1)) ? ' ' + this._escape_identifiers(item.substr(alias_index + 1), false) : item.substr(alias_index));
+           item = item.substr(0,alias_index);
+       }
+
+       // Break the string apart if it contains periods, then insert the table prefix
+       // in the correct location, assuming the period doesn't indicate that we're dealing
+       // with an alias. While we're at it, we will escape the components
+       if (item.indexOf('.') !== -1) {
+           const parts = item.split('.');
+           let first_seg = parts[0].trim();
+
+           if (Array.isArray(this.escape_char)) {
+               const rgx_esc = (str) => str.replace(/([.*+?^${}()|\[\]\/\\])/g, "\\$1");
+               let rgx = `^${rgx_esc(start)}([^${rgx_esc(end)}]+)${rgx_esc(end)}$`;
+               first_seg = first_seg.replace(new RegExp(rgx), "$1");
+           } else {
+               first_seg = first_seg.replace(/`/g,'');
+           }
+
+           // Does the first segment of the exploded item match
+           // one of the aliases previously identified?  If so,
+           // we have nothing more to do other than escape the item
+           if (this.aliased_tables.indexOf(first_seg) !== -1) {
+               if (protect_identifiers === true) {
+                   parts = parts.map((v,i) => {
+                       if (!this.reserved_identifiers.includes(v)) {
+                           return this._escape_identifiers(v);
+                           return v;
+                       }
+                   });
+
+                   item = parts.join('.');
+               }
+               return item + alias;
+           }
+
+           if (protect_identifiers === true) {
+               item = this._escape_identifiers(item);
+           }
+
+           return item + alias;
+       }
+
+       if (protect_identifiers === true) {
+           item = this._escape_identifiers(item);
+       }
+
+       return item + alias;
+   }
+
    _track_aliases(table) {
        if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
            for (let i in table) {
@@ -743,6 +906,65 @@ class GenericQueryBuilder {
        return this;
    }
 
+   join(table='', relation='', direction='', escape=true) {
+       if (typeof table !== 'string' || table.trim().length === 0) {
+           throw new Error("You must provide a table, view, or stored procedure to join to!");
+       }
+
+       relation = (typeof relation === 'string' && relation.trim().length !== 0 ? relation.trim() : '');
+       direction = (typeof direction === 'string' && direction.trim().length !== 0 ? direction.trim() : '');
+       escape = (typeof escape === 'boolean' ? escape : true);
+
+       const valid_directions = ['LEFT', 'RIGHT', 'OUTER', 'INNER', 'LEFT OUTER', 'RIGHT OUTER'];
+
+       if (direction) {
+           direction = direction.toUpperCase().trim();
+           if (!valid_directions.includes(direction)) {
+               throw new Error("Invalid join direction provided as third parameter.");
+           }
+           if (!relation) {
+               throw new Error("You must provide a valid condition to join on when providing a join direction.");
+           }
+       }
+
+       // Keep track of the table alias (if one is provided)
+       this._track_aliases(table);
+
+       // How to split a condition (foo=bar) into its consituent parts
+
+       // Find all the conditions and protect their identifiers
+       if (escape === true && this.multi_condition_rgx.test(relation)) {
+           const new_relation = relation.split(this.multi_condition_rgx).map((v,i) => {
+               if (i % 2 !== 0) return v;
+               return v.replace(this.condition_rgx, `${this._protect_identifiers("$1", escape)} $2 ${this._protect_identifiers("$3", escape)}`);
+           }).join(' ');
+
+           relation = `ON ${new_relation}`;
+       }
+
+       // Split apart the condition and protect the identifiers
+       else if (escape === true && statement_regex.test(relation)) {
+           relation = 'ON ' + v.replace(this.condition_rgx, `${this._protect_identifiers("$1", escape)} $2 ${this._protect_identifiers("$3", escape)}`);
+       }
+       else if (!this._has_operator(relation)) {
+           relation = `USING (${(escape ? this._escape_identifiers(relation) : relation)})`;
+       }
+       else if (relation && escape === false) {
+           relation = `ON ${relation}`;
+       }
+       else {
+           relation = '';
+       }
+
+       // Do we want to escape the table name?
+       if (escape === true) {
+           table = this._protect_identifiers(table,true);
+       }
+
+       this.join_array.push(`${direction} JOIN ${table} ${relation}`);
+       return this;
+   }
+
    order_by(orderby, direction) {
        let m;
        direction = (typeof direction === 'string' ? direction.toLowerCase().trim() : '');
@@ -892,12 +1114,11 @@ class GenericQueryBuilder {
 
 
    // ---------------------------- SQL EXEC TOOLS ----------------------------//
-   insert(table, set, ignore, suffix) {
+   insert(table='', set='', ignore=false, suffix='') {
        return this._insert(table, set, ignore, suffix);
    }
 
-   _insert(table, set, ignore, suffix) {
-       table = table || ''
+   _insert(table='', set='', ignore=false, suffix='') {
        ignore = (typeof ignore !== 'boolean' ? false : ignore);
        suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
 

@@ -496,7 +496,7 @@ qb.from('groups g').select('u.id, u.name, u, description, g.name as group_name')
 
 ### JOIN
 #### .join(table, relation[,direction])
-This SQL command is used query multiple tables related and connected by keys and get a single resultset.
+This SQL command is used query multiple tables related and connected by keys and get a single result set.
 
 Parameter | Type    | Default  | Description
 :-------- | :------ | :------- | :--------------------------------------------------
@@ -514,6 +514,11 @@ escape    | Boolean | true     | TRUE: Escape table name and conditions; FALSE: 
 - right outer
 
 The table/view and the relationship of it to the main table/view (see: `.from()`) must be specified. The specific type of join defaults to "left" if none is specified (although it is recommended to always supply this value for readability). Multiple function calls can be made if you need several joins in one query. Aliases can (and should) be provided and they will be escaped properly.
+
+**Warning about complex relationship clauses**
+This library currently does not support complex/nested ON clauses passed to the `relation` (second) parameter. You can supply multiple statements as long as they are not nested within parentheses. If you need to use a complex relationship clause, please make sure to escape those parts manually and pass `false` to the `escape` (fourth) parameter. See examples below for more details.
+
+If anyone would like to add this capability, please submit a pull request!
 
 **Examples**
 
