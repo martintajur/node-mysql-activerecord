@@ -1,6 +1,6 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
-const QueryBuilder = require('../../drivers/mysql/query_builder.js');
+const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
 describe('group_by()', () => {
@@ -19,17 +19,17 @@ describe('group_by()', () => {
     it('should accept a single field in string form', () => {
         qb.reset_query();
         qb.group_by('planet_type');
-        qb.group_by_array.should.eql(['`planet_type`']);
+        qb.group_by_array.should.eql(['[planet_type]']);
     });
     it('should accept a multiple fields delimited by commas', () => {
         qb.reset_query();
         qb.group_by('planet_type, planet_position');
-        qb.group_by_array.should.eql(['`planet_type`','`planet_position`']);
+        qb.group_by_array.should.eql(['[planet_type]','[planet_position]']);
     });
     it('should accept an array of fields', () => {
         qb.reset_query();
         qb.group_by(['planet_type', 'planet_position']);
-        qb.group_by_array.should.eql(['`planet_type`','`planet_position`']);
+        qb.group_by_array.should.eql(['[planet_type]','[planet_position]']);
     });
     it('should not accept anything but a string or an array of strings', () => {
         qb.reset_query();

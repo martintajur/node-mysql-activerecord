@@ -1,4 +1,5 @@
 const GenericQueryBuilder = require('../query_builder.js');
+const tsqlstring = require('tsqlstring');
 
 class QueryBuilder extends GenericQueryBuilder {
     constructor() {
@@ -6,7 +7,7 @@ class QueryBuilder extends GenericQueryBuilder {
         this.rand_word = 'NEWID()';
         this.escape_char = ['[',']'];
         this.condition_rgx = /([\[\]\w\."\s-]+)(\s*[^\"\[`'\w-]+\s*)(.+)/i;
-        this.multi_condition_rgx = /\s(OR|AND)\s/;
+        this.multi_condition_rgx = /\s(OR|AND)\s/i;
     }
 
     // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
@@ -19,7 +20,7 @@ class QueryBuilder extends GenericQueryBuilder {
         } else if (typeof str === 'number' || (typeof str === 'string' && /^\d+$/.test(str) && !/^0+/.test(str))) {
             str *= 1;
         } else {
-            str = mysql.escape(str);
+            str = tsqlstring.escape(str);
         }
 
         return str;
@@ -52,7 +53,8 @@ class QueryBuilder extends GenericQueryBuilder {
         }
 
         offset_clause += ` OFFSET ${offset_val} ROWS`;
-        if (limit_to) offset += ` FETCH NEXT ${limit_to} ROWS ONLY`;
+        if (limit_to) offset_clause += ` FETCH NEXT ${limit_to} ROWS ONLY`;
+        return offset_clause.trim();
     }
 
     // ---------------------------- SQL EXEC TOOLS ----------------------------//
@@ -62,13 +64,24 @@ class QueryBuilder extends GenericQueryBuilder {
             return '';
         }
 
-        this.from_array = this.from_array.slice(0,1);
+        // Make sure we're only deleting from one table
+        this.from_array = this.from_array.slice(0, 1);
 
-        const sql = `DELETE ${this._build_limit_clause()} `
-            + this._build_from_clause()
-            + this._build_where_clause();
+        const limit_clause = this._build_limit_clause();
+        const offset_clause = this._build_offset_clause();
+        const from_clause = this._build_from_clause().trim();
+        const where_clause = this._build_where_clause().trim();
 
-        return sql;
+        // Do not allow offset deletes (don't know how to do this yet)
+        // TODO: implement this?
+        if (offset_clause) throw new Error("Offset deletes are currently not supported by QueryBuilder for the `mssql` driver.");
+
+        let sql = 'DELETE';
+        sql += (limit_clause ? ` ${limit_clause}` : '');
+        sql += ` ${from_clause}`;
+        sql += (where_clause ? ` ${where_clause}` : '');
+
+        return sql.trim();
     }
 
     _compile_insert(ignore=false, suffix='') {
@@ -101,7 +114,15 @@ class QueryBuilder extends GenericQueryBuilder {
 
     _compile_select() {
         const distinct_clause = this.distinct_clause[0] || '';
-        let sql = `SELECT ${distinct_clause}`;
+        const from_clause = this._build_from_clause().trim();
+        const join_string = this._build_join_string().trim();
+        const where_clause = this._build_where_clause().trim();
+        const group_by_clause = this._build_group_by_clause().trim();
+        const having_clause = this._build_having_clause().trim();
+        const order_by_clause = this._build_order_by_clause().trim();
+        const offset_clause = this._build_offset_clause().trim();
+
+        let sql = (`SELECT ${distinct_clause}`).trim() + ' ';
 
         const limit_clause = this._build_limit_clause();
         if (limit_clause) sql += `${limit_clause} `;
@@ -112,21 +133,21 @@ class QueryBuilder extends GenericQueryBuilder {
             sql += this.select_array.join(', ');
         }
 
-        sql += this._build_from_clause()
-            + this._build_join_string()
-            + this._build_where_clause()
-            + this._build_group_by_clause()
-            + this._build_having_clause()
-            + this._build_order_by_clause()
-            + this._build_offset_clause();
+        sql = `${sql} ${from_clause}`;
+        sql += (join_string ? ` ${join_string}` : '');
+        sql += (where_clause ? ` ${where_clause}` : '');
+        sql += (group_by_clause ? ` ${group_by_clause}` : '');
+        sql += (having_clause ? ` ${having_clause}` : '');
+        sql += (order_by_clause ? ` ${order_by_clause}` : '');
+        sql += (offset_clause ? ` ${offset_clause}` : '');
 
-        return sql;
+        return sql.trim();
     }
 
     _compile_update() {
-        const valstr = this.set_array.map(v => {
-            const key = Object.keys(this.set_array[i])[0];
-            const val = this.set_array[i][key];
+        const valstr = this.set_array.map((v,i) => {
+            const key = Object.keys(v)[0];
+            const val = v[key];
             return `${key} = ${val}`;
         }).join(', ');
 
@@ -139,22 +160,27 @@ class QueryBuilder extends GenericQueryBuilder {
             return '';
         }
 
+        const limit_clause = this._build_limit_clause().trim();
+        const order_by_clause = this._build_order_by_clause().trim();
+        const where_clause = this._build_where_clause().trim();
+
         const table = this.from_array.toString();
 
         let sql = 'UPDATE ';
 
-        if (this.order_by_array.length > 0) {
-            sql += `${table} SET ${valstr}${this._build_where_clause()}`;
+        if (!limit_clause) {
+            sql += `${table} SET ${valstr} ${where_clause}`;
         } else {
-            const limit_clause = this._build_limit_clause();
-            const from_clause = (limit_clause ? 'FROM *' : `${limit_clause} FROM *`);
-            sql += `[t] SET ${valstr} FROM (SELECT ${from_clause})`
-                + this._build_where_clause()
-                + this._build_order_by_clause()
-                + `) [t]`;
+            const from_clause = (limit_clause ? `` : `${limit_clause} * FROM ${table}`);
+            sql += `[t] SET ${valstr} FROM (SELECT`;
+                sql += (limit_clause ? ` ${limit_clause}` : '');
+                sql += ` * FROM ${table}`;
+                sql += (where_clause ? ` ${where_clause}` : '');
+                sql += (order_by_clause ? ` ${order_by_clause}` : '');
+                sql += `) [t]`;
         }
 
-        return sql;
+        return sql.trim();
     }
 
     insert(table='', set='', ignore=false, suffix='') {
@@ -163,7 +189,7 @@ class QueryBuilder extends GenericQueryBuilder {
         super._insert(table, set, false, suffix);
     }
 
-    _insert_batch(table,set=null,ignore,suffix) {
+    _insert_batch(table, set=null, ignore=false, suffix='') {
         const orig_table = table = table || '';
         ignore = (typeof ignore !== 'boolean' ? false : ignore);
         suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
@@ -249,12 +275,15 @@ class QueryBuilder extends GenericQueryBuilder {
             this.from(table);
         }
 
-        const sql = 'SELECT COUNT(*) AS ' + this._protect_identifiers('numrows')
-            + this._build_from_clause()
-            + this._build_join_string()
-            + this._build_where_clause();
+        const from_clause = this._build_from_clause().trim();
+        const join_string = this._build_join_string().trim();
+        const where_clause = this._build_where_clause().trim();
 
-        return sql;
+        let sql = `SELECT COUNT(*) AS ${this._protect_identifiers('numrows')} ${from_clause}`;
+        sql += (join_string ? ` ${join_string}` : '');
+        sql += (where_clause ? ` ${where_clause}` : '');
+
+        return sql.trim();
     }
 }
 

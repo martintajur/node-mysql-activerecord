@@ -138,7 +138,7 @@ class GenericQueryBuilder {
     * @param	bool	split	Whether to split identifiers when a dot is encountered
     * @return	mixed
     */
-   _escape_identifiers(item = '*', split=true) {
+   _escape_identifiers(item='*', split=true) {
        if (item === '*') return item;
 
        // If object is supplied, escape the value of each key
@@ -165,12 +165,12 @@ class GenericQueryBuilder {
 
        this.reserved_identifiers.forEach(v => {
            if (item.indexOf(v) === -1) {
-               return item.replace(RegExp(`${escape_chars[0]}?([^${escape_chars[1]}\.]+)${escape_chars[1]}?\.`, 'i'), `${escape_chars[0]}$1${escape_chars[1]}.`);
+               return item.replace(RegExp(`\\${escape_chars[0]}?([^\\${escape_chars[1]}\.]+)\\${escape_chars[1]}?\.`, 'ig'), `${escape_chars[0]}$1${escape_chars[1]}.`);
            }
        });
 
-       const dot = (split !== FALSE ? '\.' : '');
-       return item.replace(RegExp(`${escape_chars[0]}?([^${escape_chars[1]}${dot}]+)${escape_chars[1]}?(\.)?`, 'i'), `${escape_chars[0]}$1${escape_chars[1]}$2`);
+       const dot = (split !== false ? '\.' : '');
+       return item.replace(RegExp(`\\${escape_chars[0]}?([^\\${escape_chars[1]}${dot}]+)\\${escape_chars[1]}?(\.)?`, 'ig'), `${escape_chars[0]}$1${escape_chars[1]}$2`);
    }
 
    /**
@@ -197,98 +197,98 @@ class GenericQueryBuilder {
     * @param	bool     field_exists
     * @return	string
     */
-   _protect_identifiers(item, prefix_single=false, protect_identifiers = null, field_exists = true) {
-       if (item === '') return item;
+    _protect_identifiers(item, prefix_single=false, protect_identifiers=null, field_exists=true) {
+        if (item === '') return item;
 
-       protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
+        protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
 
-       if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
-           const escaped_array = {};
+        if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
+            const escaped_array = {};
 
-           for (let k in item) {
-               const v = item[k];
-               escaped_array[this._protect_identifiers(k)] = this._protect_identifiers(v, prefix_single, protect_identifiers, field_exists);
-           }
-           return escaped_array;
-       }
+            for (let k in item) {
+                const v = item[k];
+                escaped_array[this._protect_identifiers(k)] = this._protect_identifiers(v);
+            }
+            return escaped_array;
+        }
 
-       // Make sure item is a string...
-       if (typeof item !== 'string') throw new Error("Invalid item passed to _protect_identifiers:" + typeof item);
+        // Make sure item is a string...
+        if (typeof item !== 'string') throw new Error("Invalid item passed to _protect_identifiers:" + typeof item);
 
-       // This is basically a bug fix for queries that use MAX, MIN, subqueries, etc.
-       // If a parenthesis is found we know that we do not need to
-       // escape the data or add a prefix.
-       const match = /[\(\)\']{1}/.exec(str)
-       if (match && match.index !== item.length) return item;
-       // const parantheses_regex = /^([^\(]+)\(([^\)]+)\)\s+(?:as\s*)?([^\s]+)(?:\s*(.*))?$/;
-       // if (parantheses_regex.test(item)) {
-       //     return item.replace(parantheses_regex, `$1($2) AS ${this._escape_identifiers("$3")} $4`);
-       // }
+        // Convert tabs or multiple spaces into single spaces
+        item = item.trim().replace(/\s+/g, ' ');
 
-       // Convert tabs or multiple spaces into single spaces
-       item = item.trim().replace(/\s+/g, ' ');
+        let alias = '';
 
-       let alias = '';
+        // This is basically a bug fix for queries that use MAX, MIN, subqueries, etc.
+        // If a parenthesis is found we know that we do not need to
+        // escape the data or add a prefix.
+        const match = /[\(\)\']{1}/.exec(item)
+        if (match && match.index !== item.length) {
+            const has_alias = item.lastIndexOf(')');
+            if (has_alias >= 0) {
+                alias = item.substr(has_alias + 1).replace(/\sAS\s/i,'').trim();
+                alias = this._escape_identifiers(alias);
+                if (alias != '')
+                    alias = ' AS ' + alias;
+                item = item.substr(0, has_alias + 1);
+            } else {
+                alias = '';
+            }
 
-       // If the item has an alias declaration we remove it and set it aside.
-       // Basically we remove everything to the right of the first space
-       if (/\sAS\s/i.test(item)) {
-           const offset = item.indexOf(item.match(/\sAS\s/i)[0]);
-           alias = (protect_identifiers ? item.substr(offset, 4) + this._escape_identifiers(item.substr(offset + 4), false) : item.substr(offset));
-           item = item.substr(0, alias_index);
-       }
-       else if (item.indexOf(' ') !== -1) {
-           const alias_index = item.indexOf(' ');
+            return item + alias;
+        }
 
-           alias = (protect_identifiers && ! this._has_operator(item.substr(alias_index + 1)) ? ' ' + this._escape_identifiers(item.substr(alias_index + 1), false) : item.substr(alias_index));
-           item = item.substr(0,alias_index);
-       }
+        // If the item has an alias declaration we remove it and set it aside.
+        // Basically we remove everything to the right of the first space
+        if (/\sAS\s/ig.test(item)) {
+            const offset = item.indexOf(item.match(/\sAS\s/ig)[0]);
+            alias = (protect_identifiers ? item.substr(offset, 4) + this._escape_identifiers(item.slice(offset + 4), false) : item.substr(offset));
+            item = item.substr(0, offset);
+        }
+        else if (item.indexOf(' ') !== -1) {
+            const alias_index = item.indexOf(' ');
 
-       // Break the string apart if it contains periods, then insert the table prefix
-       // in the correct location, assuming the period doesn't indicate that we're dealing
-       // with an alias. While we're at it, we will escape the components
-       if (item.indexOf('.') !== -1) {
-           const parts = item.split('.');
-           let first_seg = parts[0].trim();
+            alias = (protect_identifiers && ! this._has_operator(item.substr(alias_index + 1)) ? ' ' + this._escape_identifiers(item.substr(alias_index + 1)) : item.substr(alias_index));
+            item = item.substr(0, alias_index);
+        }
 
-           if (Array.isArray(this.escape_char)) {
-               const rgx_esc = (str) => str.replace(/([.*+?^${}()|\[\]\/\\])/g, "\\$1");
-               let rgx = `^${rgx_esc(start)}([^${rgx_esc(end)}]+)${rgx_esc(end)}$`;
-               first_seg = first_seg.replace(new RegExp(rgx), "$1");
-           } else {
-               first_seg = first_seg.replace(/`/g,'');
-           }
+        // Break the string apart if it contains periods, then insert the table prefix
+        // in the correct location, assuming the period doesn't indicate that we're dealing
+        // with an alias. While we're at it, we will escape the components
+        if (item.indexOf('.') !== -1) {
+            let parts = item.split('.');
+            const first_seg = parts[0].trim();//.replace(/`/g,'');
 
-           // Does the first segment of the exploded item match
-           // one of the aliases previously identified?  If so,
-           // we have nothing more to do other than escape the item
-           if (this.aliased_tables.indexOf(first_seg) !== -1) {
-               if (protect_identifiers === true) {
-                   parts = parts.map((v,i) => {
-                       if (!this.reserved_identifiers.includes(v)) {
-                           return this._escape_identifiers(v);
-                           return v;
-                       }
-                   });
+            // Does the first segment of the exploded item match
+            // one of the aliases previously identified?  If so,
+            // we have nothing more to do other than escape the item
+            if (this.aliased_tables.indexOf(first_seg) !== -1) {
+                if (protect_identifiers === true) {
+                    parts = parts.map((v,i) => {
+                        if (!this.reserved_identifiers.includes(v)) {
+                            return this._escape_identifiers(v);
+                            return v;
+                        }
+                    });
 
-                   item = parts.join('.');
-               }
-               return item + alias;
-           }
+                    item = parts.join('.');
+                }
+                return item + alias;
+            }
 
-           if (protect_identifiers === true) {
-               item = this._escape_identifiers(item);
-           }
+            if (protect_identifiers === true) {
+                item = this._escape_identifiers(item);
+            }
 
-           return item + alias;
-       }
+            return item + alias;
+        }
+        if (protect_identifiers === true) {
+            item = this._escape_identifiers(item);
+        }
 
-       if (protect_identifiers === true) {
-           item = this._escape_identifiers(item);
-       }
-
-       return item + alias;
-   }
+        return (item + alias).trim();
+    }
 
    _track_aliases(table) {
        if (Object.prototype.toString.call(table) === Object.prototype.toString.call({})) {
@@ -340,58 +340,40 @@ class GenericQueryBuilder {
 
    // ---------------------------- SQL BUILD TOOLS ----------------------------//
    _build_where_clause() {
-       let sql = '';
-       if (this.where_array.length > 0) {
-           sql += " WHERE ";
-       }
-       sql += this.where_array.join(" ");
-       return sql;
+       if (this.where_array.length === 0) return '';
+       return `WHERE ${this.where_array.join(" ")}`;
    };
 
    _build_from_clause() {
        let sql = '';
-       if (this.from_array.length > 0) {
-           sql += " FROM ";
-       } else {
+       if (this.from_array.length === 0) {
            throw new Error("You have not provided any tables, views, or store procedures for this query!!");
        }
-       sql += this.from_array.join(', ');
-       return sql;
+       sql = `FROM ${this.from_array.join(', ')}`;
+       return sql.trim();
    };
 
    _build_join_string() {
-       let sql = '';
-       sql += this.join_array.join(' ');
-       if (sql.length > 0) sql = ' ' + sql;
-       return sql;
+       if (this.join_array.length <= 0) return '';
+       return this.join_array.join(' ');
    };
 
    _build_group_by_clause() {
        if (this.group_by_array.length <= 0) return '';
-
-       let sql = ' GROUP BY ';
-       sql += this.group_by_array.join(', ');
-       return sql;
+       return `GROUP BY ${this.group_by_array.join(', ')}`;
    };
 
    _build_having_clause() {
        if (this.having_array.length <= 0) return '';
-
-       let sql = ' HAVING ';
-       sql += this.having_array.join(' ');
-       return sql;
+       return `HAVING ${this.having_array.join(' ')}`;
    };
 
    _build_order_by_clause() {
        if (this.order_by_array.length <= 0) return '';
-
-       let sql = ' ORDER BY ';
-       sql += this.order_by_array.join(', ');
-
-       return sql;
+       return `ORDER BY ${this.order_by_array.join(', ')}`;
    };
 
-   reset_query(new_last_query,debug) {
+   reset_query(new_last_query, debug=false) {
        this._clear_array(this.where_array, debug);
        this._clear_array(this.where_in_array);
        this._clear_array(this.from_array);
@@ -413,9 +395,9 @@ class GenericQueryBuilder {
        }
    }
 
-   where(key, value = null, escape) {
+   where(key, value=null, escape=true) {
        if (Object.prototype.toString.call(key) === Object.prototype.toString.call({}) && typeof value === 'boolean') {
-           escape = (typeof escape === 'boolean' ? escape : value);
+           escape = value;
        }
 
        escape = (typeof escape === 'boolean' ? escape : true);
@@ -426,7 +408,7 @@ class GenericQueryBuilder {
        return this._where(key, value, 'AND ', escape);
    }
 
-   or_where(key, value=null, escape) {
+   or_where(key, value=null, escape=true) {
        escape = (typeof escape === 'boolean' ? escape : true);
 
        if (typeof key === 'string' && typeof value === 'object' && Array.isArray(value) && value.length > 0) {
@@ -435,14 +417,14 @@ class GenericQueryBuilder {
        return this._where(key, value, 'OR ', escape);
    }
 
-   _where(key, value=null, type='AND ', escape) {
+   _where(key, value=null, type='AND ', escape=true) {
        escape = (typeof escape === 'boolean' ? escape : true);
 
        // Must be an object or a string
        if (Object.prototype.toString.call(key) !== Object.prototype.toString.call({})) {
            // If it's not an object, it must be a string
            if (typeof key !== 'string') {
-               throw new Error("where(): If first parameter is not an object, it must be a string. " + typeof key + " provided.");
+               throw new Error(`where(): If first parameter is not an object, it must be a string. ${typeof key} provided.`);
            } else {
                // If it is a string, it can't be an empty one
                if (key.length == 0) {
@@ -450,7 +432,7 @@ class GenericQueryBuilder {
                }
            }
 
-           // If it's a actual where clause string (with no paranthesis),
+           // If it's a actual where clause string (with no parantheses),
            // not just a field name, split it into individual parts to escape it properly
            if (/(<=|>=|<>|>|<|!=|=)/.test(key) && key.indexOf('(') === -1 && escape === true) {
                const filters = key.split(/\s+(AND|OR)\s+/i);
@@ -502,11 +484,11 @@ class GenericQueryBuilder {
 
            if (v !== null) {
                if (escape === true) {
-                   k = this._protect_identifiers(k,escape);
+                   k = this._protect_identifiers(k, false, escape);
                    v = ' ' + this._qb_escape(v);
                }
 
-               if (escape === false && Object.prototype.toString.call(key) === Object.prototype.toString.call({})) {
+               if (escape !== true && Object.prototype.toString.call(key) === Object.prototype.toString.call({})) {
                    v = ' ' + this._qb_escape(v);
                }
 
@@ -515,7 +497,7 @@ class GenericQueryBuilder {
                }
            }
            else {
-               k = this._protect_identifiers(k,escape);
+               k = this._protect_identifiers(k, false, escape);
            }
 
            if (v) {
@@ -529,23 +511,23 @@ class GenericQueryBuilder {
        return this;
    }
 
-   where_in(key, values, escape) {
+   where_in(key, values, escape=true) {
        return this._where_in(key, values, false, 'AND ', escape);
    }
 
-   or_where_in(key, values, escape) {
+   or_where_in(key, values, escape=true) {
        return this._where_in(key, values, false, 'OR ', escape);
    }
 
-   where_not_in(key, values, escape) {
+   where_not_in(key, values, escape=true) {
        return this._where_in(key, values, true, 'AND ', escape);
    }
 
-   or_where_not_in(key, values, escape) {
+   or_where_not_in(key, values, escape=true) {
        return this._where_in(key, values, true, 'OR ', escape);
    }
 
-   _where_in(key='', values=[], not, type='AND ', escape) {
+   _where_in(key='', values=[], not, type='AND ', escape=true) {
        not = (not ? ' NOT' : '');
        escape = (typeof escape === 'boolean' ? escape : true);
 
@@ -568,7 +550,7 @@ class GenericQueryBuilder {
        }
 
        const prefix = (this.where_array.length == 0 ? '' : type);
-       const where_in = prefix + this._protect_identifiers(key,escape) + not + " IN (" + this.where_in_array.join(', ') + ")";
+       const where_in = prefix + this._protect_identifiers(key, false, escape) + not + " IN (" + this.where_in_array.join(', ') + ")";
        this.where_array.push(where_in);
 
        // reset the array for multiple calls
@@ -667,7 +649,7 @@ class GenericQueryBuilder {
 
                    this._track_aliases(v);
 
-                   this.from_array.push(this._protect_identifiers(v, true));
+                   this.from_array.push(this._protect_identifiers(v, false, true));
                }
            }
            else {
@@ -677,14 +659,14 @@ class GenericQueryBuilder {
                // in the protect_identifiers function to know whether to add a table prefix
                this._track_aliases(val);
 
-               this.from_array.push(this._protect_identifiers(val, true));
+               this.from_array.push(this._protect_identifiers(val, false, true));
            }
        }
 
        return this;
    }
 
-   select(select,escape) {
+   select(select, escape=true) {
        // First param must be a non-empty string or array
        if (typeof select === 'string') {
            select = select.trim();
@@ -736,25 +718,25 @@ class GenericQueryBuilder {
            const val = select[i].trim();
 
            if (val !== '') {
-               this.select_array.push(this._protect_identifiers(val, escape));
+               this.select_array.push(this._protect_identifiers(val, false, escape));
            }
        }
        return this;
    }
 
-   select_min(select,alias) {
+   select_min(select, alias) {
        return this._min_max_avg_sum(select, alias, 'MIN');
    }
 
-   select_max(select,alias) {
+   select_max(select, alias) {
        return this._min_max_avg_sum(select, alias, 'MAX');
    }
 
-   select_avg(select,alias) {
+   select_avg(select, alias) {
        return this._min_max_avg_sum(select, alias, 'AVG');
    }
 
-   select_sum(select,alias) {
+   select_sum(select, alias) {
        return this._min_max_avg_sum(select, alias, 'SUM');
    }
 
@@ -827,17 +809,17 @@ class GenericQueryBuilder {
        return this;
    }
 
-   having(key, value, escape) {
+   having(key, value, escape=true) {
        escape = (typeof escape !== 'boolean' ? true : escape);
        return this._having(key, value, 'AND ', escape);
    }
 
-   or_having(key, value, escape) {
+   or_having(key, value, escape=true) {
        escape = (typeof escape !== 'boolean' ? true : escape);
        return this._having(key, value, 'OR ', escape);
    }
 
-   _having(key, value, type='AND ', escape) {
+   _having(key, value, type='AND ', escape=true) {
 
        let m;
        let key_array = {};
@@ -907,7 +889,7 @@ class GenericQueryBuilder {
    }
 
    join(table='', relation='', direction='', escape=true) {
-       if (typeof table !== 'string' || table.trim().length === 0) {
+       if (typeof table !== 'string' || (typeof table === 'string' && table.trim().length === 0)) {
            throw new Error("You must provide a table, view, or stored procedure to join to!");
        }
 
@@ -935,18 +917,21 @@ class GenericQueryBuilder {
        // Find all the conditions and protect their identifiers
        if (escape === true && this.multi_condition_rgx.test(relation)) {
            const new_relation = relation.split(this.multi_condition_rgx).map((v,i) => {
-               if (i % 2 !== 0) return v;
-               return v.replace(this.condition_rgx, `${this._protect_identifiers("$1", escape)} $2 ${this._protect_identifiers("$3", escape)}`);
+               if (i % 2 !== 0) return v.trim();
+               const match = v.match(this.condition_rgx);
+               if (!match) return v.trim();
+               return `${this._protect_identifiers(match[1].trim(), false, escape)} ${match[2].trim()} ${this._protect_identifiers(match[3].trim(), false, escape)}`;
            }).join(' ');
 
            relation = `ON ${new_relation}`;
        }
 
        // Split apart the condition and protect the identifiers
-       else if (escape === true && statement_regex.test(relation)) {
-           relation = 'ON ' + v.replace(this.condition_rgx, `${this._protect_identifiers("$1", escape)} $2 ${this._protect_identifiers("$3", escape)}`);
+       else if (relation && escape !== false && this.condition_rgx.test(relation)) {
+           const match = relation.match(this.condition_rgx);
+           relation = `ON ${this._protect_identifiers(match[1].trim(), false, escape)} ${match[2].trim()} ${this._protect_identifiers(match[3].trim(), false, escape)}`;
        }
-       else if (!this._has_operator(relation)) {
+       else if (relation && !this._has_operator(relation)) {
            relation = `USING (${(escape ? this._escape_identifiers(relation) : relation)})`;
        }
        else if (relation && escape === false) {
@@ -958,10 +943,10 @@ class GenericQueryBuilder {
 
        // Do we want to escape the table name?
        if (escape === true) {
-           table = this._protect_identifiers(table,true);
+           table = this._protect_identifiers(table, false, true);
        }
 
-       this.join_array.push(`${direction} JOIN ${table} ${relation}`);
+       this.join_array.push(`${direction} JOIN ${table} ${relation}`.trim());
        return this;
    }
 
@@ -1036,7 +1021,7 @@ class GenericQueryBuilder {
        return this;
    }
 
-   set(key, value, escape) {
+   set(key, value, escape=true) {
        escape = (typeof escape === 'boolean' ? escape : true);
 
        if (typeof key === 'string') {
@@ -1080,7 +1065,7 @@ class GenericQueryBuilder {
            }
 
            // Escape the key to be DRY
-           const escaped_key = this._protect_identifiers(i, escape);
+           const escaped_key = this._protect_identifiers(i, false, escape);
 
            // Build a temporary object with escaped key and val
            const temp = {};
@@ -1119,6 +1104,7 @@ class GenericQueryBuilder {
    }
 
    _insert(table='', set='', ignore=false, suffix='') {
+       table = table || ''; // force falsy values to be an empty string
        ignore = (typeof ignore !== 'boolean' ? false : ignore);
        suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
 
@@ -1164,7 +1150,7 @@ class GenericQueryBuilder {
        return this.insert(table, set, true, suffix);
    }
 
-   insert_batch(table,set=null,ignore,suffix) {
+   insert_batch(table, set=null, ignore, suffix) {
        return this._insert_batch(table, set, ignore, suffix);
    }
 
@@ -1177,11 +1163,11 @@ class GenericQueryBuilder {
            this.from(table);
        }
        else {
-           if (this.from_array.length == 0) {
+           if (this.from_array.length === 0) {
                throw new Error('You have not specified any tables to select from!');
            }
        }
-       return this._compile_select(this);
+       return this._compile_select();
    }
 
    get_where(table=null, where=null) {
@@ -1225,8 +1211,7 @@ class GenericQueryBuilder {
        return this._update(table, set, where);
    }
 
-   _update(table, set, where=null) {
-
+   _update(table='', set=null, where=null) {
        table = table || '';
        set = set || null;
 

@@ -95,7 +95,7 @@ qb.select('name', 'position')
 Driver                                     | Default  | Ready   | single | pool | cluster | Additional Connection Options
 :----------------------------------------- | :------- | :------ | :----- | :--- | :------ | :----------------------------------------------------------------------------------------
 [mysql](//www.npmjs.com/package/mysql)     | &#x2713; | Yes     | Yes    | Yes  | Pending | [node-mysql connection options](https://github.com/felixge/node-mysql#connection-options)
-[mssql](//www.npmjs.com/package/mssql)     |          | Yes     | Yes    | Yes  | ???     | [node-mssql connection options](https://github.com/tediousjs/node-mssql#general-same-for-all-drivers)
+[mssql](//www.npmjs.com/package/tedious)   |          | Yes     | Yes    | Yes  | ???     | [tedious connection options](http://tediousjs.github.io/tedious/api-connection.html)
 [sqlite3](//www.npmjs.com/package/sqlite3) |          | No      | Yes    | ???  | ???     |
 [oracle](//www.npmjs.com/package/oracle)   |          | No      | Yes    | ???  | ???     |
 [postgres](//www.npmjs.com/package/pg)     |          | No      | Yes    | Yes  | ???     |
@@ -161,7 +161,7 @@ This part is super simple. Just pass which one you'd like to use as the second p
 **_Example:_**
 
 ```javascript
-const qb = new require('node-querybuilder')(settings, 'postgres');
+const qb = new require('node-querybuilder')(settings, 'mssql');
 ```
 
 ## Choosing the Connection Type
@@ -926,7 +926,7 @@ This SQL command is used to order the resultset by a field or fields in descendi
 Parameter | Type         | Default  | Description
 :-------- | :----------- | :------- | :----------------------------------------------------------------------
 fields    | String/Array | Required | Field name or an array of field names, possibly with directions as well
-direction | String       | 'asc'    | 'asc': Ascending; 'desc': Descending; 'rand'/'newid'/'random'/'rand()': Random.
+direction | String       | 'asc'    | 'asc': Ascending; 'desc': Descending; 'rand'/'random'/'rand()': Random.
 
 This is a very flexible method, offering a wide variety of ways you can call it. Variations include:
 - Pass the field name and omit the direction

@@ -1,6 +1,6 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
-const QueryBuilder = require('../../drivers/mysql/query_builder.js');
+const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
 describe('count()', () => {
@@ -19,7 +19,7 @@ describe('count()', () => {
     it('should add a table to from_array when a table is supplied', () => {
         qb.reset_query();
         const sql = qb.count('galaxies');
-        qb.from_array.should.eql(['`galaxies`']);
+        qb.from_array.should.eql(['[galaxies]']);
     });
     it('should return a string', () => {
         qb.reset_query();
@@ -31,26 +31,26 @@ describe('count()', () => {
     it('should create a properly-escaped SELECT query', () => {
         qb.reset_query();
         const sql = qb.count('galaxies');
-        sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `galaxies`");
+        sql.should.eql("SELECT COUNT(*) AS [numrows] FROM [galaxies]");
     });
     it('should include WHERE statements', () => {
         qb.reset_query();
         const sql = qb.where({type:'spiral'}).count('galaxies');
-        sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `galaxies` WHERE `type` = 'spiral'");
+        sql.should.eql("SELECT COUNT(*) AS [numrows] FROM [galaxies] WHERE [type] = 'spiral'");
     });
     it('should work when table/view/procedure is provided earlier in chain but not in count() method', () => {
         qb.reset_query();
         const sql = qb.from('galaxies').count();
-        sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `galaxies`");
+        sql.should.eql("SELECT COUNT(*) AS [numrows] FROM [galaxies]");
     });
     it('should work with multiple tables/views/stored procedures', () => {
         qb.reset_query();
         const sql = qb.from(['planets','galaxies']).count();
-        sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `planets`, `galaxies`");
+        sql.should.eql("SELECT COUNT(*) AS [numrows] FROM [planets], [galaxies]");
     });
     it('should include any joins that were added in the chain', () => {
         qb.reset_query();
         const sql = qb.join('galaxies g','g.id=s.galaxy_id','left').count('star_systems s');
-        sql.should.eql("SELECT COUNT(*) AS `numrows` FROM `star_systems` `s` LEFT JOIN `galaxies` `g` ON `g`.`id` = `s`.`galaxy_id`");
+        sql.should.eql("SELECT COUNT(*) AS [numrows] FROM [star_systems] [s] LEFT JOIN [galaxies] [g] ON [g].[id] = [s].[galaxy_id]");
     });
 });

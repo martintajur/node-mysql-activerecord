@@ -1,6 +1,6 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
-const QueryBuilder = require('../../drivers/mysql/query_builder.js');
+const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
 describe('join()', () => {
@@ -32,12 +32,12 @@ describe('join()', () => {
     it('should except single item and add it to join array as basic join and escape item', () => {
         qb.reset_query();
         qb.join('universe');
-        qb.join_array.should.eql(['JOIN `universe`']);
+        qb.join_array.should.eql(['JOIN [universe]']);
     });
     it('should except single item with alias and add it to join array as basic join and escape each part', () => {
         qb.reset_query();
         qb.join('universe u');
-        qb.join_array.should.eql(['JOIN `universe` `u`']);
+        qb.join_array.should.eql(['JOIN [universe] [u]']);
     });
     it('should allow a string (and only a string) to be passed as second parameter but only if a valid (or no) third parameter is provided', () => {
         const invalid_2nd_param = /You must provide a valid condition to join on when providing a join direction/;
@@ -79,12 +79,12 @@ describe('join()', () => {
     it('should except a valid second parameter as a join condition and escape it properly', () => {
         qb.reset_query();
         qb.join('universe u','u.type_id = ut.id');
-        qb.join_array.should.eql(['JOIN `universe` `u` ON `u`.`type_id` = `ut`.`id`']);
+        qb.join_array.should.eql(['JOIN [universe] [u] ON [u].[type_id] = [ut].[id]']);
     });
     it('should escape compound objects properly', () => {
         qb.reset_query();
         qb.join('universe.galaxy.star_system s','s.type_id = st.id');
-        qb.join_array.should.eql(['JOIN `universe`.`galaxy`.`star_system` `s` ON `s`.`type_id` = `st`.`id`']);
+        qb.join_array.should.eql(['JOIN [universe].[galaxy].[star_system] [s] ON [s].[type_id] = [st].[id]']);
     });
     it('should add aliases to alias-tracking array', () => {
         qb.reset_query();
@@ -94,27 +94,27 @@ describe('join()', () => {
     it('should properly place join direction into join clause', () => {
         qb.reset_query();
         qb.join('universe.galaxy.star_system s', 's.type_id = st.id', 'left outer');
-        qb.join_array.should.eql(['LEFT OUTER JOIN `universe`.`galaxy`.`star_system` `s` ON `s`.`type_id` = `st`.`id`']);
+        qb.join_array.should.eql(['LEFT OUTER JOIN [universe].[galaxy].[star_system] [s] ON [s].[type_id] = [st].[id]']);
     });
     it('should be chainable to allow for multiple join clauses', () => {
         qb.reset_query();
         qb.join('star_system s', 's.type_id = st.id', 'left outer').join('planets p','p.star_system_id = s.id','left');
-        qb.join_array.should.eql(['LEFT OUTER JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id`', 'LEFT JOIN `planets` `p` ON `p`.`star_system_id` = `s`.`id`']);
+        qb.join_array.should.eql(['LEFT OUTER JOIN [star_system] [s] ON [s].[type_id] = [st].[id]', 'LEFT JOIN [planets] [p] ON [p].[star_system_id] = [s].[id]']);
     });
     it('should escape complex join conditions', () => {
         qb.reset_query();
         qb.join('star_system s', "s.type_id = st.id AND st.active = 1 AND st.created_on > '2014-01-01'", 'left');
-        qb.join_array.should.eql(["LEFT JOIN `star_system` `s` ON `s`.`type_id` = `st`.`id` AND `st`.`active` = 1 AND `st`.`created_on` > '2014-01-01'"]);
+        qb.join_array.should.eql(["LEFT JOIN [star_system] [s] ON [s].[type_id] = [st].[id] AND [st].[active] = 1 AND [st].[created_on] > '2014-01-01'"]);
     });
-    it('should escape complex join conditions when there is `or` in the right-hand side of the condition', () => {
+    it('should escape complex join conditions when there is [or] in the right-hand side of the condition', () => {
         qb.reset_query();
         qb.join('star_system s', " st.type = 'foo or bar' AND s.type_id = st.id", 'left');
-        qb.join_array.should.eql(["LEFT JOIN `star_system` `s` ON `st`.`type` = 'foo or bar' AND `s`.`type_id` = `st`.`id`"]);
+        qb.join_array.should.eql(["LEFT JOIN [star_system] [s] ON [st].[type] = 'foo or bar' AND [s].[type_id] = [st].[id]"]);
     });
-    it('should escape complex join conditions when there is `and` in the right-hand side of the condition', () => {
+    it('should escape complex join conditions when there is [and] in the right-hand side of the condition', () => {
         qb.reset_query();
         qb.join('star_system s', "st.type = 'foo and bar' AND s.type_id = st.id", 'left');
-        qb.join_array.should.eql(["LEFT JOIN `star_system` `s` ON `st`.`type` = 'foo and bar' AND `s`.`type_id` = `st`.`id`"]);
+        qb.join_array.should.eql(["LEFT JOIN [star_system] [s] ON [st].[type] = 'foo and bar' AND [s].[type_id] = [st].[id]"]);
     });
     it('should NOT escape any part of join query when asked not to', () => {
         qb.reset_query();

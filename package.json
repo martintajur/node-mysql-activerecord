@@ -18,10 +18,10 @@
     "Daehyub Kim <lateau@gmail.com>"
   ],
   "dependencies": {
-    "lodash.assign": "^4.0.7",
-    "mssql": "^4.1.0",
     "mysql": "^2.10.1",
-    "tedious-connection-pool": "^1.0.5"
+    "tedious": "^2.6.3",
+    "tedious-connection-pool": "^1.0.5",
+    "tsqlstring": "^1.0.0"
   },
   "devDependencies": {
     "chai": "~1.4.2",

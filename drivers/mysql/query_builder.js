@@ -6,128 +6,10 @@ class QueryBuilder extends GenericQueryBuilder {
         this.rand_word = 'RAND()';
         this.escape_char = '`';
         this.condition_rgx = /([\[\]\w\."\s-]+)(\s*[^\"\[`'\w-]+\s*)(.+)/i;
-        this.multi_condition_rgx = /\sAND\s|\sOR\s/ig;
+        this.multi_condition_rgx = /\s(OR|AND)\s/i;
     }
 
     // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
-    _escape_identifiers(item = '*') {
-        if (item === '*') return item;
-
-        if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
-            for (let i in item) {
-                item[i] = this._escape_identifiers(item[i]);
-            }
-            return item;
-        }
-        else if ((typeof item === 'string' && /^\d+$/.test(item)) || item[0] === "'" || item[0] === '"' || item.indexOf('(') !== -1) {
-            return item;
-        }
-
-        let str;
-        if (item.indexOf('.' + '*') !== -1) {
-            str = item.replace(/`?([^`\.]+)`?\./ig, "`$1`.");
-        }
-        else {
-            str = item.replace(/`?([^`\.]+)`?(\.)?/ig, "`$1`$2`");
-        }
-
-        // remove duplicates if the user already included the escape
-        return str.replace(/[`]+/g,'`');
-    };
-
-    _protect_identifiers(item, protect_identifiers) {
-        if (item === '') return item;
-
-        protect_identifiers = (typeof protect_identifiers === 'boolean' ? protect_identifiers : true);
-
-        if (Object.prototype.toString.call(item) === Object.prototype.toString.call({})) {
-            const escaped_array = {};
-
-            for (let k in item) {
-                const v = item[k];
-                escaped_array[this._protect_identifiers(k)] = this._protect_identifiers(v);
-            }
-            return escaped_array;
-        }
-
-        // Make sure item is a string...
-        if (typeof item !== 'string') throw new Error("Invalid item passed to _protect_identifiers:" + typeof item);
-
-        // Convert tabs or multiple spaces into single spaces
-        item = item.replace(/\s+/g, ' ');
-
-        // This is basically a bug fix for queries that use MAX, MIN, subqueries, etc.
-        // If a parenthesis is found we know that we do not need to
-        // escape the data or add a prefix.
-        if (item.indexOf('(') !== -1 || item.indexOf("'") !== -1) {
-            const has_alias = item.lastIndexOf(')');
-            let alias;
-            if (has_alias >= 0) {
-                alias = item.substr(has_alias + 1).replace(/\sAS\s/i,'').trim();
-                alias = this._escape_identifiers(alias);
-                if (alias != '')
-                    alias = ' AS ' + alias;
-                item = item.substr(0, has_alias + 1);
-            } else {
-                alias = '';
-            }
-
-            return item + alias;
-        }
-
-        let alias = '';
-
-        // If the item has an alias declaration we remove it and set it aside.
-        // Basically we remove everything to the right of the first space
-        if (/\sAS\s/ig.test(item)) {
-            const alias_index = item.indexOf(item.match(/\sAS\s/ig)[0]);
-            alias = (protect_identifiers ? item.substr(alias_index, 4) + this._escape_identifiers(item.slice(alias_index + 4)) : item.substr(alias_index));
-            item = item.substr(0, alias_index);
-        }
-        else if (item.indexOf(' ') !== -1) {
-            const alias_index = item.indexOf(' ');
-
-            alias = (protect_identifiers && ! this._has_operator(item.substr(alias_index + 1)) ? ' ' + this._escape_identifiers(item.substr(alias_index + 1)) : item.substr(alias_index));
-            item = item.substr(0,alias_index);
-        }
-
-        // Break the string apart if it contains periods, then insert the table prefix
-        // in the correct location, assuming the period doesn't indicate that we're dealing
-        // with an alias. While we're at it, we will escape the components
-        if (item.indexOf('.') !== -1) {
-            const parts = item.split('.');
-            const first_seg = parts[0].trim().replace(/`/g,'');
-
-            // Does the first segment of the exploded item match
-            // one of the aliases previously identified?  If so,
-            // we have nothing more to do other than escape the item
-            if (this.aliased_tables.indexOf(first_seg) !== -1) {
-                if (protect_identifiers === true) {
-                    for (let key in parts) {
-                        const val = parts[key];
-                        if (val !== '*') {
-                            parts[key] = this._escape_identifiers(val);
-                        }
-                    }
-
-                    item = parts.join('.');
-                }
-                return item + alias;
-            }
-
-            if (protect_identifiers === true) {
-                item = this._escape_identifiers(item);
-            }
-
-            return item + alias;
-        }
-        if (protect_identifiers === true) {
-            item = this._escape_identifiers(item);
-        }
-
-        return item + alias;
-    };
-
     _qb_escape(str) {
         const mysql = require('mysql');
 
@@ -168,14 +50,17 @@ class QueryBuilder extends GenericQueryBuilder {
 
         const limit_to = this.limit_to[0] || false;
         const offset_val = this.offset_val[0] || false;
+        const from_clause = this._build_from_clause().trim();
+        const where_clause = this._build_where_clause().trim();
 
-        const sql = 'DELETE' + this._build_from_clause() + this._build_where_clause();
+        const sql = (`DELETE ${from_clause} ${where_clause}`).trim();
         return this._build_limit_clause(sql, limit_to, offset_val);
     };
 
     _compile_insert(ignore, suffix='') {
         const keys = [];
         const values = [];
+        let table;
 
         for (let i in this.set_array) {
             const key = Object.keys(this.set_array[i])[0];
@@ -185,10 +70,10 @@ class QueryBuilder extends GenericQueryBuilder {
             values.push(val);
         }
 
-        const verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
+        const verb = ('INSERT ' + (ignore === true ? 'IGNORE ' : '')).trim();
 
         if (this.from_array.length === 1) {
-            const table = this.from_array.toString();
+            table = this.from_array.toString();
         } else {
             if (this.from_array.length === 0) {
                 throw new Error("You haven't provided any tables to build INSERT querty with!");
@@ -198,30 +83,38 @@ class QueryBuilder extends GenericQueryBuilder {
             return '';
         }
 
-        return verb + `INTO ${this.from_array[0]} (${keys.join(', ')}) VALUES (${values.join(', ')})${suffix}`;
+        const sql = `${verb} INTO ${table} (${keys.join(', ')}) VALUES (${values.join(', ')})${suffix}`;
+        return sql.trim();
     };
 
     _compile_select() {
         const distinct_clause = this.distinct_clause[0] || '';
-        let sql = 'SELECT ' + distinct_clause;
+        const from_clause = this._build_from_clause().trim();
+        const join_string = this._build_join_string().trim();
+        const where_clause = this._build_where_clause().trim();
+        const group_by_clause = this._build_group_by_clause().trim();
+        const having_clause = this._build_having_clause().trim();
+        const order_by_clause = this._build_order_by_clause().trim();
+
+        let sql = (`SELECT ${distinct_clause}`).trim() + ' ';
         if (this.select_array.length === 0) {
             sql += '*';
         } else {
             sql += this.select_array.join(', ');
         }
 
-        sql += this._build_from_clause()
-            + this._build_join_string()
-            + this._build_where_clause()
-            + this._build_group_by_clause()
-            + this._build_having_clause()
-            + this._build_order_by_clause();
+        sql = `${sql} ${from_clause}`;
+        sql += (join_string ? ` ${join_string}` : '');
+        sql += (where_clause ? ` ${where_clause}` : '');
+        sql += (group_by_clause ? ` ${group_by_clause}` : '');
+        sql += (having_clause ? ` ${having_clause}` : '');
+        sql += (order_by_clause ? ` ${order_by_clause}` : '');
 
         const limit_to = this.limit_to[0] || false;
         const offset_val = this.offset_val[0] || false;
 
         sql = this._build_limit_clause(sql, limit_to, offset_val);
-        return sql;
+        return sql.trim();
     };
 
     _compile_update() {
@@ -245,10 +138,12 @@ class QueryBuilder extends GenericQueryBuilder {
 
         const limit_to = this.limit_to[0] || false;
         const offset_val = this.offset_val[0] || false;
+        const where_clause = this._build_where_clause().trim();
+        const order_by_clause = this._build_order_by_clause().trim();
 
         let sql = `UPDATE (${table}) SET ${valstr.join(', ')}`;
-        sql += this._build_where_clause();
-        sql += this._build_order_by_clause();
+        sql += (where_clause ? ` ${where_clause}` : '');
+        sql += (order_by_clause ? ` ${order_by_clause}` : '');
         return this._build_limit_clause(sql, limit_to, offset_val);
     };
 
@@ -329,8 +224,9 @@ class QueryBuilder extends GenericQueryBuilder {
             })(i);
         }
 
-        const verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
-        return verb + `INTO ${this.from_array[0]} (${columns.join(', ')}) VALUES ${map.join(', ')}${suffix}`;
+        const verb = 'INSERT' + (ignore === true ? ' IGNORE' : '');
+        const sql = `${verb} INTO ${this.from_array[0]} (${columns.join(', ')}) VALUES ${map.join(', ')}${suffix}`;
+        return sql.trim();
     }
 
     _count(table) {
@@ -338,12 +234,15 @@ class QueryBuilder extends GenericQueryBuilder {
             this.from(table);
         }
 
-        const sql = 'SELECT COUNT(*) AS ' + this._protect_identifiers('numrows')
-            + this._build_from_clause()
-            + this._build_join_string()
-            + this._build_where_clause();
+        const from_clause = this._build_from_clause().trim();
+        const join_string = this._build_join_string().trim();
+        const where_clause = this._build_where_clause().trim();
 
-        return sql;
+        let sql = `SELECT COUNT(*) AS ${this._protect_identifiers('numrows')} ${from_clause}`;
+        sql += (join_string ? ` ${join_string}` : '');
+        sql += (where_clause ? ` ${where_clause}` : '');
+
+        return sql.trim();
     }
 }
 
