@@ -10,26 +10,24 @@ class QueryExec extends QueryBuilder {
     }
 
     _exec(sql, cb) {
-        if (Object.prototype.toString.call(this._connection) == Object.prototype.toString.call({})) {
+        if (Object.prototype.toString.call(this._connection) === Object.prototype.toString.call({})) {
             //console.log("Connection: ", conn);
             const request = new Request(sql, (err, count, results) => {
-                //console.log("Results:" , results);
+                // console.log("Results:" , results);
+                // console.log("Count:" , count);
 
                 // Standardize some important properties
-                if (!err && results.length > 0) {
+                if (!err && results && Array.isArray(results) && results.length === 0) {
+                    results = {insert_id: null, affected_rows: 0, changed_rows: 0};
 
                     // Insert ID
                     if (results.hasOwnProperty('insertId')) {
                         results.insert_id = results.insertId;
                     }
 
-                    // Affected Rows
-                    if (results.hasOwnProperty('rowsAffected')) {
+                    // Affected & Changed Rows
+                    if (count) {
                         results.affected_rows = count;
-                    }
-
-                    // Changed Rows
-                    if (results.hasOwnProperty('changedRows')) {
                         results.changed_rows = count;
                     }
                 }

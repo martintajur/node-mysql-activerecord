@@ -1,4 +1,7 @@
-[![Build Status](https://travis-ci.org/kylefarris/node-querybuilder.svg?branch=master)](https://travis-ci.org/kylefarris/node-querybuilder)
+[![NPM Version][npm-version-image]][npm-url]
+[![NPM Downloads][npm-downloads-image]][npm-url]
+[![Node.js Version][node-image]][node-url]
+[![Build Status][travis-image]][travis-url]
 
 # Universal QueryBuilder for Node.js
 Node-QueryBuilder is an ambitious attempt to create a kind of "universal translator" which provides programmers a consistent API to connect to and query _any_ database (traditional and NoSQL) supported by the module. The module is highly extensible and, in theory, can suppport any database provided that the driver has been written for it.
@@ -30,10 +33,14 @@ The primary benefits of this module (currently) are:
   - [Standard Connection Settings](#standard-connection-settings)
   - [Choosing the Database Type](#choosing-the-database-type)
   - [Choosing the Connection Type](#choosing-the-connection-type)
+  - [Managing Connections](#managing-connections)
 
 - [API Methods](#api-methods)
   - [Chainable Methods](#chainable-methods)
   - [Execution Methods](#execution-methods)
+    - [What Are Execution Methods?](#what-are-execution-methods)
+    - [Handling Error Messages and Results](#handling-error-messages-and-results)
+    - [Response Format Examples](#response-format-examples)
   - [Other Library-Specific Methods](#other-library-specific-methods)
 
 - [Contribute](#contribute)
@@ -185,7 +192,7 @@ This library currently supports 3 connection methods:
 const qb = new require('node-querybuilder')(settings, 'mysql', 'pool');
 ```
 
-## Handling Connections
+## Managing Connections
 
 It's important to handle your connections properly. When not using a pool, for every connection you make, you'll need to disconnect it when you're done. If you're using a pool (or cluster), it's a similar concept... but you'll be _releasing_ the connection back to the pool so it can be used again later.
 
@@ -253,6 +260,7 @@ API Method                            | SQL Command | MySQL    | MSSQL    | Orac
 [limit()](#limit)                     | LIMIT       | &#x2713; | &#x2713; |          |          |          |
 [offset()](#offset)                   | OFFSET      | &#x2713; | &#x2713; |          |          |          |
 [set()](#set)                         | SET         | &#x2713; | &#x2713; |          |          |          |
+[returning()](#returning)             | OUTPUT      | &#x2717; | &#x2713; |          |          |          |
 
 --------------------------------------------------------------------------------
 
@@ -1046,7 +1054,7 @@ escape    | String/Object | true     | If false, keys and values will not be esc
 
 **Examples**
 
-Basic single seting of a value
+Basic single setting of a value
 
 ```javascript
 // UPDATE `users` SET `birthday` = '2015-02-04'
@@ -1063,6 +1071,36 @@ qb.set({birthday: birthday, anniversary: '2010-05-15'}).update('users', callback
 
 --------------------------------------------------------------------------------
 
+### RETURNING / OUTPUT
+#### .returning(id)
+This method is required for MSSQL when performing INSERT queries to get the IDs of the row(s) that were inserted. You should supply which column(s) should be returned by the INSERT query as the `insert_id` in the response object. If you need multiple values (compound primary key, for instance) you can supply an array of strings representing those columns. If you call this method while using the `mysql` driver, it will be ignored silently.
+
+Parameter | Type          | Default  | Description
+:-------- | :------------ | :------- | :-----------------------------------------------------------------------------------------------------
+key       | String/Array  | Required | The ID or IDs used to identify the row that you're inserting
+
+**How This Works**
+
+Upon a successful `INSERT` query, you will be provided with a `result` object (see: [Response Format Examples](#response-format-examples)). I the `returning()` method is not called when using the MSSQL driver, the `insert_id` property of the result object will be `NULL`. This is not needed for the MySQL driver because its engine already supplies this info to the driver by default.
+
+**Examples**
+
+Basic single ID example
+
+```javascript
+// INSERT INTO [users] ([first_name], [last_name]) OUTPUT INSERTED.[id] VALUES ('John', 'Smith')
+qb.returning('id').insert('users', {first_name: 'John', last_name: 'Smith'});
+```
+
+Return multiple column that should act as the `insert_id`
+
+```javascript
+// INSERT INTO [users] ([position_request_id], [job_id], [name], [title]) OUTPUT INSERTED.[position_request_id], INSERTED.[job_id] VALUES (42, 1337, 'John Smith', 'Hacker')
+qb.returning(['position_request_id', 'job_id']).insert('applicants', {position_request_id: 42, job_id: 1337, name: 'John Smith', title: 'Hacker'});
+```
+
+--------------------------------------------------------------------------------
+
 ## Execution Methods
 
 API Method                        | SQL Command   | MySQL    | MSSQL    | Oracle | SQLite | Postgres | Mongo
@@ -1075,7 +1113,7 @@ API Method                        | SQL Command   | MySQL    | MSSQL    | Oracle
 [update_batch()](#update_batch)   | N/A           | &#x2713; | &#x2713; |        |        |          |
 [insert()](#insert)               | INSERT        | &#x2713; | &#x2713; |        |        |          |
 [insert_batch()](#insert_batch)   | N/A           | &#x2713; | &#x2713; |        |        |          |
-[insert_ignore()](#insert-ignore) | INSERT IGNORE | &#x2713; |          |        |        |          |
+[insert_ignore()](#insert-ignore) | INSERT IGNORE | &#x2713; | &#x2717; |        |        |          |
 [delete()](#delete)               | DELETE        | &#x2713; | &#x2713; |        |        |          |
 [truncate()](#truncate)           | TRUNCATE      | &#x2713; | &#x2713; |        |        |          |
 [empty_table()](#empty_table)     | DELETE        | &#x2713; | &#x2713; |        |        |          |
@@ -1764,14 +1802,14 @@ API Method                                    | MySQL    | MSSQL    | Oracle   |
 [connection](#connection_settings)            | &#x2713; | &#x2713; |          |          |          |
 [connection_settings()](#connection_settings) | &#x2713; | &#x2713; |          |          |          |
 [disconnect()](#disconnect)                   | &#x2713; | &#x2713; |          |          |          |
-[escape()](#escape)                           | &#x2713; |          |          |          |          |
+[escape()](#escape)                           | &#x2713; | &#x2713; |          |          |          |
 [get_connection()](#get_connection)           | &#x2713; | &#x2713; |          |          |          |
 [last_query()](#last_query)                   | &#x2713; |          |          |          |          |
 [release()](#release)                         | &#x2713; | &#x2713; |          |          |          |
-[get_compiled_select()](#get_compiled_select) | &#x2713; |          |          |          |          |
-[get_compiled_insert()](#get_compiled_insert) | &#x2713; |          |          |          |          |
-[get_compiled_update()](#get_compiled_update) | &#x2713; |          |          |          |          |
-[get_compiled_delete()](#get_compiled_delete) | &#x2713; |          |          |          |          |
+[get_compiled_select()](#get_compiled_select) | &#x2713; | &#x2713; |          |          |          |
+[get_compiled_insert()](#get_compiled_insert) | &#x2713; | &#x2713; |          |          |          |
+[get_compiled_update()](#get_compiled_update) | &#x2713; | &#x2713; |          |          |          |
+[get_compiled_delete()](#get_compiled_delete) | &#x2713; | &#x2713; |          |          |          |
 
 --------------------------------------------------------------------------------
 
@@ -2142,3 +2180,11 @@ console.log(sql);
 
 # Contribute
 Got a missing feature you'd like to use? Found a bug? Go ahead and fork this repo, build the feature and issue a pull request.
+
+[npm-version-image]: https://img.shields.io/npm/v/node-querybuilder.svg
+[npm-downloads-image]: https://img.shields.io/npm/dm/node-querybuilder.svg
+[npm-url]: https://npmjs.org/package/node-querybuilder
+[travis-image]: https://img.shields.io/travis/mysqljs/node-querybuilder/master.svg
+[travis-url]: https://travis-ci.org/mysqljs/node-querybuilder
+[node-image]: https://img.shields.io/node/v/node-querybuilder.svg
+[node-url]: https://nodejs.org/en/download

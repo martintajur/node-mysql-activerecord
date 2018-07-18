@@ -1,6 +1,7 @@
 // Load Tedious connection library
 const Connection = require('tedious').Connection;
 const Adapter = require('../adapter.js');
+const tsqlstring = require('tsqlstring');
 
 class Single extends Adapter {
     constructor(settings, pool) {
@@ -43,7 +44,7 @@ class Single extends Adapter {
     }
 
     escape_id(str) {
-        throw new Error("The `escape` method is not supported with the mssql driver!");
+        return tsqlstring.escapeId(str);
     }
 
     disconnect(callback) {

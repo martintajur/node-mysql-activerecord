@@ -12,6 +12,10 @@ you spot any mistakes.
 * Added new options:
 ** `pool_min` (minimum number of pooled connections (`mssql` driver only))
 ** `acquireTimeout` (milliseconds before a timeout occurs during the connection acquisition)
+* Added new query building method: `returning()` to allow for insert IDs to be returned. See docs for more info.
+* Added new tests
+* Fixed [#26](https://github.com/kylefarris/node-querybuilder/issues/26)
+
 
 ## v1.2.0 (2018-05-18)
 

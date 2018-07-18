@@ -54,12 +54,12 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
         done();
    });
 
-    const bad_user = Object.assign({},settings, {user: 'foobar'});
-    const bad_host = Object.assign({},settings, {host: 'nonlocalhost'});
-    const bad_password = Object.assign({},settings, {password: 'password'});
-    const bad_database = Object.assign({},settings, {database: 'bad_mock_db'});
-    const bad_port = Object.assign({},settings, {port: 1});
-    const bad_version = Object.assign({},settings, {version: 12});
+    const bad_user = Object.assign({}, settings, {user: 'foobar'});
+    const bad_host = Object.assign({}, settings, {host: 'nonlocalhost'});
+    const bad_password = Object.assign({}, settings, {password: 'password'});
+    const bad_database = Object.assign({}, settings, {database: 'bad_mock_db'});
+    const bad_port = Object.assign({}, settings, {port: 1});
+    const bad_version = Object.assign({}, settings, {version: 12});
 
     it('should exist', () => {
         should.exist(QueryBuilder);
@@ -72,7 +72,7 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
         const children = [
             'reset_query','where','or_where','_where','where_in','or_where_in','where_not_in','or_where_not_in','_where_in','like',
             'not_like','or_like','or_not_like','_like','from','join','select','select_min','select_max','select_avg','select_sum',
-            '_min_max_avg_sum','distinct','group_by','having','or_having','_having','order_by','limit','offset','set',
+            '_min_max_avg_sum','distinct','group_by','having','or_having','_having','order_by','limit','offset','set','returning'
         ];
         children.forEach(v => {
             expect(qb).to.respondTo(v);
@@ -80,7 +80,11 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
     });
     it('should have all the QueryExec methods', () => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
-        const children = ['insert','insert_ignore','insert_batch','get','get_where','count','update','update_batch','delete','get_compiled_select','get_compiled_delete','get_compiled_update','get_compiled_insert','compile_select','compile_delete','compile_update','compile_insert'];
+        const children = [
+            'insert','insert_ignore','insert_batch','get','get_where','count','update','update_batch','delete',
+            'get_compiled_select','get_compiled_delete','get_compiled_update','get_compiled_insert','compile_select',
+            'compile_delete','compile_update','compile_insert'
+        ];
         children.forEach(v => {
             expect(qb).to.respondTo(v);
         });
@@ -225,19 +229,19 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
             });
         });
     });
-    // it('should allow us to escape identifiers the MS SQL way', done => {
-    //     const qb = new QueryBuilder(Object.assign({}, settings), driver);
-    //     qb.connect(err => {
-    //         check(done, () => {
-    //             should.exist(qb.escape_id);
-    //             qb.escape_id.should.be.a('function');
-    //             expect(qb.escape_id('foo'), 'not  pre-escaped').to.be.eql('`foo`');
-    //             expect(qb.escape_id('`foo`'), 'pre-escaped').to.be.eql('```foo```');
-    //             expect(qb.escape_id('foo.bar'), 'with qualifier').to.be.eql('`foo`.`bar`');
-    //             qb.disconnect();
-    //         });
-    //     });
-    // });
+    it('should allow us to escape identifiers the MS SQL way', done => {
+        const qb = new QueryBuilder(Object.assign({}, settings), driver);
+        qb.connect(err => {
+            check(done, () => {
+                should.exist(qb.escape_id);
+                qb.escape_id.should.be.a('function');
+                expect(qb.escape_id('foo'), 'not  pre-escaped').to.be.eql('[foo]');
+                expect(qb.escape_id('[foo]'), 'pre-escaped').to.be.eql('[[foo]]]');
+                expect(qb.escape_id('foo.bar'), 'with qualifier').to.be.eql('[foo].[bar]');
+                qb.disconnect();
+            });
+        });
+    });
     it('should allow us to execute a query', done => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
         qb.connect(err => {

@@ -17,6 +17,7 @@ class GenericQueryBuilder {
         this.last_query_string = [];    // has to be array to work as reference
         this.distinct_clause = [];      // has to be array to work as reference
         this.aliased_tables = [];
+        this.returning_ids = [];
     }
 
     // ------------------------------ GENERIC METHODS ------------------------------//
@@ -388,6 +389,7 @@ class GenericQueryBuilder {
        this._clear_array(this.join_clause);
        this._clear_array(this.distinct_clause);
        this._clear_array(this.aliased_tables);
+       this._clear_array(this.returning_ids);
 
        this._clear_array(this.last_query_string);
        if (typeof new_last_query === 'string') {
@@ -1021,6 +1023,11 @@ class GenericQueryBuilder {
        return this;
    }
 
+   returning(ids) {
+       // By default, this will do nothing. Specific drivers will override as needed.
+       return this;
+   }
+
    set(key, value, escape=true) {
        escape = (typeof escape === 'boolean' ? escape : true);
 
@@ -1106,12 +1113,11 @@ class GenericQueryBuilder {
    _insert(table='', set='', ignore=false, suffix='') {
        table = table || ''; // force falsy values to be an empty string
        ignore = (typeof ignore !== 'boolean' ? false : ignore);
-       suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
+       suffix = (typeof suffix !== 'string' ? '' : suffix);
 
        if (/^(number|boolean)$/.test(typeof set) || (typeof set == 'string' && set !== '') || Object.prototype.toString.call(set) === Object.prototype.toString.call(/test/)) {
            throw new Error("insert(): Invalid data provided to insert into database!");
        }
-
        if (Array.isArray(set)) {
            return this.insert_batch(table, set, ignore, suffix);
        }

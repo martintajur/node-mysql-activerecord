@@ -83,7 +83,7 @@ class QueryBuilder extends GenericQueryBuilder {
             return '';
         }
 
-        const sql = `${verb} INTO ${table} (${keys.join(', ')}) VALUES (${values.join(', ')})${suffix}`;
+        const sql = `${verb} INTO ${table} (${keys.join(', ')}) VALUES (${values.join(', ')}) ${suffix.trim()}`;
         return sql.trim();
     };
 
@@ -147,10 +147,10 @@ class QueryBuilder extends GenericQueryBuilder {
         return this._build_limit_clause(sql, limit_to, offset_val);
     };
 
-    _insert_batch(table,set=null,ignore,suffix) {
+    _insert_batch(table, set=null, ignore=false, suffix='') {
         const orig_table = table = table || '';
         ignore = (typeof ignore !== 'boolean' ? false : ignore);
-        suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
+        suffix = (typeof suffix !== 'string' ? '' : suffix);
         if (suffix == ' ') suffix = '';
 
         if (typeof table !== 'string') throw new Error("insert(): Table parameter must be a string!");
@@ -225,7 +225,7 @@ class QueryBuilder extends GenericQueryBuilder {
         }
 
         const verb = 'INSERT' + (ignore === true ? ' IGNORE' : '');
-        const sql = `${verb} INTO ${this.from_array[0]} (${columns.join(', ')}) VALUES ${map.join(', ')}${suffix}`;
+        const sql = `${verb} INTO ${this.from_array[0]} (${columns.join(', ')}) VALUES ${map.join(', ')} ${suffix.trim()}`;
         return sql.trim();
     }
 

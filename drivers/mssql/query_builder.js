@@ -13,8 +13,6 @@ class QueryBuilder extends GenericQueryBuilder {
     // ---------------------------------------- SQL ESCAPE FUNCTIONS ------------------------ //
 
     _qb_escape(str) {
-        const mysql = require('mysql');
-
         if (typeof str === 'boolean') {
             str = (str === false ? 0 : 1);
         } else if (typeof str === 'number' || (typeof str === 'string' && /^\d+$/.test(str) && !/^0+/.test(str))) {
@@ -57,6 +55,32 @@ class QueryBuilder extends GenericQueryBuilder {
         return offset_clause.trim();
     }
 
+    returning(ids) {
+        ids = ids || null;
+        if (typeof ids !== 'string' && !Array.isArray(ids)) throw new Error("returning(): Only non-empty strings and arrays of strings are allowed as column names.");
+        if (Array.isArray(ids) && ids.length === 0) throw new Error("returning(): No columns specified in your array.");
+        if (typeof ids === 'string' && ids.length <= 0) throw new Error("returning(): An empty string is not a valid column name.");
+
+        if (typeof ids === 'string') {
+            this.returning_ids.push(`INSERTED.${this._escape_identifiers(ids)}`);
+        }
+
+        else if (Array.isArray(ids)) {
+            // Escape each ID
+            ids = ids.map(v => `INSERTED.${this._escape_identifiers(v)}`);
+            // Add new IDs without duplicating
+            this.returning_ids = Array.from(new Set(this.returning_ids.concat(ids)));
+        }
+
+        return this;
+    }
+
+    _build_returning_clause() {
+        if (this.returning_ids.length <= 0) return '';
+        let sql = `OUTPUT ${this.returning_ids.join(', ')}`;
+        return sql.trim();
+    }
+
     // ---------------------------- SQL EXEC TOOLS ----------------------------//
     _compile_delete() {
         if (this.from_array.length === 0) {
@@ -96,8 +120,6 @@ class QueryBuilder extends GenericQueryBuilder {
             values.push(val);
         }
 
-        const verb = 'INSERT ';
-
         if (this.from_array.length === 1) {
             const table = this.from_array.toString();
         } else {
@@ -109,7 +131,12 @@ class QueryBuilder extends GenericQueryBuilder {
             return '';
         }
 
-        return verb + `INTO ${this.from_array[0]} (${keys.join(', ')}) VALUES (${values.join(', ')})`;
+        const returning_clause = this._build_returning_clause();
+
+        let sql = `INSERT INTO ${this.from_array[0]} (${keys.join(', ')})`;
+        sql += (returning_clause ? ` ${returning_clause}` : '');
+        sql += ` VALUES (${values.join(', ')})`;
+        return sql.trim();
     }
 
     _compile_select() {
@@ -186,26 +213,28 @@ class QueryBuilder extends GenericQueryBuilder {
     insert(table='', set='', ignore=false, suffix='') {
         if (ignore) throw new Error("insert(): INSERT IGNORE is currently unsupported on the MSSQL driver.");
         if (suffix) throw new Error("insert(): 'on_dupe' string (4th parameter) is currently unsupported on the MSSQL driver.");
-        super._insert(table, set, false, suffix);
+        return this._insert(table, set);
     }
 
-    _insert_batch(table, set=null, ignore=false, suffix='') {
-        const orig_table = table = table || '';
-        ignore = (typeof ignore !== 'boolean' ? false : ignore);
-        suffix = (typeof suffix !== 'string' ? '' : ' ' + suffix);
-        if (suffix == ' ') suffix = '';
+    insert_batch(table, set=null, ignore=false, suffix='') {
+        if (ignore) throw new Error("insert_batch(): INSERT IGNORE is currently unsupported on the MSSQL driver.");
+        if (suffix) throw new Error("insert_batch(): 'on_dupe' string (4th parameter) is currently unsupported on the MSSQL driver.");
+        return this._insert_batch(table, set);
+    }
 
-        if (typeof table !== 'string') throw new Error("insert(): Table parameter must be a string!");
+    _insert_batch(table='', set=null) {
+        const orig_table = table = table || '';
+
+        if (typeof table !== 'string') throw new Error("insert_batch(): Table parameter must be a string!");
         table = table.trim();
 
         if (table !== '' && !/^[a-zA-Z0-9\$_]+(\.[a-zA-Z0-9\$_]+)?$/.test(table)) {
-            throw new Error("insert(): Invalid table name ('" + table + "') provided!");
+            throw new Error(`insert_batch(): Invalid table name ('${table}') provided!`);
         }
 
-        if (table == '') {
-            if (this.from_array.length === 0) {
-                throw new Error("insert_batch(): You have not set any tables to insert into.");
-            }
+        if (!table) {
+            if (this.from_array.length === 0) throw new Error("insert_batch(): You have not set any tables to insert into.");
+            if (this.from_array.length > 1) throw new Error("insert_batch(): Batch inserting into multiple tables is not supported.");
             table = this.from_array[0];
         } else {
             this._clear_array(this.from_array);
@@ -215,6 +244,11 @@ class QueryBuilder extends GenericQueryBuilder {
         if (!Array.isArray(set)) {
             throw new Error('insert_batch(): Array of objects must be provided for batch insert!');
         }
+
+        if (set.length === 0) {
+            return this.insert(orig_table, {});
+        }
+
 
         for (let key in set) {
             const row = set[key];
@@ -226,17 +260,13 @@ class QueryBuilder extends GenericQueryBuilder {
                     const v = row[i];
 
                     if (!/^(number|string|boolean)$/.test(typeof v) && v !== null) {
-                        throw new Error("set(): Invalid value provided!");
+                        throw new Error("insert_batch(): Invalid value provided!");
                     }
                     else if (typeof v === 'number' && (v === Infinity || v !== +v)) {
-                        throw new Error("set(): Infinity and NaN are not valid values in MySQL!");
+                        throw new Error("insert_batch(): Infinity and NaN are not valid values in MS SQL!");
                     }
                 }
             }
-        }
-
-        if (set.length == 0) {
-            return this.insert(orig_table, {}, ignore, (suffix === '' ? null : suffix));
         }
 
         const map = [];
@@ -262,12 +292,12 @@ class QueryBuilder extends GenericQueryBuilder {
                 if (row.length != columns.length) {
                     throw new Error(`insert_batch(): Cannot use batch insert into ${table} - fields must match on all rows (${row.join(',')} vs ${columns.join(',')}).`);
                 }
-                map.push('(' + row.join(', ') + ')');
+                map.push(`(${row.join(', ')})`);
             })(i);
         }
 
-        const verb = 'INSERT ' + (ignore === true ? 'IGNORE ' : '');
-        return verb + `INTO ${this.from_array[0]} (${columns.join(', ')}) VALUES ${map.join(', ')}${suffix}`;
+        const sql = `INSERT INTO ${this.from_array[0]} (${columns.join(', ')}) VALUES ${map.join(', ')}`;
+        return sql.trim();
     }
 
     _count(table) {

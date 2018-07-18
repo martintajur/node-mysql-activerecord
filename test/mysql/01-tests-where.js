@@ -131,44 +131,44 @@ describe('where()', () => {
         qb.where({star_system: 'Solar', planet: ['Earth', 'Mars']}, false);
         qb.where_array.should.eql(["star_system = 'Solar'", "AND planet IN ('Earth', 'Mars')"]);
     });
-    // it("should split out and escape custom WHERE strings when that is the only thing provided (except when string contains parenthesis)", () => {
-    //     qb.reset_query();
-    //     qb.where("planet_id = 3 AND galaxy_id > 21645 OR planet = 'Earth'");
-    //     qb.where_array.should.eql(['`planet_id` = 3', 'AND `galaxy_id` > 21645', "OR `planet` = 'Earth'"]);
-    // });
-    // it("should not try to escape where clauses utilizing functions or subqueries when provided as a string in the first and only parameter", () => {
-    //     qb.reset_query();
-    //     qb.where("planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
-    //     qb.where_array.should.eql(["planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))"]);
-    // });
-    // it("should escape (quote) functions and subqueries as strings when provided as second parameter", () => {
-    //     qb.reset_query();
-    //     qb.where('galaxy_id >', "(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
-    //     qb.where_array.should.eql(["`galaxy_id` > '(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN(\\'Milky Way\\',\\'Andromeda\\'))'"]);
-    // });
+    it("should split out and escape custom WHERE strings when that is the only thing provided (except when string contains parenthesis)", () => {
+        qb.reset_query();
+        qb.where("planet_id = 3 AND galaxy_id > 21645 OR planet = 'Earth'");
+        qb.where_array.should.eql(['`planet_id` = 3', 'AND `galaxy_id` > 21645', "OR `planet` = 'Earth'"]);
+    });
+    it("should not try to escape where clauses utilizing functions or subqueries when provided as a string in the first and only parameter", () => {
+        qb.reset_query();
+        qb.where("planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
+        qb.where_array.should.eql(["planet_id = 3 AND galaxy_id > (SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))"]);
+    });
+    it("should escape (quote) functions and subqueries as strings when provided as second parameter", () => {
+        qb.reset_query();
+        qb.where('galaxy_id >', "(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
+        qb.where_array.should.eql(["`galaxy_id` > '(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN(\\'Milky Way\\',\\'Andromeda\\'))'"]);
+    });
 });
 
 describe('or_where()', () => {
-    // it('should exist', () => {
-    //     should.exist(qb.or_where);
-    // });
-    // it('should be a function', () => {
-    //     qb.or_where.should.be.a('function');
-    // });
-    // it('should prepend tertiary WHERE clauses with "OR"', () => {
-    //     qb.reset_query();
-    //     qb.or_where('planet','Mars');
-    //     qb.or_where('planet','Venus');
-    //     qb.where_array.should.eql(["`planet` = 'Mars'", "OR `planet` = 'Venus'"]);
-    // });
-    // it('should be chainable', () => {
-    //     qb.reset_query();
-    //     qb.or_where('planet','Mars').or_where('planet','Venus');
-    //     qb.where_array.should.eql(["`planet` = 'Mars'", "OR `planet` = 'Venus'"]);
-    // });
-    // it('should be chainable with normal where', () => {
-    //     qb.reset_query();
-    //     qb.where('planet','Mars').where('galaxy','Milky Way').or_where('planet','Venus');
-    //     qb.where_array.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'", "OR `planet` = 'Venus'"]);
-    // });
+    it('should exist', () => {
+        should.exist(qb.or_where);
+    });
+    it('should be a function', () => {
+        qb.or_where.should.be.a('function');
+    });
+    it('should prepend tertiary WHERE clauses with "OR"', () => {
+        qb.reset_query();
+        qb.or_where('planet','Mars');
+        qb.or_where('planet','Venus');
+        qb.where_array.should.eql(["`planet` = 'Mars'", "OR `planet` = 'Venus'"]);
+    });
+    it('should be chainable', () => {
+        qb.reset_query();
+        qb.or_where('planet','Mars').or_where('planet','Venus');
+        qb.where_array.should.eql(["`planet` = 'Mars'", "OR `planet` = 'Venus'"]);
+    });
+    it('should be chainable with normal where', () => {
+        qb.reset_query();
+        qb.where('planet','Mars').where('galaxy','Milky Way').or_where('planet','Venus');
+        qb.where_array.should.eql(["`planet` = 'Mars'", "AND `galaxy` = 'Milky Way'", "OR `planet` = 'Venus'"]);
+    });
 });

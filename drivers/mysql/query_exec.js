@@ -9,14 +9,14 @@ class QueryExec extends QueryBuilder {
     }
 
     _exec(sql, cb) {
-        if (Object.prototype.toString.call(this._connection) == Object.prototype.toString.call({})) {
+        if (Object.prototype.toString.call(this._connection) === Object.prototype.toString.call({})) {
             this._connection.query(sql, (err, results) => {
                 // Standardize some important properties
-                if (!err && results.length > 0) {
+                if (!err && results && !Array.isArray(results)) {
 
                     // Insert ID
                     if (results.hasOwnProperty('insertId')) {
-                        results.insert_id = results.insertId;
+                        results.insert_id = results.insertId || null;
                     }
 
                     // Affected Rows
