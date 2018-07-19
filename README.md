@@ -1133,6 +1133,18 @@ count()                        | Integer (ex. `578`)
 insert(), update(), delete()   | Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`
 insert_batch(), update_batch() | Example: `{insert_id: 579, affected_rows: 1, changed_rows: 0 [,and others per DB driver]}`
 
+**NOTE**
+
+When using the [returning()](#returning) method with compatible drivers, the `insert_id` property of the response object will be an array of objects containing key value pairs representing the requested "returned" columns along with their values.
+
+Example:
+
+```javascript
+qb.returning('id').insert('users', {firstName: 'John', lastName: 'Smith'}, (err, results) => {
+    // Results: {insert_id: [{id: 12345}], affected_rows: 1, changed_rows: 0}
+});
+```
+
 #### Callback Example
 
 ```javascript
@@ -2184,7 +2196,7 @@ Got a missing feature you'd like to use? Found a bug? Go ahead and fork this rep
 [npm-version-image]: https://img.shields.io/npm/v/node-querybuilder.svg
 [npm-downloads-image]: https://img.shields.io/npm/dm/node-querybuilder.svg
 [npm-url]: https://npmjs.org/package/node-querybuilder
-[travis-image]: https://img.shields.io/travis/mysqljs/node-querybuilder/master.svg
-[travis-url]: https://travis-ci.org/mysqljs/node-querybuilder
+[travis-image]: https://img.shields.io/travis/kylefarris/node-querybuilder/master.svg
+[travis-url]: https://travis-ci.org/kylefarris/node-querybuilder
 [node-image]: https://img.shields.io/node/v/node-querybuilder.svg
 [node-url]: https://nodejs.org/en/download

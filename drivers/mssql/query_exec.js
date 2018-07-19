@@ -17,18 +17,23 @@ class QueryExec extends QueryBuilder {
                 // console.log("Count:" , count);
 
                 // Standardize some important properties
-                if (!err && results && Array.isArray(results) && results.length === 0) {
-                    results = {insert_id: null, affected_rows: 0, changed_rows: 0};
+                if (!err && results && Array.isArray(results)) {
+                    if (results.length === 0) {
+                        results = {insert_id: null, affected_rows: 0, changed_rows: 0};
 
-                    // Insert ID
-                    if (results.hasOwnProperty('insertId')) {
-                        results.insert_id = results.insertId;
-                    }
-
-                    // Affected & Changed Rows
-                    if (count) {
-                        results.affected_rows = count;
-                        results.changed_rows = count;
+                        // Affected & Changed Rows
+                        if (count) {
+                            results.affected_rows = count;
+                            // Only set changed rows on an update
+                            if (/^update\s/i.test(sql)) results.changed_rows = count;
+                        }
+                    } else {
+                        const data = results.map(row => row.map(col => ({[col.metadata.colName]: col.value})).reduce((l,r) => Object.assign(l,r)))
+                        if (/^insert\s/i.test(sql)) {
+                            results = {insert_id: data, affected_rows: (count ? count : 0), changed_rows: 0};
+                        } else {
+                            results = data;
+                        }
                     }
                 }
 
