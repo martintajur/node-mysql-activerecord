@@ -33,7 +33,7 @@ class QueryBuilder extends GenericQueryBuilder {
         // provided, skip building limit clause
         if (!limit_to || offset_val) return '';
 
-        return `TOP ${limit_to}`;
+        return `TOP (${limit_to})`;
     }
 
     _build_offset_clause() {
@@ -91,8 +91,8 @@ class QueryBuilder extends GenericQueryBuilder {
         // Make sure we're only deleting from one table
         this.from_array = this.from_array.slice(0, 1);
 
-        const limit_clause = this._build_limit_clause();
-        const offset_clause = this._build_offset_clause();
+        const limit_clause = this._build_limit_clause().trim();
+        const offset_clause = this._build_offset_clause().trim();
         const from_clause = this._build_from_clause().trim();
         const where_clause = this._build_where_clause().trim();
 

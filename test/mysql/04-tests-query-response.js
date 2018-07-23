@@ -11,7 +11,7 @@ const check = (done, f) => {
     }
 };
 
-describe('Query Responses', () => {
+describe('MySQL: Query Responses', () => {
     const driver = 'mysql';
     const settings = {
         host: '127.0.0.1',

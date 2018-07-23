@@ -11,7 +11,7 @@ class QueryExec extends QueryBuilder {
 
     _exec(sql, cb) {
         if (Object.prototype.toString.call(this._connection) === Object.prototype.toString.call({})) {
-            //console.log("Connection: ", conn);
+            console.log("The Query: ", sql);
             const request = new Request(sql, (err, count, results) => {
                 // console.log("Results:" , results);
                 // console.log("Count:" , count);

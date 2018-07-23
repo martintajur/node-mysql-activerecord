@@ -293,19 +293,4 @@ describe('QueryBuilder() - MS SQL Adapter', () => {
             check(done, () => connection_released(qb));
         });
     });
-    // it('should allow one use the same connection pool connection for multiple queries', done => {
-    //     const pool = new QueryBuilder(Object.assign({}, settings), driver, 'pool');
-    //
-    //     pool.get_connection(qb => {
-    //         qb.query('select * from `cities` where `city` = "Gainesville"', (err, res) => {
-    //             if (res.length > 0) {
-    //                 qb.query('select * from `cities` where `state_code` = "' + res[0].state_code + '"', (err, res) => {
-    //                     check(done, () => connection_released(qb));
-    //                 });
-    //             } else {
-    //                 check(done, () => connection_released(qb));
-    //             }
-    //         });
-    //     });
-    // });
 });
