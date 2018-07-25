@@ -1,16 +1,6 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
-const settings = {
-    host: 'localhost',
-    database: 'mock_db',
-    user: 'travis',
-    password: 'Password123',
-    version: '4.1.0',
-    port: 1433,
-    options: {
-        encrypt: false
-    }
-};
+const settings = require('../configs').mssql;
 
 const check = (done, f) => {
     try {

@@ -2,6 +2,7 @@ const chai = require('chai');
 chai.Assertion.includeStack = true;
 const should = chai.should();
 const expect = chai.expect;
+const settings = require('../configs').mysql;
 const QueryBuilder = require('../../index.js');
 
 const check = (done, f) => {
@@ -26,13 +27,6 @@ describe('QueryBuilder() - MySQL Adapter', () => {
         console.log("connected!");
     };
     const driver = 'mysql';
-    const settings = {
-        host: '127.0.0.1',
-        database: 'mock_db',
-        user: 'travis',
-        version: '2.5.4',
-        port: 3306
-    };
     const bad_user = Object.assign({},settings, {user: 'foobar'});
     const bad_host = Object.assign({},settings, {host: 'nonlocalhost'});
     const bad_password = Object.assign({},settings, {password: 'password'});

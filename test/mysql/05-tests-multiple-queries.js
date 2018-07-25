@@ -1,13 +1,6 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
-const settings = {
-    host: '127.0.0.1',
-    database: 'mock_db',
-    user: 'travis',
-    version: '2.5.4',
-    port: 3306,
-    debug: false,
-};
+const settings = require('../configs').mysql;
 const QueryBuilder = require('../../index.js');
 const pool = new QueryBuilder(settings, 'mysql', 'pool');
 

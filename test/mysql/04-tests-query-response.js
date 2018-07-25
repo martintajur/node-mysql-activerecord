@@ -1,6 +1,8 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
 const QueryBuilder = require('../../index.js');
+const settings = require('../configs').mysql;
+const driver = 'mysql';
 
 const check = (done, f) => {
     try {
@@ -12,15 +14,6 @@ const check = (done, f) => {
 };
 
 describe('MySQL: Query Responses', () => {
-    const driver = 'mysql';
-    const settings = {
-        host: '127.0.0.1',
-        database: 'mock_db',
-        user: 'travis',
-        version: '2.5.4',
-        port: 3306
-    };
-
     it('should allow us to execute a simple SELECT query', done => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
         qb.connect(err => {

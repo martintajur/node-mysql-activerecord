@@ -1,6 +1,8 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
 const QueryBuilder = require('../../index.js');
+const settings = require('../configs').mssql;
+const driver = 'mssql';
 
 const check = (done, f) => {
     try {
@@ -35,19 +37,6 @@ const connection_released = qb => {
 };
 
 describe('MSSQL: QueryBuilder() - Adapter', () => {
-    const driver = 'mssql';
-    const settings = {
-        host: 'localhost',
-        database: 'mock_db',
-        user: 'travis',
-        password: 'Password123',
-        version: '4.1.0',
-        port: 1433,
-        options: {
-            encrypt: false
-        }
-    };
-
     afterEach(done => {
         // const qb = new QueryBuilder(Object.assign({}, settings), driver);
         // qb.disconnect();

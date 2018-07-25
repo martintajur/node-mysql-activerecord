@@ -14,6 +14,7 @@ you spot any mistakes.
 ** `acquireTimeout` (milliseconds before a timeout occurs during the connection acquisition)
 * Added new query building method: `returning()` to allow for insert IDs to be returned. See docs for more info.
 * Added new tests
+* Fixed [#18](https://github.com/kylefarris/node-querybuilder/issues/18)
 * Fixed [#26](https://github.com/kylefarris/node-querybuilder/issues/26)
 
 

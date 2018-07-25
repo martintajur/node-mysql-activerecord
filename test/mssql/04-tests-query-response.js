@@ -1,6 +1,8 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
 const QueryBuilder = require('../../index.js');
+const settings = require('../configs').mssql;
+const driver = 'mssql';
 
 const check = (done, f) => {
     try {
@@ -12,19 +14,6 @@ const check = (done, f) => {
 };
 
 describe('MSSQL: Query Responses', () => {
-    const driver = 'mssql';
-    const settings = {
-        host: 'localhost',
-        database: 'mock_db',
-        user: 'travis',
-        password: 'Password123',
-        version: '4.1.0',
-        port: 1433,
-        options: {
-            encrypt: false
-        }
-    };
-
     it('should allow us to execute a simple SELECT query', done => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
         qb.connect(err => {
