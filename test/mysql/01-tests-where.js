@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mysql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('where()', () => {
+describe('MySQL: where()', () => {
     it('should exist', () => {
         should.exist(qb.where);
     });
@@ -148,7 +148,7 @@ describe('where()', () => {
     });
 });
 
-describe('or_where()', () => {
+describe('MySQL: or_where()', () => {
     it('should exist', () => {
         should.exist(qb.or_where);
     });

@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('returning()', () => {
+describe('MSSQL: returning()', () => {
     it('should exist', () => {
         should.exist(qb.returning);
     });

@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('delete()', () => {
+describe('MSSQL: delete()', () => {
     it('should exist', () => {
         should.exist(qb.delete);
     });
@@ -81,7 +81,7 @@ describe('delete()', () => {
     it('should accept a limit on the number of rows deleted', () => {
         qb.reset_query();
         const sql = qb.limit(20).delete('galaxies');
-        sql.should.eql("DELETE TOP 20 FROM [galaxies]");
+        sql.should.eql("DELETE TOP (20) FROM [galaxies]");
     });
     it('should not a allow an offset delete', () => {
         qb.reset_query();

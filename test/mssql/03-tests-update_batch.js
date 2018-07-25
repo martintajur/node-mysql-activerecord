@@ -6,7 +6,7 @@ const qb = new QueryBuilder();
 const test_where = {id:3};
 const test_data = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'Andromeda', type: 'spiral'}];
 
-describe('update_batch()', () => {
+describe('MSSQL: update_batch()', () => {
     it('should exist', () => {
         should.exist(qb.update_batch);
     });

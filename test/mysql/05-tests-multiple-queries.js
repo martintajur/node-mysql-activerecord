@@ -11,7 +11,7 @@ const settings = {
 const QueryBuilder = require('../../index.js');
 const pool = new QueryBuilder(settings, 'mysql', 'pool');
 
-describe('Multiple Queries', () => {
+describe('MySQL: Multiple Queries', () => {
     it('should not get confused about table after delete records', done => {
         pool.get_connection(qb => {
             qb.limit(1).delete('cities', (err, result) => {

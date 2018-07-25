@@ -8,7 +8,7 @@ const test_data_set = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'A
 
 // table, data, callback, ignore, suffix
 
-describe('insert()', () => {
+describe('MSSQL: insert()', () => {
     it('should exist', () => {
         should.exist(qb.insert);
     });
@@ -131,7 +131,7 @@ describe('insert()', () => {
     });
 });
 
-describe('insert_ignore()', () => {
+describe('MSSQL: insert_ignore()', () => {
     it('should exist', () => {
         should.exist(qb.insert_ignore);
     });

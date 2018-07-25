@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mysql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('set()', () => {
+describe('MySQL: set()', () => {
     it('should exist', () => {
         should.exist(qb.set);
     });

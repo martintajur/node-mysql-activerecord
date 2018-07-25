@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('having()', () => {
+describe('MSSQL: having()', () => {
     it('should exist', () => {
         should.exist(qb.having);
     });
@@ -92,7 +92,7 @@ describe('having()', () => {
     });
 });
 
-describe('or_having()', () => {
+describe('MSSQL: or_having()', () => {
     it('should exist', () => {
         should.exist(qb.or_having);
     });

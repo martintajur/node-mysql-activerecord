@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mysql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('count()', () => {
+describe('MySQL: count()', () => {
     it('should exist', () => {
         should.exist(qb.count);
     });

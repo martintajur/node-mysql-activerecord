@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mysql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('group_by()', () => {
+describe('MySQL: group_by()', () => {
     it('should exist', () => {
         should.exist(qb.group_by);
     });

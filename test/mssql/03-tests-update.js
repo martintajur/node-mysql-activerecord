@@ -9,7 +9,7 @@ const test_data_set = [{id:3, name:'Milky Way', type: 'spiral'}, {id:4, name: 'A
 
 // table, data, callback, ignore, suffix
 
-describe('update()', () => {
+describe('MSSQL: update()', () => {
     it('should exist', () => {
         should.exist(qb.update);
     });
@@ -121,6 +121,6 @@ describe('update()', () => {
     it('should allow for a LIMITed update', () => {
         qb.reset_query();
         const sql = qb.limit(10).update('galaxies', test_data, test_where);
-        sql.should.eql("UPDATE [t] SET [name] = 'Milky Way', [type] = 'spiral' FROM (SELECT TOP 10 * FROM [galaxies] WHERE [id] = 3) [t]");
+        sql.should.eql("UPDATE [t] SET [name] = 'Milky Way', [type] = 'spiral' FROM (SELECT TOP (10) * FROM [galaxies] WHERE [id] = 3) [t]");
     });
 });

@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('get()', () => {
+describe('MSSQL: get()', () => {
     it('should exist', () => {
         should.exist(qb.get);
     });
@@ -90,7 +90,7 @@ describe('get()', () => {
     it('should accept a limit on the number of rows selected', () => {
         qb.reset_query();
         const sql = qb.limit(20).get('galaxies');
-        sql.should.eql("SELECT TOP 20 * FROM [galaxies]");
+        sql.should.eql("SELECT TOP (20) * FROM [galaxies]");
     });
     it('should accept a LIMIT on the number of rows to select and an OFFSET at which to start selecting the rows', () => {
         qb.reset_query();
@@ -153,7 +153,7 @@ describe('get()', () => {
     });
 });
 
-describe('get_where()', () => {
+describe('MSSQL: get_where()', () => {
     it('should exist', () => {
         should.exist(qb.get_where);
     });

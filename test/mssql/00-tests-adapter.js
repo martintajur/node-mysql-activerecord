@@ -34,7 +34,7 @@ const connection_released = qb => {
     }, 100);
 };
 
-describe('QueryBuilder() - MS SQL Adapter', () => {
+describe('MSSQL: QueryBuilder() - Adapter', () => {
     const driver = 'mssql';
     const settings = {
         host: 'localhost',

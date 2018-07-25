@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('get_compiled_select()', () => {
+describe('MSSQL: get_compiled_select()', () => {
     it('should exist', () => {
         should.exist(qb.get_compiled_select);
     });
@@ -27,7 +27,7 @@ describe('get_compiled_select()', () => {
     });
 });
 
-describe('get_compiled_insert()', () => {
+describe('MSSQL: get_compiled_insert()', () => {
     it('should exist', () => {
         should.exist(qb.get_compiled_insert);
     });
@@ -41,7 +41,7 @@ describe('get_compiled_insert()', () => {
     });
 });
 
-describe('get_compiled_update()', () => {
+describe('MSSQL: get_compiled_update()', () => {
     it('should exist', () => {
         should.exist(qb.get_compiled_update);
     });
@@ -55,7 +55,7 @@ describe('get_compiled_update()', () => {
     });
 });
 
-describe('get_compiled_delete()', () => {
+describe('MSSQL: get_compiled_delete()', () => {
     it('should exist', () => {
         should.exist(qb.get_compiled_delete);
     });

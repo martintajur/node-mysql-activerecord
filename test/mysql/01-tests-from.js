@@ -2,7 +2,7 @@ const should = require('chai').should();
 const QueryBuilder = require('../../drivers/mysql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('from()', () => {
+describe('MySQL: from()', () => {
     it('should exist', () => {
         should.exist(qb.from);
     });

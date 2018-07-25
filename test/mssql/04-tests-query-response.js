@@ -11,7 +11,7 @@ const check = (done, f) => {
     }
 };
 
-describe('Query Responses', () => {
+describe('MSSQL: Query Responses', () => {
     const driver = 'mssql';
     const settings = {
         host: 'localhost',

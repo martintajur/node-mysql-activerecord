@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('where_in()', () => {
+describe('MSSQL: where_in()', () => {
     it('should exist', () => {
         should.exist(qb.where_in);
     });
@@ -76,7 +76,7 @@ describe('where_in()', () => {
     });
 });
 
-describe('where_not_in()', () => {
+describe('MSSQL: where_not_in()', () => {
     it('should exist', () => {
         should.exist(qb.where_not_in);
     });
@@ -111,7 +111,7 @@ describe('where_not_in()', () => {
     });
 });
 
-describe('or_where_in()', () => {
+describe('MSSQL: or_where_in()', () => {
     it('should exist', () => {
         should.exist(qb.or_where_in);
     });
@@ -141,7 +141,7 @@ describe('or_where_in()', () => {
     });
 });
 
-describe('or_where_not_in()', () => {
+describe('MSSQL: or_where_not_in()', () => {
     it('should exist', () => {
         should.exist(qb.or_where_in);
     });

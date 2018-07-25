@@ -2,7 +2,7 @@ const should = require('chai').should();
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('from()', () => {
+describe('MSSQL: from()', () => {
     it('should exist', () => {
         should.exist(qb.from);
     });

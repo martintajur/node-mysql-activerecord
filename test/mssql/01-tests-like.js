@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('like()', () => {
+describe('MSSQL: like()', () => {
     it('should exist', () => {
         should.exist(qb.like);
     });
@@ -103,7 +103,7 @@ describe('like()', () => {
     });
 });
 
-describe('or_like()', () => {
+describe('MSSQL: or_like()', () => {
     it('should exist', () => {
         should.exist(qb.or_like);
     });
@@ -128,7 +128,7 @@ describe('or_like()', () => {
     });
 });
 
-describe('not_like()', () => {
+describe('MSSQL: not_like()', () => {
     it('should exist', () => {
         should.exist(qb.not_like);
     });
@@ -158,7 +158,7 @@ describe('not_like()', () => {
     });
 });
 
-describe('or_not_like()', () => {
+describe('MSSQL: or_not_like()', () => {
     it('should exist', () => {
         should.exist(qb.or_not_like);
     });

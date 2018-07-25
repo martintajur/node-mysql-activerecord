@@ -3,7 +3,7 @@ const expect = require('chai').expect;
 const QueryBuilder = require('../../drivers/mssql/query_builder.js');
 const qb = new QueryBuilder();
 
-describe('select()', () => {
+describe('MSSQL: select()', () => {
     it('should exist', () => {
         should.exist(qb.select);
     });
@@ -191,7 +191,7 @@ describe('select()', () => {
 const prefixes = ['min','max','avg','sum'];
 for (const i in prefixes) {
     const type = prefixes[i];
-    describe('select_' + type+'()', () => {
+    describe('MSSQL: select_' + type+'()', () => {
         it('should exist', () => {
             should.exist(qb['select_' + type]);
         });
