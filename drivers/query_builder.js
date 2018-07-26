@@ -404,7 +404,7 @@ class GenericQueryBuilder {
 
        escape = (typeof escape === 'boolean' ? escape : true);
 
-       if (typeof key === 'string' && typeof value === 'object' && Array.isArray(value) && value.length > 0) {
+       if (typeof key === 'string' && Array.isArray(value) && value.length > 0) {
            return this._where_in(key, value, false, 'AND ');
        }
        return this._where(key, value, 'AND ', escape);
@@ -422,7 +422,7 @@ class GenericQueryBuilder {
    _where(key, value=null, type='AND ', escape=true) {
        escape = (typeof escape === 'boolean' ? escape : true);
 
-       // Must be an object or a string
+       // If key is not an object....
        if (Object.prototype.toString.call(key) !== Object.prototype.toString.call({})) {
            // If it's not an object, it must be a string
            if (typeof key !== 'string') {
@@ -467,15 +467,18 @@ class GenericQueryBuilder {
            key = key_array;
        }
 
-       if (Object.keys(key).length == 0) {
+       // Fail if its an empty object
+       if (Object.keys(key).length === 0) {
            throw new Error("where(): You haven't provided any key value pairs to limit the resultset by.");
        }
 
+       // If an object is supplied...
        for (let k in key) {
            let v = key[k];
 
-           if (typeof v === 'object' && Array.isArray(v) && v.length > 0) {
-               return this._where_in(k, v, false, type, escape);
+           if (Array.isArray(v) && v.length > 0) {
+               this._where_in(k, v, false, type, escape);
+               continue;
            }
 
            const prefix = (this.where_array.length == 0 ? '' : type);
@@ -1300,9 +1303,9 @@ class GenericQueryBuilder {
            this.from(table);
        }
 
-       if (Object.prototype.toString.call(where) === Object.prototype.toString.call({})) {
-           if (Object.keys(where).length == 0) {
-               throw new Error("where(): The object you provided to limit the deletion of rows is empty.");
+       if (Object.prototype.toString.call(where) === Object.prototype.toString.call({}) && where !== null) {
+           if (Object.keys(where).length === 0) {
+               throw new Error("where(): The object you provided to limit the deletion of rows is empty. Provide NULL if you need to an empty value.");
            }
            else {
                this.where(where);

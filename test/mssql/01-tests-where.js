@@ -146,6 +146,11 @@ describe('MSSQL: where()', () => {
         qb.where('galaxy_id >', "(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN('Milky Way','Andromeda'))");
         qb.where_array.should.eql([`[galaxy_id] > '(SELECT MIN(id) first_galaxy FROM galaxies WHERE id IN(''Milky Way'',''Andromeda''))'`]);
     });
+    it('should allow for arrays and non-arrays as values within a where object without dropping anything', () => {
+        qb.reset_query();
+        qb.where({planet:'Earth', star_system:'Solar', moons: [1,3,5]});
+        qb.where_array.should.eql(["[planet] = 'Earth'", "AND [star_system] = 'Solar'", "AND [moons] IN (1, 3, 5)"]);
+    });
 });
 
 describe('MSSQL: or_where()', () => {
