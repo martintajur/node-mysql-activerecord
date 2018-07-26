@@ -99,14 +99,14 @@ class QueryExec extends QueryBuilder {
         this._exec(sql,cb);
     }
 
-    insert(table,set,cb,ignore,suffix) {
-        const sql = this._insert(table,set,ignore,suffix);
+    insert(table, set, cb, ignore, suffix) {
+        const sql = this._insert(table, set, ignore, suffix);
         this.reset_query(sql);
         this._exec(sql,cb);
     }
 
-    insert_ignore(table,set,on_dupe,cb) {
-        throw new Error("This feature is currently unsupported in the MSSQL driver.");
+    insert_ignore(table, set, on_dupe, cb) {
+        throw new Error("insert_ignore(): This feature is currently unsupported in the MSSQL driver.");
         // if (typeof on_dupe === 'function') {
         //     cb = on_dupe;
         //     on_dupe = null;
@@ -116,10 +116,22 @@ class QueryExec extends QueryBuilder {
         // this._exec(sql,cb);
     }
 
-    insert_batch(table,set,cb) {
-        const sql = this._insert_batch(table,set);
+    insert_batch(table, set, ignore, on_dupe, cb) {
+        if (typeof ignore === 'function') {
+            cb = ignore;
+            ignore = null;
+         }
+         else if (typeof on_dupe === 'function') {
+          cb = on_dupe;
+          on_dupe = null;
+        }
+
+        if (ignore) throw new Error("QE insert_batch(): INSERT IGNORE is currently unsupported on the MSSQL driver.");
+        if (suffix) throw new Error("QE insert_batch(): 'on_dupe' string (4th parameter) is currently unsupported on the MSSQL driver.");
+
+        const sql = this._insert_batch(table, set);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        this._exec(sql, cb);
     }
 
     update(table,set,where,cb) {

@@ -87,25 +87,33 @@ class QueryExec extends QueryBuilder {
     }
 
     insert(table,set,cb,ignore,suffix) {
-        const sql = this._insert(table,set,ignore,suffix);
+        const sql = this._insert(table, set, ignore, suffix);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        this._exec(sql, cb);
     }
 
-    insert_ignore(table,set,on_dupe,cb) {
+    insert_ignore(table, set, on_dupe, cb) {
         if (typeof on_dupe === 'function') {
             cb = on_dupe;
             on_dupe = null;
         }
-        const sql = this._insert_ignore(table,set,on_dupe);
+        const sql = this._insert_ignore(table, set, on_dupe);
         this.reset_query(sql);
         this._exec(sql,cb);
     }
 
-    insert_batch(table,set,cb) {
-        const sql = this._insert_batch(table,set);
+    insert_batch(table, set, ignore, on_dupe, cb) {
+        if (typeof ignore === 'function') {
+            cb = ignore;
+            ignore = null;
+         }
+         else if (typeof on_dupe === 'function') {
+          cb = on_dupe;
+          on_dupe = null;
+        }
+        const sql = this._insert_batch(table, set, ignore, on_dupe);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        this._exec(sql, cb);
     }
 
     update(table,set,where,cb) {
@@ -121,9 +129,9 @@ class QueryExec extends QueryBuilder {
             where = null;
         }
 
-        const sql = this._update(table,set,where);
+        const sql = this._update(table, set, where);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        this._exec(sql, cb);
     }
 
     // TODO: Write this complicated-ass function
@@ -140,7 +148,7 @@ class QueryExec extends QueryBuilder {
             where = null;
         }
 
-        const sqls = this._update_batch(table,set,index,where);
+        const sqls = this._update_batch(table, set, index, where);
         const results = null;
         const errors = [];
 
