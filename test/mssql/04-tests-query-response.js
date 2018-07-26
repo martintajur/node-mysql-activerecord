@@ -62,12 +62,9 @@ describe('MSSQL: Query Responses', () => {
     it('should respond with the requested IDs (from the `returning()` method) after insert', done => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
         qb.connect(err => {
-            expect(err).to.not.be.instanceof(Error);
-
+            expect(err, 'there should not be an error when querying').to.not.be.instanceof(Error);
             qb.returning(['city', 'state_code']).insert('cities', {city: 'Node QB Returns', state_code: 'NQ'}, (err, res) => {
                 check(done, () => {
-                    console.log("Result: ", JSON.stringify(res));
-                    expect(err, 'there should not be an error when querying').to.not.be.instanceof(Error);
                     expect(res, 'results should be an object with all the expected keys').to.be.an('object').that.includes.all.keys('insert_id', 'affected_rows', 'changed_rows');
                     expect(res.insert_id, 'insert id should be the values of the ids requested').to.not.be.null;
                     expect(res.affected_rows, 'affected_rows should be 1').to.eql(1);

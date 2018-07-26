@@ -101,6 +101,11 @@ describe('MySQL: like()', () => {
         qb.like('galaxy_name', 'milky').like('planet_name', 'ear', 'right');
         qb.where_array.should.eql(["`galaxy_name` LIKE '%milky%'", "AND `planet_name` LIKE 'ear%'"]);
     });
+    it('should not allow apostrophes in the query', () => {
+        qb.reset_query();
+        qb.like('galaxy_name', "O'Conner", 'both');
+        qb.where_array.should.eql(["`galaxy_name` LIKE '%O\\'Conner%'"]);
+    });
 });
 
 describe('MySQL: or_like()', () => {

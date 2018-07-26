@@ -604,7 +604,7 @@ class GenericQueryBuilder {
 
        for (let k in field) {
            let like_statement;
-           const v = field[k];
+           let v = field[k];
            k = this._protect_identifiers(k.trim());
 
            // Make sure value is only string, number, or boolean
@@ -616,17 +616,32 @@ class GenericQueryBuilder {
                throw new Error("like(): You have provided an invalid number value as the second parameter. Only valid strings, numbers, and booleans are allowed.");
            }
 
+           // Make sure to escape the value...
+           v = this._qb_escape(v);
+
            if (side === 'none') {
-               like_statement =  k + not + ' LIKE ' + "'" + v + "'";
+               like_statement =  k + not + ` LIKE ${v}`;
            }
            else if (side === 'before' || side === 'left') {
-               like_statement = k + not + ' LIKE ' + "'%" + v + "'";
+               if (typeof v === 'string') {
+                   like_statement = k + not + ` LIKE ${v.substr(0, 1)}%${v.substr(1)}`;
+               } else {
+                   like_statement = k + not + ` LIKE %${v}`;
+               }
            }
            else if (side === 'after' || side === 'right') {
-               like_statement = k + not + ' LIKE ' + "'" + v + "%'";
+                if (typeof v === 'string') {
+                    like_statement = k + not + ` LIKE ${v.substr(0, v.length -1)}%${v.slice(-1)}`;
+                } else {
+                    like_statement = k + not + ` LIKE ${v}%`;
+                }
            }
            else if (side === 'both') {
-               like_statement = k + not + ' LIKE ' + "'%" + v + "%'";
+               if (typeof v === 'string') {
+                   like_statement = k + not + ` LIKE ${v.substr(0, 1)}%${v.substr(1, v.length -2)}%${v.slice(-1)}`;
+               } else {
+                   like_statement = k + not + ` LIKE %${v}%`;
+               }
            }
            else {
                throw new Error("like(): Invalid direction provided!");
