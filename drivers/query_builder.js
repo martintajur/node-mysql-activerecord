@@ -540,21 +540,19 @@ class GenericQueryBuilder {
            throw new Error("where_" + (not === '' ? '' : not.toLowerCase() + '_') + "in(): Invalid field name provided.");
        }
 
-       // Values must be an array...
+       // `values` must be an array...
        if (!Array.isArray(values)) {
-           throw new Error("where_" + (not === '' ? '' : not.toLowerCase() + '_') + "in(): Invalid second parameter provided--it must be an array of scalar values.");
+           throw new Error("where_" + (not === '' ? '' : not.toLowerCase() + '_') + "in(): Invalid second parameter provided--it must be an array of scalar values or an empty array.");
        }
-       else {
-           if (values.length == 0) {
-               throw new Error("where_" + (not === '' ? '' : not.toLowerCase() + '_') + "in(): You have provided an empty list of values to limit resultset by.");
-           }
-       }
+
+       // If array is empty, ignore this request
+       else if (values.length === 0) return;
 
        for (let i in values) {
            this.where_in_array.push(this._qb_escape(values[i]));
        }
 
-       const prefix = (this.where_array.length == 0 ? '' : type);
+       const prefix = (this.where_array.length === 0 ? '' : type);
        const where_in = prefix + this._protect_identifiers(key, false, escape) + not + " IN (" + this.where_in_array.join(', ') + ")";
        this.where_array.push(where_in);
 

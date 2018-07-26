@@ -6,16 +6,26 @@ you spot any mistakes.
 
 ## v2.0.0 (2018-06-15)
 
-* Added mssql support
-* Updated class files to use new ES6 class syntax for easier-maintainability
+### Breaking Changes
 * Changed the Query Builder instantiation syntax
+* Passing an empty array to `where_in` and `where_not_in` no longer throws an error ([#34](https://github.com/kylefarris/node-querybuilder/issues/34))
+
+# General Enhancements/Changes/Features
+* Added mssql (t-sql) support using `tedious` as the underlying driver
+* Updated class files to use new ES6 class syntax for easier-maintainability
 * Added new options:
 ** `pool_min` (minimum number of pooled connections (`mssql` driver only))
 ** `acquireTimeout` (milliseconds before a timeout occurs during the connection acquisition)
 * Added new query building method: `returning()` to allow for insert IDs to be returned. See docs for more info.
 * Added new tests
+
+### Bug Fixes
 * Fixed [#18](https://github.com/kylefarris/node-querybuilder/issues/18)
+* Fixed [#23](https://github.com/kylefarris/node-querybuilder/issues/23)
 * Fixed [#26](https://github.com/kylefarris/node-querybuilder/issues/26)
+* Fixed [#28](https://github.com/kylefarris/node-querybuilder/issues/28)
+* Fixed [#30](https://github.com/kylefarris/node-querybuilder/issues/30)
+* Fixed [#33](https://github.com/kylefarris/node-querybuilder/issues/33)
 
 
 ## v1.2.0 (2018-05-18)

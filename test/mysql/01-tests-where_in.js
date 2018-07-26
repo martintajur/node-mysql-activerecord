@@ -35,9 +35,8 @@ describe('MySQL: where_in()', () => {
 
         expect(() => qb.where_in('planet_position',[1,2,3]), 'valid string provided').to.not.throw(Error);
     });
-    it('should not accept anything but a non-empty array of values as second parameter', () => {
+    it('should not accept anything but an array of values as second parameter', () => {
         qb.reset_query();
-        expect(() => qb.where_in('planet'), 'nothing provided').to.throw(Error);
         expect(() => qb.where_in('planet',null), 'null provided').to.throw(Error);
         expect(() => qb.where_in('planet',false), 'false provided').to.throw(Error);
         expect(() => qb.where_in('planet',true), 'true provided').to.throw(Error);
@@ -47,31 +46,37 @@ describe('MySQL: where_in()', () => {
         expect(() => qb.where_in('planet',3.5), 'float provided').to.throw(Error);
         expect(() => qb.where_in('planet',NaN), 'NaN provided').to.throw(Error);
         expect(() => qb.where_in('planet',Infinity), 'Infinity provided').to.throw(Error);
-        expect(() => qb.where_in('planet',[]), 'empty array provided').to.throw(Error);
         expect(() => qb.where_in('planet',''), 'empty string provided').to.throw(Error);
         expect(() => qb.where_in('planet',/foobar/), 'regex provided').to.throw(Error);
 
-        expect(() => qb.where_in('planet',['Mars','Earth','Venus','Mercury']), 'non-empty array provided').to.not.throw(Error);
+        expect(() => qb.where_in('planet'), 'nothing provided (empty array is default value)').to.not.throw(Error);
+        expect(() => qb.where_in('planet', []), 'empty array provided').to.not.throw(Error);
+        expect(() => qb.where_in('planet', ['Mars','Earth','Venus','Mercury']), 'non-empty array provided').to.not.throw(Error);
     });
-    it('should require both a field name an array of values as first and second parameters, respectively', () => {
+    it('should accept both a field name and array of values as first and second parameters, respectively', () => {
         qb.reset_query();
-        qb.where_in('planet_position',[1,2,3]);
+        qb.where_in('planet_position', [1,2,3]);
         qb.where_array.should.eql(['`planet_position` IN (1, 2, 3)']);
+    });
+    it('should ignore the request if an empty array is provided to the second parameter', () => {
+        qb.reset_query();
+        qb.where_in('planet_position', []);
+        qb.where_array.should.eql([]);
     });
     it('should concatenate multiple WHERE IN clauses with AND ', () => {
         qb.reset_query();
         qb.where_in('planet',['Mercury','Venus','Earth','Mars']);
-        qb.where_in('galaxy_id',[123,456,789,0110]);
+        qb.where_in('galaxy_id', [123, 456, 789, 0110]);
         qb.where_array.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `galaxy_id` IN (123, 456, 789, 72)"]);
     });
     it('should be chainable', () => {
         qb.reset_query();
-        qb.where_in('planet',['Mercury','Venus','Earth','Mars']).where_in('planet_position',[1,2,3,4]);
+        qb.where_in('planet',['Mercury','Venus','Earth','Mars']).where_in('planet_position', [1,2,3,4]);
         qb.where_array.should.eql(["`planet` IN ('Mercury', 'Venus', 'Earth', 'Mars')","AND `planet_position` IN (1, 2, 3, 4)"]);
     });
     it('should not escape fields if asked not to', () => {
         qb.reset_query();
-        qb.where_in('planet_position',[1,2,3],false);
+        qb.where_in('planet_position', [1,2,3], false);
         qb.where_array.should.eql(['planet_position IN (1, 2, 3)']);
     });
 });
