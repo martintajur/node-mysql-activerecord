@@ -1529,8 +1529,18 @@ class GenericQueryBuilder {
                cases += `ELSE ${l} END, `;
            }
 
+           // Remove the trailing comma
            sql += cases.substr(0, cases.length - 2);
-           sql += ` WHERE ${where + index} IN (${ids.join(',')})`;
+
+           // Make sure we don't double-up on the "WHERE" directive
+           if (where) {
+               sql += ` ${where}`;
+           } else {
+               sql += ' WHERE ';
+           }
+
+
+           sql += `${index} IN (${ids.join(',')})`;
 
            // Add query to batch
            batches.push(sql);
