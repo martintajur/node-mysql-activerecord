@@ -1,24 +1,41 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
-const configs = require('configs');
+const configs = require('./configs');
 
-const QueryBuilder = require('../../index.js');
+const QueryBuilder = require('../index.js');
 const my_pool = new QueryBuilder(configs.mysql, 'mysql', 'pool');
 const ms_pool = new QueryBuilder(configs.mssql, 'mssql', 'pool');
+let my_pool_settings, ms_pool_settings;
+
+const compare_connections = (done) => {
+    try {
+        expect(my_pool_settings, 'should have port property').to.have.property('port');
+        expect(ms_pool_settings, 'should have connection_settings property').to.have.property('connection_settings');
+
+        const port1 = my_pool_settings.port;
+        const port2 = ms_pool_settings.connection_settings.options.port;
+
+        port1.should.not.be.eql(port2);
+
+        done();
+    } catch(e) {
+        done(e);
+    }
+};
 
 describe('Multiple Drivers', () => {
-    it('should not get confused between pools from different drivers', done => {
-        pool.get_connection(qb => {
-            qb.limit(1).delete('cities', (err, result) => {
-                qb.select(['city', 'state_code']).from('cities').limit(1).get((err2, result2) => {
-                    qb.release();
-                    expect(err, 'should not error on delete').to.not.be.instanceof(Error);
-                    expect(result.affectedRows, 'one record should be deleted').to.be.eql(1);
-                    expect(err2, 'should not error on select').to.not.be.instanceof(Error);
-                    expect(result2.length, 'should have one result').to.be.equal(1);
-                    done();
-                });
-            });
+    it('should not get confused by what pool/settings to use', done => {
+        let connections_established = 0;
+
+        my_pool.get_connection(qb1 => {
+            my_pool_settings = qb1.connection_settings();
+            connections_established++;
+            if (connections_established >= 2) compare_connections(done);
+        });
+        ms_pool.get_connection(qb2 => {
+            ms_pool_settings = qb2.connection_settings();
+            connections_established++;
+            if (connections_established >= 2) compare_connections(done);
         });
     });
 });

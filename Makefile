@@ -1,4 +1,4 @@
-TESTS = test/mysql/*.js test/mssql/*.js
+TESTS = test/mysql/*.js test/mssql/*.js test/*.js
 #TESTS = test/mssql/05-tests-multiple-pools.js
 #TESTS = test/05-multiple-drivers.js
 test:
