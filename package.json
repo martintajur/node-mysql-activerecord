@@ -1,9 +1,10 @@
 {
   "name": "node-querybuilder",
-  "version": "1.2.2",
+  "version": "2.0.0-beta",
   "author": "Kyle Farris <kyle@chomponllc.com>",
   "description": "Modeled after Codeigniter's QueryBuilder. Build and execute queries in a safe and database-agnostic way.",
   "keywords": "nodejs, node, mysql, active record, activerecord, querybuilder, query builder, codeigniter, postgres, mssql, mongo, sqlite, translator",
+  "bugs": "https://github.com/kylefarris/node-querybuilder/issues",
   "scripts": {
     "test": "make test"
   },
@@ -27,7 +28,7 @@
     "chai": "^4.1.2",
     "mocha": "*"
   },
-  "main": "./",
+  "main": "index.js",
   "engines": {
     "node": ">=8.0"
   }
