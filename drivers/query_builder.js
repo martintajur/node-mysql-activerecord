@@ -269,7 +269,9 @@ class GenericQueryBuilder {
                     parts = parts.map((v,i) => {
                         if (!this.reserved_identifiers.includes(v)) {
                             return this._escape_identifiers(v);
-                            return v;
+                        }
+                        else {
+                            return v;                            
                         }
                     });
 
