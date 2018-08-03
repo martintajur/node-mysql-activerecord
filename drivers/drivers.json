@@ -3,7 +3,7 @@
         "connection_types": { "single": true, "pool": true, "cluster": false },
         "versions": {
             "2.5.4": {
-                "path": "./drivers/mysql/",
+                "path": "./drivers/mysql",
                 "active": true
             },
             "default": {
@@ -15,7 +15,7 @@
         "connection_types": { "single": true, "pool": true, "cluster": false },
         "versions": {
             "4.1.0": {
-                "path": "./drivers/mssql/",
+                "path": "./drivers/mssql",
                 "active": true
             },
             "default": {
