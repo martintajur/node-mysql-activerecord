@@ -1,3 +1,5 @@
+**Note from author: I don't actively maintain this repository anymore. Huge thanks to Kyle Farris who has a more actively maintained version of the same thing available at (https://github.com/kylefarris/node-querybuilder) Please use that instead.**
+
 MySQL ActiveRecord Adapter for Node.js
 ======================================
 
