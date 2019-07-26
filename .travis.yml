@@ -1,10 +1,12 @@
 before_script: ./test/create_mock_dbs.sh
 language: node_js
-dist: precise
+dist: bionic
 node_js:
-    - "10.1.0"
-    - "9.11.1"
-    - "8.11.2"
+    - "12"
+    - "11"
+    - "10"
+    - "9"
+    - "8"
 services: mysql
 test:
     adapter: mysql2
