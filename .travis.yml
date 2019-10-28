@@ -1,4 +1,8 @@
-before_script: ./test/create_mock_dbs.sh
+before_script: 
+    - sudo docker run --name=mssql-server-linux-latest -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password123' -p 1433:1433 -d microsoft/mssql-server-linux:2017-latest
+    - sudo docker cp ./test/mssql/mock_data.sql mssql-server-linux-latest:mock_data.sql
+    - sudo docker cp ./test/mssql/mock_data2.sql mssql-server-linux-latest:mock_data2.sql
+    - ./test/create_mock_dbs.sh
 language: node_js
 dist: bionic
 node_js:
@@ -7,7 +11,9 @@ node_js:
     - "10"
     - "9"
     - "8"
-services: mysql
+services:
+    - mysql
+    - docker
 test:
     adapter: mysql2
     database: mock_db
