@@ -1137,7 +1137,7 @@ class GenericQueryBuilder {
            throw new Error("insert(): Invalid data provided to insert into database!");
        }
        if (Array.isArray(set)) {
-           return this.insert_batch(table, set, ignore, suffix);
+           return this._insert_batch(table, set, ignore, suffix);
        }
 
        if (set !== null) {
