@@ -8,3 +8,5 @@ mysql -uroot mock_db -e "DROP TABLE IF EXISTS cities;"
 mysql -uroot mock_db2 -e "DROP TABLE IF EXISTS cities2;"
 mysql -utravis mock_db < ./mock_data.sql
 mysql -utravis mock_db2 < ./mock_data2.sql
+
+echo "Done with MySQL Import"

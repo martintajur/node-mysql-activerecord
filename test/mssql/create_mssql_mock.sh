@@ -32,3 +32,5 @@ sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $s
 # Check to see if data exists in $db_name
 sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db_name -Q "SELECT TOP 5 * FROM [$db_table];"
 sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db2_name -Q "SELECT TOP 5 * FROM [$db2_table];"
+
+echo "Done with MS SQL Import"
