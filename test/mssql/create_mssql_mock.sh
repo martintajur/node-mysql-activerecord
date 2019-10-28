@@ -23,8 +23,8 @@ sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $s
 sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db2_name -Q "IF OBJECT_ID('dbo.$db2_table', 'U') IS NOT NULL DROP TABLE dbo.$db2_table;"
 sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db_name -Q "CREATE TABLE $db_table([city] varchar(50) NOT NULL, [state_code] char(2) NOT NULL);"
 sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db2_name -Q "CREATE TABLE $db2_table([city] varchar(50) NOT NULL, [state_code] char(2) NOT NULL);"
-sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db_name -i ./test/mssql/mock_data.sql
-sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db2_name -i ./test/mssql/mock_data2.sql
+sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db_name -i mock_data.sql
+sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -S $server -U $db_user -P $password -d $db2_name -i mock_data2.sql
 
 # Check to see if table exists now...
 #sudo docker exec -it mssql-server-linux-latest /opt/mssql-tools/bin/sqlcmd -U $db_user -P $password -d $db_name -Q "SELECT TABLE_NAME FROM $db_name.INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'"
