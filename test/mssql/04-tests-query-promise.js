@@ -1,34 +1,20 @@
 const should = require('chai').should();
 const expect = require('chai').expect;
 const QueryBuilder = require('../../index.js');
-const settings = require('../configs').mysql;
-const driver = 'mysql';
+const settings = require('../configs').mssql;
+const driver = 'mssql';
 
 const check = (done, f) => {
     try {
         f();
         done();
-    } catch(e) {
+    } catch (e) {
         done(e);
     }
 };
 
-describe('MySQL: Query Promises', () => {
+describe('MSSQL: Query Responses', () => {
     it('should allow us to execute a simple SELECT query', async () => {
-        const qb = new QueryBuilder(Object.assign({}, settings), driver);
-        try {
-            await qb.connect();
-            const res = await qb.query("select * from `cities` where `city` like 'Z%' and `state_code` = 'FL'");
-
-            expect(res, 'results should not be empty').to.not.be.empty;
-            expect(res, 'should have 3 results').to.have.length(3);
-        } catch (err) {
-            throw err;
-        } finally {
-
-        }
-    });
-    it('should have a non-empty array of objects as a response value when there should be results from a SELECT query', async () => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
         try {
             await qb.connect();
@@ -36,6 +22,9 @@ describe('MySQL: Query Promises', () => {
 
             expect(res, 'results should not be empty').to.not.be.empty;
             expect(res, 'should have 3 results').to.have.length(3);
+
+            const expected_result = [{ city: 'Zellwood', state_code: 'FL' }, { city: 'Zephyrhills', state_code: 'FL' }, { city: 'Zolfo Springs', state_code: 'FL' }];
+            expect(res, 'should be just an array of objects representing the desired rows and columns').to.eql(expected_result);
         } catch (err) {
             throw err;
         } finally {
@@ -44,10 +33,8 @@ describe('MySQL: Query Promises', () => {
     });
     it('should have a javascript Standard Error object when running an invalid query', async () => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
-        
-        await qb.connect();
-
         try {
+            await qb.connect();
             await qb.query("select * = 'FL'");
         } catch (err) {
             expect(err, 'there should be an error when the query is invalid').to.be.instanceof(Error);
@@ -63,6 +50,23 @@ describe('MySQL: Query Promises', () => {
 
             expect(res, 'results should be an object with all the expected keys').to.be.an('object').that.includes.all.keys('insert_id', 'affected_rows', 'changed_rows');
             expect(res.insert_id, 'insert id should be null').to.be.null;
+            expect(res.affected_rows, 'affected_rows should be 1').to.eql(1);
+            expect(res.changed_rows, 'changed_rows should be 0').to.eql(0);
+        } catch (err) {
+            throw err;
+        } finally {
+
+        }
+    });
+    it('should respond with the requested IDs (from the `returning()` method) after insert', async () => {
+        const qb = new QueryBuilder(Object.assign({}, settings), driver);
+
+        try {
+            await qb.connect();
+            const res = await qb.returning(['city', 'state_code']).insert('cities', { city: 'Node QB Returns', state_code: 'NQ' });
+
+            expect(res, 'results should be an object with all the expected keys').to.be.an('object').that.includes.all.keys('insert_id', 'affected_rows', 'changed_rows');
+            expect(res.insert_id, 'insert id should be the values of the ids requested').to.not.be.null;
             expect(res.affected_rows, 'affected_rows should be 1').to.eql(1);
             expect(res.changed_rows, 'changed_rows should be 0').to.eql(0);
         } catch (err) {
