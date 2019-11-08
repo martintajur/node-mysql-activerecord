@@ -4,6 +4,19 @@ This file is a manually maintained list of changes for each release. Feel free
 to add your changes here when sending pull requests. Also send corrections if
 you spot any mistakes.
 
+## v2.1.1 (2019-11-08)
+
+* Updated documentation to reflect new Promise API support.
+
+## v2.1.0 (2019-11-08)
+
+* Added Promise support. Closes [#18](https://github.com/kylefarris/node-querybuilder/pull/52). Thanks for the contribution @AbhijetPokhrel!
+* Added new tests to verify that Promise support is working.
+
+## v2.0.2 (2019-10-28)
+
+* Finally got testing working on Travis CI for MySQL and MSSQL.
+
 ## v2.0.0 (2018-06-15)
 
 ### Breaking Changes

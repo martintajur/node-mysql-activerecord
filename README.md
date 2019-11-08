@@ -68,7 +68,7 @@ Licensed under the GPL license and MIT:
 - [http://www.opensource.org/licenses/mit-license.php](http://www.opensource.org/licenses/mit-license.php)
 
 # Quick Example
-This quick example shows how to connect to and asynchronously query a MySQL database using a single connection.
+This quick example shows how to connect to and asynchronously query a MySQL database using a pooled connection.
 
 ```javascript
 const QueryBuilder = require('node-querybuilder');
@@ -78,22 +78,58 @@ const settings = {
     user: 'myuser',
     password: 'MyP@ssw0rd'
 };
-const qb = new QueryBuilder(settings, 'mysql', 'single');
+const pool = new QueryBuilder(settings, 'mysql', 'pool');
 
-qb.select('name', 'position')
-    .where({type: 'rocky', 'diameter <': 12000})
-    .get('planets', (err, response) => {
-        qb.disconnect();
+pool.get_connection(qb => {
+    qb.select('name', 'position')
+        .where({type: 'rocky', 'diameter <': 12000})
+        .get('planets', (err, response) => {
+            qb.disconnect();
 
-        if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
+            if (err) return console.error("Uh oh! Couldn't get results: " + err.msg);
+
+            // SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
+            console.log("Query Ran: " + qb.last_query());
+
+            // [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
+            console.log("Results:", response);
+        }
+    );
+});
+```
+
+Anywhere a callback is used in the examples below, you can substitute for a Promise (or async/await). Here's the same code above in Promise format:
+
+```javascript
+const QueryBuilder = require('node-querybuilder');
+const settings = {
+    host: 'localhost',
+    database: 'mydatabase',
+    user: 'myuser',
+    password: 'MyP@ssw0rd'
+};
+const pool = new QueryBuilder(settings, 'mysql', 'pool');
+
+async function getPlanets() {
+    try {
+        const qb = await pool.get_connection();
+        const response = await qb.select('name', 'position')
+            .where({type: 'rocky', 'diameter <': 12000})
+            .get('planets');
 
         // SELECT `name`, `position` FROM `planets` WHERE `type` = 'rocky' AND `diameter` < 12000
         console.log("Query Ran: " + qb.last_query());
 
         // [{name: 'Mercury', position: 1}, {name: 'Mars', position: 4}]
         console.log("Results:", response);
+    } catch (err) {
+        return console.error("Uh oh! Couldn't get results: " + err.msg);
+    } finally {
+        qb.disconnect();
     }
-);
+}
+
+getPlanets();
 ```
 
 # Connecting to Your Database
@@ -286,10 +322,14 @@ The fields provided to this method will be automatically escaped by the database
 
 ```javascript
 // SELECT * FROM galaxies
-qb.select('*').get('foo', callback);
+qb.select('*').get('foo', (err, results) => {});
 
 // Easier and same result:
-qb.get('foo', callback);
+qb.get('foo', (err, results) => {});
+
+// Async/Await version:
+const results = await qb.get('foo');
+
 ```
 
 An array of field names:
@@ -1119,10 +1159,19 @@ API Method                        | SQL Command   | MySQL    | MSSQL    | Oracle
 [empty_table()](#empty_table)     | DELETE        | &#x2713; | &#x2713; |        |        |          |
 
 ### What are "Execution Methods"??
-Execution methods are the end-of-chain methods in the QueryBuilder library. Once these methods are called, all the chainable methods you've called up until this point will be compiled into a query string and sent to the driver's `query()` method. At this point, the QueryBuilder will be reset and ready to build a new query. The database driver will respond with results depending on the type of query being executed or with an error message. Both (if provided) will be supplied to the callback function.
+Execution methods are the end-of-chain methods in the QueryBuilder library. Once these methods are called, all the chainable methods you've called up until this point will be compiled into a query string and sent to the driver's `query()` method. At this point, the QueryBuilder will be reset and ready to build a new query. The database driver will respond with results depending on the type of query being executed or with an error message.
 
 ### Handling Error Messages and Results
-The final parameter of every execution method will be a callback function. For `single` connection setups, the parameters for the callback are in the `node.js` standard `(err, response)` format. If the driver throws an error, a JavaScript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
+
+#### Callback Style
+The final parameter of every execution method will be a callback function. If a callback is supplied to that final parameter, a Promise object *WILL NOT* be returned.
+
+The parameters for the callback are in the `node.js` standard `(err, response)` format. If the driver throws an error, a JavaScript `Standard Error` object will be passed into the `err` parameter. The `response` parameter can be supplied with an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
+
+#### Promise Style
+If a callback function is not supplied to the final parameter of execution methods, a Promise will be returned. If the driver throws an error a JavaScript `Standard Error` object will be sent to the the Promise's `reject` callback parameter. The `response` will be sent to the Promise's `resolve` callback parameter. The `response` can be an array of result rows (`.get()` & `.get_where()`), an integer (`.count()`), or a response object containing rows effected, last insert id, etc... in any other scenario.
+
+Obviously, `async/await` is supported through this style.
 
 ### Response Format Examples
 
@@ -1135,75 +1184,101 @@ insert_batch(), update_batch() | Example: `{insert_id: 579, affected_rows: 1, ch
 
 **NOTE**
 
-When using the [returning()](#returning) method with compatible drivers, the `insert_id` property of the response object will be an array of objects containing key value pairs representing the requested "returned" columns along with their values.
+When using the [returning()](#returning) method with compatible drivers (`mssql`), the `insert_id` property of the response object will be an array of objects containing key value pairs representing the requested "returned" columns along with their values.
 
 Example:
 
 ```javascript
-qb.returning('id').insert('users', {firstName: 'John', lastName: 'Smith'}, (err, results) => {
-    // Results: {insert_id: [{id: 12345}], affected_rows: 1, changed_rows: 0}
-});
+// results: {insert_id: [{id: 12345}], affected_rows: 1, changed_rows: 0}
+const results = await qb.returning('id').insert('users', {firstName: 'John', lastName: 'Smith'});
 ```
 
 #### Callback Example
 
 ```javascript
-const callback =  (err, response) => {
+pool.get_connection(qb => qb.get('foo', (err, response) => {
     qb.release();
-    if (err) {
-        console.error(err);
-    }
-    else {
-        for (const i in response) {
-            const row = response[i];
-            /*
-                Do something with each row...
-            */
-        }
-    }
-};
-pool.get_connection(qb => {
-    qb.get('foo', callback);
+    if (err) return console.error(err);
+    response.forEach((v) => /* Do Something */);
+}));
+```
+
+#### Promise Example
+
+**Note:** Don't do it this way. It's silly, verbose, and out-dated.
+
+```javascript
+pool.get_connection().then(qb => {
+    const result = qb.get('foo');
+    qb.release();
+    return result;
+}).then(response => {
+    response.forEach((v) => /* Do Something */);
+    return response;
+}).catch(err =>{
+    return console.error(err);
 });
+```
+
+#### Async/Await Example
+
+```javascript
+async function getFoo() {
+    let qb;
+    try {
+        qb = await pool.get_connection();
+        const response = qb.get('foo');
+        response.forEach((v) => /* Do Something */);
+    } catch (err) {
+        console.error(err);
+    } finally {
+        if (qb) qb.release();
+    }
+}
+
+getFoo();
 ```
 
 #### Using the Same Connection Pool Connection for Successive Calls
 
+This is an ideal scenario for the async/await pattern.
+
 ```javascript
 const pool = new require('node-querybuilder')(settings,'mysql','pool');
-const data = {username: 'jsmith', first_name: 'John', last_name: 'Smith'};
+const data = {first_name: 'John', last_name: 'Smith'};
 
-pool.get_connection(qb => {
-    qb.insert('employees', data, (err, res) => {
-        if (err) {
-            console.error(err);
+async function addUser() {
+    let qb;
+    try {
+        qb = await pool.get_connection();
+        const results = await qb.insert('users', data);
+
+        if (results.affected_rows === 1) {
+            const user = await qb.get_where('users', {id: res.insert_id});
+            console.log('New User: ', user);
+        } else {
+            throw new Error("New user was not added to database!");
         }
-        else {
-            if (res.affected_rows > 0) {
-                const insert_id = res.insert_id;
-                qb.get_where('employees', {id: insert_id}, (err, res) => {
-                    qb.release();
-                    console.dir(res);
-                });
-            }
-            else {
-                console.error("New user was not added to database!");
-            }
-        }
-    });
-});
+    } catch (err) {
+        console.error(err);
+    } finally {
+        if (qb) qb.release();
+    }
+}
+
+updateUser();
 ```
 
 --------------------------------------------------------------------------------
 
 <a name="query"></a>
 
-### .query(query_string, callback)
+### .query(query_string[, callback])
 
-Parameter    | Type     | Default  | Description
-:----------- | :------- | :------- | :---------------------------------------------
-query_string | String   | Required | Query to send directly to your database driver
-callback     | Function | Required | What to do when the driver has responded
+Parameter    | Type     | Default   | Description
+:----------- | :------- | :-------- | :---------------------------------------------
+query_string | String   | Required  | Query to send directly to your database driver
+callback     | Function | undefined | (optional) What to do when the driver has responded
 
 *****This method bypasses the entire QueryBuilder portion of this module***** is simply uses your database driver's native querying method. You should be cautious when using this as none of this module's security and escaping functionality will be utilized.
 
@@ -1216,6 +1291,7 @@ const sql = qb.select(['f.foo', 'b.bar'])
     .from('foo f')
     .join('bar b', 'b.foo_id=f.id', 'left')
     .get_compiled_select();
+
 qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 ```
 
@@ -1223,18 +1299,18 @@ qb.query("CREATE VIEW `foobar` AS " + sql, callback);
 
 <a name="get"></a>
 
-### .get([table,]callback)
+### .get([table[,callback]])
 
-Parameter | Type     | Default   | Description
-:-------- | :------- | :-------- | :------------------------------------------------------------
-table     | String   | undefined | (optional) Used to avoid having to call `.from()` seperately.
-callback  | Function | Required  | What to do when the driver has responded
+Parameter | Type     | Default    | Description
+:-------- | :------- | :--------- | :------------------------------------------------------------
+table     | String   | undefined  | (optional) Used to avoid having to call `.from()` seperately.
+callback  | Function | undefined  | (optional) What to do when the driver has responded
 
 This method is used when running queries that might respond with rows of data (namely, "SELECT" statements...). You can pass a table name as the first parameter to avoid having to call [.from()](#from) separately. If the table name is omitted, and the first parameter is a callback function, there will be no need to pass a callback function into the second parameter.
 
-**Type of Response Sent to Callback**
+**Response Type**
 
-Array of rows
+Array of rows/records
 
 **Examples**
 
@@ -1252,12 +1328,12 @@ If you already have the table added to the query:
 qb.from('galaxies').get(callback);
 ```
 
-Just a more-complicated example for the sake of it (note: using connection pool):
+Just a more-complicated example for the sake of it:
 
 ```javascript
 /**
  * SELECT
- *     `g`.`name`,
+ *    `g`.`name`,
  *    `g`.`diameter`,
  *    `g`.`type_id`,
  *    `gt`.`name` AS `type`,
@@ -1277,16 +1353,12 @@ qb.limit(10)
     .join('stars s', 's.galaxy_id=g.id', 'left')
     .group_by('g.id')
     .order_by('g.name', 'asc')
-    .get((err, response, conn) => {
-        conn.release();
+    .get((err, response) => {
         if (err) return console.error(err);
 
-        for (const i in response) {
-            const row = response[i];
-            console.log("The " + row.name + " is a " + row.diameter
-                + " lightyear-wide " + row.type + " galaxy with "
-                + row.num_stars + " stars.");
-        }
+        response.forEach(row => {
+            console.log(`The ${row.name} is a ${row.diameter} lightyear-wide ${row.type} galaxy with ${row.num_stars} stars.`);
+        });
     });
 ```
 
@@ -1294,17 +1366,17 @@ qb.limit(10)
 
 <a name="get_where"></a>
 
-### .get_where(table, where, callback)
+### .get_where(table, where[, callback])
 
-Parameter | Type            | Default  | Description
-:-------- | :-------------- | :------- | :-------------------------------------------------
-table     | String or Array | Required | Used to avoid having to call `.from()` separately.
-where     | Object          | Required | Used to avoid having to call `.where()` separately
-callback  | Function        | Required | What to do when the driver has responded.
+Parameter | Type            | Default   | Description
+:-------- | :-------------- | :-------- | :-------------------------------------------------
+table     | String or Array | Required  | Used to avoid having to call `.from()` separately.
+where     | Object          | Required  | Used to avoid having to call `.where()` separately
+callback  | Function        | undefined | (optional) What to do when the driver has responded.
 
 This method is basically the same as the `.get()` method except that if offers an additional shortcut parameter to provide a list of filters (`{field_name:value}`)  to limit the results by (effectively a shortcut to avoid calling `.where()` separately).  The other difference is that _all_ parameters are required and they must be in the proper order.
 
-**Type of Response Sent to Callback**
+**Response Type**
 
 Array of objects representing the result rows.
 
@@ -1328,18 +1400,18 @@ qb.where('num_stars >', 100000000).get_where('galaxies', {galaxy_type_id: 3}, ca
 
 <a name="count"></a>
 
-### .count([table,]callback)
+### .count([[table[, callback]])
 
-Parameter | Type     | Default   | Description
-:-------- | :------- | :-------- | :------------------------------------------------------------
-table     | String   | undefined | (optional) Used to avoid having to call `.from()` separately.
-callback  | Function | Required  | What to do when the driver has responded.
+Parameter | Type     | Default    | Description
+:-------- | :------- | :--------- | :------------------------------------------------------------
+table     | String   | undefined  | (optional) Used to avoid having to call `.from()` separately.
+callback  | Function | undefined  | (optional) What to do when the driver has responded.
 
 This method is used to determine the total number of results that a query would return without actually returning the entire resultset back to this module. Obviously, you could simply execute the same query with `.get()` and then check the `length` property of the response array, but, that would take significantly more time and memory for very large resultsets.
 
 The field in the resultset will always labeled be 'numrows'.
 
-**Type of Response Sent to Callback**
+**Response Type**
 
 Integer
 
@@ -1358,14 +1430,14 @@ qb.where('type', type).count('galaxies', (err, count) => {
 
 <a name="update"></a>
 
-### .update(table, data[,where], callback)
+### .update(table, data[,where][, callback])
 
-Parameter | Type     | Default  | Description
-:-------- | :------- | :------- | :----------------------------------------------------------------------------------------------------
-table     | String   | null     | (suggested) The table/collection you'd like to update
-data      | Object   | null     | (suggested) The data to update (ex. `{field: value}`)
-where     | Object   | null     | (optional) Used to avoid having to call `.where()` separately. Pass NULL if you don't want to use it.
-callback  | Function | Required | What to do when the driver has responded.
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :----------------------------------------------------------------------------------------------------
+table     | String   | null      | (suggested) The table/collection you'd like to update
+data      | Object   | null      | (suggested) The data to update (ex. `{field: value}`)
+where     | Object   | null      | (optional) Used to avoid having to call `.where()` separately. Pass NULL if you don't want to use it.
+callback  | Function | undefined | (optional) What to do when the driver has responded.
 
 This method is used to update a table (SQL) or collection (NoSQL) with new data. All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the number of records updated, and the number of changed rows...
 
@@ -1373,7 +1445,7 @@ This method is used to update a table (SQL) or collection (NoSQL) with new data.
 
 The first and second parameters are not required but I do suggest you use them as your code will be much easier to read. If you choose not to use them, you will need to pass a "falsey" value to each... you can't simply skip them. My recommendation is to use `null`. The way you would supply these values without using this method would be through the `from()` method for the first parameter and the `set()` method for the second parameter.
 
-**Type of Response Sent to Callback**
+**Response Type**
 
 Object containing information about the results of the query.
 
@@ -1430,15 +1502,15 @@ qb.where('id', 42)
 
 <a name="update_batch"></a>
 
-### .update_batch(table, dataset, index[,where], callback)
+### .update_batch(table, dataset, index[,where][, callback])
 
-Parameter | Type     | Default  | Description
-:-------- | :------- | :------- | :----------------------------------------------------------------------------------------------------
-table     | String   | Required | The table/collection you'd like to insert into
-dataset   | Array    | Required | An array of data (rows) to update (ex. `[{id: 3, field: value}, {id: 4, field: val}]`)
-index     | String   | Required | Name of the key in each data object that represents a `where` clause.
-where     | Object   | NULL     | (optional) Used to avoid having to call `.where()` separately. Pass NULL if you don't want to use it.
-callback  | Function | Required | What to do when the driver has responded.
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :----------------------------------------------------------------------------------------------------
+table     | String   | Required  | The table/collection you'd like to insert into
+dataset   | Array    | Required  | An array of data (rows) to update (ex. `[{id: 3, field: value}, {id: 4, field: val}]`)
+index     | String   | Required  | Name of the key in each data object that represents a `where` clause.
+where     | Object   | NULL      | (optional) Used to avoid having to call `.where()` separately. Pass NULL if you don't want to use it.
+callback  | Function | undefined | (optional) What to do when the driver has responded.
 
 This method is a somewhat-complex one and, when using transactional databases, a bit pointless. Nevertheless, this will allow you to update a batch of rows with one query which, in theory, should be faster than running multiple update queries.
 
@@ -1494,19 +1566,19 @@ As you can see, in each `CASE` statement, the `key` and it's value are being use
 
 <a name="insert"></a>
 
-### .insert(table, data[,ignore[,on_dupe]], callback)
+### .insert(table, data[,ignore[,on_dupe]][, callback])
 
-Parameter | Type     | Default   | Description
-:-------- | :------- | :-------- | :--------------------------------------------------------------------------------------------------------------
-table     | String   | Required  | The table/collection you'd like to insert into
-data      | Object   | Required  | The data to insert (ex. `{field: value}`)
-ignore    | Boolean  | false     | (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.
-on_dupe   | String   | undefined | (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).
-callback  | Function | Required  | What to do when the driver has responded.
+Parameter | Type     | Default    | Description
+:-------- | :------- | :--------- | :--------------------------------------------------------------------------------------------------------------
+table     | String   | Required   | The table/collection you'd like to insert into
+data      | Object   | Required   | The data to insert (ex. `{field: value}`)
+ignore    | Boolean  | false      | (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.
+on_dupe   | String   | undefined  | (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).
+callback  | Function | undefined  | (optional) What to do when the driver has responded.
 
-This method is used to insert new data into a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with information like the ID of the newly inserted item, the affected rows (should be 1), etc...
+This method is used to insert new data into a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback (or the Promise resolution value) should receive a response object with information like the ID of the newly inserted item, the affected rows (should be 1), etc...
 
-**Type of Response Sent to Callback**
+**Response Type**
 
 Object containing information about the result of the query.
 
@@ -1548,7 +1620,7 @@ app.post('/add_article', (req, res) => {
 
 <a name="insert_batch"></a>
 
-### .insert_batch(table, dataset[,ignore[,on_dupe]], callback)
+### .insert_batch(table, dataset[,ignore[,on_dupe]][, callback])
 
 Parameter | Type     | Default   | Description
 :-------- | :------- | :-------- | :------------------------------------------------------------------------------------------------------------------
@@ -1556,11 +1628,11 @@ table     | String   | Required  | The table/collection you'd like to delete rec
 dataset   | Array    | undefined | An array of objects containing the data you want to insert. Pass *can* pass an empty array if you want to be silly.
 ignore    | Boolean  | false     | (optional) If TRUE, generates IGNORE syntax for your driver if it's supported; ignored (haha) if not supported.
 on_dupe   | String   | undefined | (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).
-callback  | Function | Required  | What to do when the driver has responded.
+callback  | Function | undefined | (optional) What to do when the driver has responded.
 
 The goal of this method is to speed the insertion of many rows. For instance, if you were insert 1,000 rows... Instead of making 1,000 queries to the server, you could just call `insert_batch()` and it would generate a single query to insert 1,000 rows. This is _much_ more efficient and less taxing on your app and database server.
 
-**Type of Response Sent to Callback**
+**Response Type**
 
 Object containing information about the result of the query.
 
@@ -1588,18 +1660,18 @@ qb.insert_batch('db_engines', data, (err, res) => {
 
 <a name="insert_ignore"></a>
 
-### .insert_ignore(table, data[,on_dupe], callback)
+### .insert_ignore(table, data[,on_dupe][, callback])
 
 Parameter | Type     | Default   | Description
 :-------- | :------- | :-------- | :------------------------------------------------------------------------------------------------------------------
 table     | String   | Required  | The table/collection you'd like to delete records from.
 data      | Object   | undefined | An array of objects containing the data you want to insert. Pass *can* pass an empty array if you want to be silly.
 on_dupe   | String   | undefined | (optional) Query suffix needed for generating an 'upsert' (ex. `ON DUPLICATE KEY UPDATE ...`).
-callback  | Function | Required  | What to do when the driver has responded.
+callback  | Function | undefined | (optional) What to do when the driver has responded.
 
 This method is just a wrapper to the `insert()` method which passes `true` to the ignore parameter. The purpose of using `IGNORE` syntax, for the drivers that support it, is so that a row insertion will be skipped if it's an exact duplicate of another row in the database. Optionally, you can provide a 3rd parameter containing a query that will update specified keys in the case of a duplicate entry (instead of simply ignoring it). With the third parameter, you can create an 'upsert' of sorts. Without the third parameter, it's essentially just "ignoring" errors, or, rather, converting them to simple warnings.
 
-**Type of Response Sent to Callback**
+**Response Type**
 
 Object containing information about the result of the query.
 
@@ -1658,19 +1730,19 @@ qb.insert_ignore('db_engines', data, 'ON DUPLICATE KEY UPDATE last_modified = NO
 
 <a name="delete"></a>
 
-### .delete(table, where, callback)
+### .delete(table, where[, callback])
 
 Parameter | Type     | Default   | Description
 :-------- | :------- | :-------- | :----------------------------------------------------------------------------------------------------
 table     | String   | Required  | The table/collection you'd like to delete records from.
 where     | Object   | undefined | (optional) Used to avoid having to call `.where()` separately. Pass NULL if you don't want to use it.
-callback  | Function | Required  | What to do when the driver has responded.
+callback  | Function | undefined | (optional) What to do when the driver has responded.
 
 This method is used to delete records from a table (SQL) or collection (NoSQL). All identifiers and values are escaped automatically when applicable. The response parameter of the callback should receive a response object with the number of affected rows.
 
 **NOTE:** If tables are added to the querybuilder query cache via the `from()` method, only first table in the array (the first added) will be used for this method.
 
-**Type of Response Sent to Callback**
+**Response Type**
 
 Object containing information about the result of the query.
 
@@ -1684,25 +1756,23 @@ const app = express();
 const settings = require('db.json');
 const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 
-app.post('/delete_comment/:id', (req, res) => {
-    const comment_id = req.params.id;
+app.post('/delete_comment/:id', async (req, res) => {
+    const id = req.params.id;
+    let qb;
 
-    pool.get_connection(qb => {
-        qb.get('comments', {id: id}, (err, res) => {
-            if (err) return console.error(err);
-            const article_id = res.article_id;
-
-            qb.delete('comments', {id: id}, (err, res) => {
-                qb.release();
-                if (err) return console.error(err);
-
-                const page_data = {
-                    num_removed: res.affected_rows,
-                }
-                return res.render('/article/' + article_id, page_data);
-            });
-        });
-    });
+    try {
+        qb = await pool.get_connection();
+        const comment = qb.get('comments', {id});
+        const comment_id = comment.id;
+        const results = await qb.delete('comments', {id: comment_id});
+        const num_removed = res.affected_rows;
+        return res.render(`/article/${article_id}`, {num_removed});
+    } catch (err) {
+        console.error(err);
+        return res.status(400).send('Something bad happened.');
+    } finally {
+        if (qb) qb.release();
+    }
 });
 ```
 
@@ -1710,18 +1780,18 @@ app.post('/delete_comment/:id', (req, res) => {
 
 <a name="truncate"></a>
 
-### .truncate(table, callback)
+### .truncate(table[, callback])
 
-Parameter | Type     | Default  | Description
-:-------- | :------- | :------- | :-------------------------------------------
-table     | String   | Required | The table/collection you'd like to truncate.
-callback  | Function | Required | What to do when the driver has responded.
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :-------------------------------------------
+table     | String   | Required  | The table/collection you'd like to truncate.
+callback  | Function | undefined | (optional) What to do when the driver has responded.
 
 For drivers that support it (MySQL, MSSQL), this method will utilize the `TRUNCATE` directive to empty a table of all it's data. The main difference between the `truncate()` method and the `empty_table()` method is that, when available, and when possible, truncating a table will reset your AUTO_INCREMENT counter back to zero. If you simply delete every row from a table, the next item inserted will just continue with the next highest ID from the deleted records.
 
 For drivers that don't support the truncate method, this will simply act as a wrapper to the [.empty_table()](#empty_table) method.
 
-**Type of Response Sent to Callback**
+**Response Type**
 
 Object containing information about the result of the query.
 
@@ -1732,7 +1802,7 @@ const settings = require('db.json');
 const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 
 /*
- * Assume we have a table like this to start with...
+ * Assume we have a table (with auto-incrementing ID) like this to start with...
  * [
  *   { id: 1, name: 'Mary' },
  *   { id: 2, name: 'Jane' },
@@ -1740,27 +1810,31 @@ const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
  * ];
  */
 
-pool.get_connection(qb => {
-    qb.truncate('users', (err, res) => {
-        if (err) throw err;
-        qb.insert('users', {name: 'Bob'}, (err, res) => {
-            if (err) throw err;
-            qb.get_where('users', {id: res.insert_id}, (err, res) => {
-                qb.release();
-                if (err) throw err;
-                // { id: 1, name: 'Bob' } (notice ID is 1)
-                console.dir(res);
-            });
-        });
-    });
-});
+async function deleteUser() {
+    let qb;
+    try {
+        qb = await pool.get_connection();
+        await qb.truncate('users');
+        await qb.insert('users', { name: 'Bob' });
+        const results = await qb.get_where('users', { id: res.insert_id });
+
+        // { id: 1, name: 'Bob' } (notice ID is 1)
+        console.log('Results: ', results);
+    } catch (err) {
+        console.error(err);
+    } finally {
+        if (qb) qb.release();
+    }
+}
+
+deleteUser();
 ```
 
 --------------------------------------------------------------------------------
 
 <a name="empty_table"></a>
 
-### .empty_table(table, callback)
+### .empty_table(table[, callback])
 
 Parameter | Type     | Default  | Description
 :-------- | :------- | :------- | :-------------------------------------------
@@ -1769,7 +1843,9 @@ callback  | Function | Required | What to do when the driver has responded.
 
 This method will allow you to delete all records from a table/collection.
 
-**Type of Response Sent to Callback**
+**Note:** This will *not* reset your `AUTO_INCREMENT`ing primary key field. For that, please use the [.truncate()](#truncate) method where possible.
+
+**Response Type**
 
 Object containing information about the result of the query.
 
@@ -1816,7 +1892,7 @@ API Method                                    | MySQL    | MSSQL    | Oracle   |
 [disconnect()](#disconnect)                   | &#x2713; | &#x2713; |          |          |          |
 [escape()](#escape)                           | &#x2713; | &#x2713; |          |          |          |
 [get_connection()](#get_connection)           | &#x2713; | &#x2713; |          |          |          |
-[last_query()](#last_query)                   | &#x2713; |          |          |          |          |
+[last_query()](#last_query)                   | &#x2713; | &#x2717; |          |          |          |
 [release()](#release)                         | &#x2713; | &#x2713; |          |          |          |
 [get_compiled_select()](#get_compiled_select) | &#x2713; | &#x2713; |          |          |          |
 [get_compiled_insert()](#get_compiled_insert) | &#x2713; | &#x2713; |          |          |          |
@@ -1873,17 +1949,17 @@ const connection_settings = qb.connection_settings();
 
 <a name="disconnect"></a>
 
-### .disconnect(callback)
+### .disconnect([callback])
 
-Parameter | Type     | Default  | Description
-:-------- | :------- | :------- | :---------------------------------------------------------
-callback  | Function | Required | What to do when the connection is fully terminated.
+Parameter | Type     | Default   | Description
+:-------- | :------- | :-------- | :---------------------------------------------------------
+callback  | Function | undefined | (optional) What to do when the connection is fully terminated.
 
-Disconnect from the server after your query is complete. You _must_ call this each time after your done querying the database! **NOTE:** You would _not_ use this when using a connection pool. This should only be called when working with single one-off connections. After disconnecting, all subsequent queries will fail unless you reconnect ([connect()](#connect)).
+Disconnect from the server after your query is complete. You _must_ call this each time after your done querying the database! **NOTE:** You would _not_ use this when using a connection pool. This should only be called when working with single one-off connections (command-line scripts, for example). After disconnecting, all subsequent queries will fail unless you reconnect ([connect()](#connect)).
 
 **Examples**
 
-Below is a contrived example that gets a list of all users in a users table where their username starts with a `|` character. It then loops over each one and removes the `|` from the username and re-inserts it. Notice that the connection is not terminated until all the queries that needed to be executed have been executed.
+Below is a contrived example that gets a list of all users in a users table where their username starts with a `|` (pipe) character. It then loops over each one and removes the `|` from the username and re-inserts it. Notice that the connection is not terminated until all the queries that needed to be executed have been executed.
 
 ```javascript
 const settings = require('db.json');
@@ -1919,10 +1995,31 @@ const settings = require('db.json');
 const qb = new require('node-querybuilder')(settings, 'mysql');
 
 qb.get_where('users', {username: 'foobar'}, (err, res) => {
-    qb.disconnect();
     if (err) throw err;
-    console.log("Success: ", res);
+    qb.disconnect((err) => { // NOTE: an error here is unlikely
+        if (err) return console.error(err);
+        console.log("Success: ", res);
+    });
 });
+```
+
+As with all functions in this library, it has a Promise-style verion as well. Simply don't supply the callback and a Promise will be returned. Here's an example:
+
+```javascript
+const settings = require('db.json');
+const qb = new require('node-querybuilder')(settings, 'mysql');
+
+async function getFooUsers() {
+    try {
+        const res = await qb.get_where('users', {username: 'foobar'});
+        await qb.disconnect();
+        console.log("Success: ", res);
+    } catch (err) {
+        if (err) console.error(err);
+    }
+}
+
+getFooUsers();
 ```
 
 --------------------------------------------------------------------------------
@@ -1963,15 +2060,15 @@ qb.query(sql, (err, res) => {
 
 <a name="get_connection"></a>
 
-### .get_connection(callback)
+### .get_connection([callback])
 
 Parameter | Type     | Default  | Description
 :-------- | :------- | :------- | :---------------------------------------------------------
 callback  | Function | Required | What to do when the connection is retrieved (or not) from the pool.
 
-Used to get a new connection from the connection pool or cluster pool. An instance of the QueryBuilder adapter for your specific connection will be passed to the callback. Make sure that your connection is [release](#release)d when you are done with it!
+Used to get a new connection from the connection pool or cluster pool. An instance of the QueryBuilder adapter for your specific connection will be passed to the callback or Promise resolution. Make sure that your connection is [release](#release)d when you are done with it!
 
-**Example**
+**Callback Example**
 
 ```javascript
 const settings = require('db.json');
@@ -1980,9 +2077,32 @@ const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 pool.get_connection(qb => {
     qb.limit(10).get('users', (err, res) => {
         qb.release();
-        // Do stuff with results or err
+        if (err) return console.error(err);
+        // Do stuff with results
     });
 });
+```
+
+**Async/Await Example**
+
+```javascript
+const settings = require('db.json');
+const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
+
+async function getUsers() {
+    let qb;
+    try {
+        qb = await pool.get_connection();
+        const res = await qb.limit(10).get('users');
+        // Do stuff with results
+    } catch (err) {
+        console.error(err);
+    } finally {
+        if (qb) qb.release();
+    }
+}
+
+getUsers();
 ```
 
 --------------------------------------------------------------------------------
@@ -2001,7 +2121,7 @@ const settings = require('db.json');
 const pool = new require('node-querybuilder')(settings, 'mysql', 'pool');
 pool.get_connection(qb => {
     const id = 4531;
-    qb.get('comments', {id: id}, (err, res) => {
+    qb.get('comments', {id}, (err, res) => {
         // SELECT * FROM `comments` WHERE `id` = 4531
         console.log(qb.last_query());
         qb.release();
@@ -2065,7 +2185,7 @@ pool.get_connection(qb => {
 ### SQL Compilation Methods
 These methods can be used to build a query string without having to execute it. This is a fantastic option if you want to use the querybuilder to simply build queries and display the resulting string or to send the compiled query string off to a driver/engine other than the one offered by `node-querybuilder`.
 
-These are excellent educational tools and can be used like a SQL/NoSQL language Rosetta Stone of sorts.
+These are also excellent educational tools and can be used like a SQL/NoSQL language Rosetta Stone of sorts.
 
 These methods are not asynchronous and, therefore, just return the compiled query string.
 
