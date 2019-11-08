@@ -30,17 +30,18 @@ class Pool extends Adapter {
             throw new Error(error_msg);
         }
 
+        const self = this;
         const handler = (reject, resolve) => {
-            this._pool.acquire((err, connection) => {
+            self._pool.acquire((err, connection) => {
                 if (err) {
                     if (cb && typeof cb === 'function') return cb(err, null);
                     else if ((!cb || typeof cb !== 'function') && (typeof resolve === 'function' && typeof reject === 'function')) return reject(err);
                     throw err;
                 }
 
-                const adapter = new Single(this._original_settings, {
+                const adapter = new Single(self._original_settings, {
                     pool: {
-                        pool: this._pool,
+                        pool: self._pool,
                         connection,
                     }
                 });
