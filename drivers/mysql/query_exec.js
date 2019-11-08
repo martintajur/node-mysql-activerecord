@@ -145,7 +145,7 @@ class QueryExec extends QueryBuilder {
             cb = where;
             where = null;
         }
-        else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && Object.keys(where.length) === 0)) {
+        else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && Object.keys(where).length === 0)) {
             where = null;
         }
 
