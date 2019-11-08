@@ -1,6 +1,6 @@
 {
   "name": "node-querybuilder",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "author": "Kyle Farris <kyle@chomponllc.com>",
   "description": "Modeled after Codeigniter's QueryBuilder. Build and execute queries in a safe and database-agnostic way.",
   "keywords": [
