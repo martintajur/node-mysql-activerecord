@@ -1,5 +1,7 @@
 const Request = require('tedious').Request;
 const QueryBuilder = require('./query_builder.js');
+const ERROR = require("../QueryExecError");
+const WrapperPromise = require("../WrapperPromise");
 
 // ****************************************************************************
 // QueryBuilder "Query Execution" methods.

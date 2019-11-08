@@ -13,7 +13,7 @@ const check = (done, f) => {
     }
 };
 
-describe('MSSQL: Query Responses', () => {
+describe('MSSQL: Query Promises', () => {
     it('should allow us to execute a simple SELECT query', async () => {
         const qb = new QueryBuilder(Object.assign({}, settings), driver);
         try {
