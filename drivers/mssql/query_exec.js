@@ -51,6 +51,7 @@ class QueryExec extends QueryBuilder {
     }
 
     query(sql, cb) {
+        if (!cb || typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
         this._exec(sql, cb);
     }
 
@@ -62,15 +63,26 @@ class QueryExec extends QueryBuilder {
 
         const sql = this._count(table);
         this.reset_query(sql);
-        this._exec(sql, (err, row) => {
+
+        const handler = (err, row) => {
             if (!err) {
-                //console.dir(row[0].numrows);
+                if (typeof callback !== "function") {
+                    this.resolve(row[0].numrows);
+                    return;
+                }
                 cb(err, row[0].numrows);
             }
             else {
+                if (typeof callback !== "function") {
+                    this.reject(err);
+                    return;
+                }
                 cb(err, row);
             }
-        });
+        }
+
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this), handler).promisify();
+        this._exec(sql, handler);
     }
 
     get(table,cb,conn) {
@@ -78,31 +90,34 @@ class QueryExec extends QueryBuilder {
         if (typeof table === 'function' && typeof cb !== 'function') {
             cb = table;
         }
-        else if (typeof table === 'undefined' && typeof cb !== 'function') {
-            throw new Error("No cb function has been provided in your 'get' call!");
-        }
 
         const sql = this._get(table);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
+        this._exec(sql, cb);
     }
 
     get_where(table,where,cb) {
         if (typeof table !== 'string' && !Array.isArray(table)) {
-            throw new Error("First parameter of get_where() must be a string or an array of strings.");
+            throw ERROR.FIRST_PARAM_OF_GET_WHERE_ERR;
         }
         if (Object.prototype.toString.call(where) !== Object.prototype.toString.call({})) {
-            throw new Error("Second parameter of get_where() must be an object with key:value pairs.");
+            throw ERROR.SECOND_PARAM_OF_GET_WHERE_ERR;
         }
-        const sql = this._get_where(table,where);
+        const sql = this._get_where(table, where);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
+        this._exec(sql, cb);
     }
 
     insert(table, set, cb, ignore, suffix) {
         const sql = this._insert(table, set, ignore, suffix);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
+        this._exec(sql, cb);
     }
 
     insert_ignore(table, set, on_dupe, cb) {
@@ -131,6 +146,8 @@ class QueryExec extends QueryBuilder {
 
         const sql = this._insert_batch(table, set);
         this.reset_query(sql);
+        
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
         this._exec(sql, cb);
     }
 
@@ -140,16 +157,15 @@ class QueryExec extends QueryBuilder {
             cb = where;
             where = null;
         }
-        else if (typeof where === 'undefined' && typeof cb !== 'function') {
-            throw new Error("No cb function has been provided in your update call!");
-        }
-        else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && where.length == 0)) {
+        else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && Object.keys(where).length === 0)) {
             where = null;
         }
 
         const sql = this._update(table,set,where);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
+        this._exec(sql, cb);
     }
 
     // TODO: Write this complicated-ass function
@@ -159,41 +175,46 @@ class QueryExec extends QueryBuilder {
             cb = where;
             where = null;
         }
-        else if (typeof where === 'undefined' && typeof cb !== 'function') {
-            throw new Error("No cb function has been provided in your update_batch call!");
-        }
-        else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && where.length == 0)) {
+        else if (typeof where === 'undefined' || where === false || (where !== null && typeof where === 'object' && Object.keys(where).length === 0)) {
             where = null;
         }
 
-        const sqls = this._update_batch(table,set,index,where);
+        const sqls = this._update_batch(table, set, index, where);
         const results = null;
         const errors = [];
 
         // Execute each batch of (at least) 100
-        (function next_batch() {
-            const sql = sqls.shift();
-            this.reset_query(sql);
+        const handler = (resolve, reject) => {
+            (function next_batch() {
+                const sql = sqls.shift();
+                this.reset_query(sql);
 
-            this._exec(sql, (err, res) => {
-                if (!err) {
-                    if (null === results) {
-                        results = res;
+                this._exec(sql, (err, res) => {
+                    if (!err) {
+                        if (null === results) {
+                            results = res;
+                        } else {
+                            results.affected_rows += res.affected_rows;
+                            results.changed_rows += res.changed_rows;
+                        }
                     } else {
-                        results.affected_rows += res.affected_rows;
-                        results.changed_rows += res.changed_rows;
+                        errors.push(err);
                     }
-                } else {
-                    errors.push(err);
-                }
 
-                if (sqls.length > 0) {
-                    setTimeout(next_batch,0);
-                } else {
-                    return cb(errors, results);
-                }
-            });
-        })();
+                    if (sqls.length > 0) {
+                        setTimeout(next_batch,0);
+                    } else {
+                        return cb(errors, results);
+                    }
+                });
+            })();
+        };
+
+        if (!cb || cb !== 'function') {
+            return new Promise(handler);
+        } else {
+            handler();
+        }
     }
 
     delete(table, where, cb) {
@@ -208,26 +229,27 @@ class QueryExec extends QueryBuilder {
             where = undefined;
         }
 
-        if (typeof cb !== 'function') {
-            throw new Error("delete(): No callback function has been provided!");
-        }
-
         const sql = this._delete(table, where);
-
         this.reset_query(sql);
-        this._exec(sql,cb);
+        
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
+        this._exec(sql, cb);
     }
 
     empty_table(table, cb) {
         const sql = this._empty_table(table,cb);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
+        this._exec(sql, cb);
     }
 
     truncate(table, cb) {
         const sql = this._truncate(table,cb);
         this.reset_query(sql);
-        this._exec(sql,cb);
+        
+        if (typeof cb !== "function") return new WrapperPromise(sql, this._exec.bind(this)).promisify();
+        this._exec(sql, cb);
     }
 }
 
