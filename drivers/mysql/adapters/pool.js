@@ -38,21 +38,48 @@ class Pool extends Adapter {
             throw new Error(error_msg);
         }
 
-        this._pool.getConnection((err, connection) => {
-            if (err) throw err;
-            const adapter = new Single(this._original_settings, {
-                pool: {
-                    pool: this._pool,
-                    connection: connection
+        const handler = (resolve, reject) => {
+            this._pool.getConnection((err, connection) => {
+                if (err) {
+                    if (cb && typeof cb === 'function') return cb(err, null);
+                    else if ((!cb || typeof cb !== 'function') && (typeof resolve === 'function' && typeof reject === 'function')) return reject(err);
+                    throw err;
                 }
-            });
 
-            cb(adapter);
-        });
+                const adapter = new Single(this._original_settings, {
+                    pool: {
+                        pool: this._pool,
+                        connection
+                    }
+                });
+
+                if ((!cb || typeof cb !== 'function') && (typeof resolve === 'function' && typeof reject === 'function')) return resolve(adapter)
+                else if (cb && typeof cb === 'function') return cb(err, adapter);
+                throw ERRORS.NO_VALID_RESULTS_HANDLER;
+            });
+        }
+
+        if (!cb || (cb && typeof cb !== 'function')) {
+            return new Promise(handler);
+        } else {
+            handler();
+        }
     }
 
     disconnect(cb) {
-        this._pool.end(cb);
+        if (!cb || (cb && typeof cb !== 'function')) {
+            return new Promise((resolve, reject) => {
+                this._pool.end((err) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+        } else {
+            this._pool.end(cb);
+        }
     }
 }
 

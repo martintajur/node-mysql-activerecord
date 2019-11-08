@@ -31,7 +31,19 @@ class Single extends Adapter {
     }
 
     connect(cb) {
-        return this._connection.connect(cb);
+        if (!cb || (cb && typeof cb !== 'function')) {
+            return new Promise((resolve, reject) => {
+                return this._connection.connect((err) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+        } else {
+            this._connection.connect(cb);
+        }
     }
 
     connection() {
@@ -42,8 +54,20 @@ class Single extends Adapter {
         return this._connection.escapeId(str);
     }
 
-    disconnect(callback) {
-        return this._connection.end(callback);
+    disconnect(cb) {
+        if (!cb || (cb && typeof cb !== 'function')) {
+            return new Promise((resolve, reject) => {
+                this._connection.end((err) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+        } else {
+            this._connection.end(cb);
+        }
     }
 
     release() {

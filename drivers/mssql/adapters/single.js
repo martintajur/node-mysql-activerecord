@@ -35,8 +35,18 @@ class Single extends Adapter {
     }
 
     connect(cb) {
-        if (this._connection) return this._connection;
-        this._connection = this.sql_connection.connect(cb);
+        if (!cb || (cb && typeof cb !== 'function')) {
+            return new Promise((resolve, reject) => {
+                if (this._connection) return resolve();
+                this._connection = this.sql_connection.connect((err) => {
+                    if (err) return reject(err);
+                    resolve();
+                });
+            });
+        } else {
+            if (this._connection) return cb();
+            this._connection = this.sql_connection.connect(cb);
+        }
     }
 
     connection() {
@@ -47,13 +57,20 @@ class Single extends Adapter {
         return tsqlstring.escapeId(str);
     }
 
-    disconnect(callback) {
+    disconnect(cb) {
         if (this.pool) {
             this.pool.drain();
         } else {
             this._connection.close();
         }
-        if (callback && typeof callback === 'function') callback(null);
+        
+        if (cb && typeof cb === 'function') {
+            cb(null);
+        } else {
+            return new Promise((resolve, reject) => {
+                resolve();
+            });
+        }
     }
 
     release() {
