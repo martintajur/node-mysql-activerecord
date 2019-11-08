@@ -33,11 +33,7 @@ class Pool extends Adapter {
         const self = this;
         const handler = (reject, resolve) => {
             self._pool.acquire((err, connection) => {
-                if (err) {
-                    if (cb && typeof cb === 'function') return cb(err, null);
-                    else if ((!cb || typeof cb !== 'function') && (typeof resolve === 'function' && typeof reject === 'function')) return reject(err);
-                    throw err;
-                }
+                if (err) throw err;
 
                 const adapter = new Single(self._original_settings, {
                     pool: {
@@ -47,7 +43,7 @@ class Pool extends Adapter {
                 });
 
                 if ((!cb || typeof cb !== 'function') && (typeof resolve === 'function' && typeof reject === 'function')) return resolve(adapter)
-                else if (cb && typeof cb === 'function') return cb(err, adapter);
+                else if (cb && typeof cb === 'function') return cb(adapter);
                 throw ERRORS.NO_VALID_RESULTS_HANDLER;
             });
         }
